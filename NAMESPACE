@@ -1,0 +1,10 @@
+export(POLYCHORIC_R, RAWPAR, PARALLEL, MAP, LOCALDEP, PCA, PA_FA, IMAGE_FA, MAXLIKE_FA, SCREE_PLOT,
+       PROMAX, VARIMAX, PROCRUSTES, ROOTFIT, CONGRUENCE, EXTENSION_FA, SALIENT, SESCREE, NEVALSGT1, FACTORABILITY)
+
+importFrom("stats", cor, na.omit, rnorm, cov2cor, pchisq)
+
+importFrom("psych", polychoric, fa, factor.fit, factor.residuals, principal)
+
+importFrom("polycor", hetcor)
+
+importFrom("graphics", "axis", "plot")
