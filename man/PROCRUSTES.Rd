@@ -17,7 +17,7 @@
   \code{}The options are 'orthogonal' or 'oblique' rotation.}
                   
   \item{verbose}{
-  \code{}Should detailed results be displayed in console? \cr The options are: TRUE (default) or FALSE.}
+  \code{}Should detailed results be displayed in console? TRUE (default) or FALSE}
 }
 \details{This function conducts Procrustes rotations of a factor loading matrix to 
 	a target factor matrix, and it computes the factor solution congruence and the root 
@@ -41,7 +41,8 @@
 	to test a hypothesized factor structure. \emph{Behavioral Science, 7,} 258-262.}
 \cr\cr{McCrae, R. R., Zonderman, A. B., Costa, P. T. Jr., Bond, M. H., & Paunonen, S. V. (1996). 
 	Evaluating replicability of factors in the revised NEO personality inventory: Confirmatory 
-	factor analysis versus Procrustes rotation. \emph{Journal of Personality and Social Psychology, 70,} 552-566.}
+	factor analysis versus Procrustes rotation. 
+	\emph{Journal of Personality and Social Psychology, 70,} 552-566.}
 \cr\cr{Schonemann, P. H. (1966). A generalized solution of the orthogonal Procrustes problem. 
 	\emph{Psychometrika, 31,} 1-10.}
 \cr\cr{ten Berge, J. M. F. (1986). Some relationships between descriptive comparisons of 
@@ -49,9 +50,13 @@
 }
 \author{Brian P. O'Connor}
 \examples{
+\donttest{
 # RSE data
-loadings <- PCA(data_RSE[1:150,],   Nfactors = 2, rotate='varimax', verbose=FALSE)
-target   <- PCA(data_RSE[151:300,], Nfactors = 2, rotate='varimax', verbose=FALSE)
+PCAoutput_1 <- PCA(data_RSE[1:150,],   Nfactors = 2, rotate='PROMAX', verbose=FALSE)
 
-PROCRUSTES(loadings$loadingsROT, target$loadingsROT, type = 'orthogonal', verbose=TRUE)
+PCAoutput_2 <- PCA(data_RSE[151:300,], Nfactors = 2, rotate='PROMAX', verbose=FALSE)
+
+PROCRUSTES(target=PCAoutput_1$pattern, loadings=PCAoutput_2$pattern, 
+           type = 'orthogonal', verbose=TRUE)
+}
 }

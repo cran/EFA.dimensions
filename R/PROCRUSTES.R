@@ -1,8 +1,11 @@
 		
 # Procrustes rotation of factor loading matries
+
 PROCRUSTES <- function (loadings, target, type='orthogonal', verbose=TRUE) {
+
 #   type = 'orthogonal' or 'oblique'
 # orthogonal Procrustes   
+
 # McCrae et al 1996 JPSP, 70, p. 566; based on Schoneman 1966, Psychometrika, 31, 1-10
 if  (type == 'orthogonal') {
 	s= t(loadings)%*%target
@@ -18,6 +21,7 @@ if  (type == 'orthogonal') {
 	t1 = ww %*% t(v)
 	procrust = loadings %*% t1 
 }
+
 # oblique Procrustes   
 # Hurley & Cattell 1962, Behavioral Science, 7, 258
 	if (type == 'oblique') {
@@ -28,28 +32,35 @@ if  (type == 'orthogonal') {
 	for (t in 1:numrows) { cat3 = rbind(cat3, cat2) }
 	procrust =  loadings %*% (cat1 / cat3)   
 }
+
 colnames(procrust) <- colnames(loadings)
+
 # congruence coefficient
 rtproc = sum(target*procrust) / sqrt (sum(target*target)  * sum(procrust*procrust))
+
 #  % var in target vs % var in resid matrix.
 resid = target - procrust
 nvars = nrow(target)
 pertarget =  sum(target*target) / nvars
 perresid =  sum((target - procrust) * (target - procrust)) / nvars 
+
 #root mean square residual.
 rmsr = sqrt (sum(resid*resid) / (nvars * ncol(target)))
+
 if (verbose == TRUE) {
 	if (type=='orthogonal') {message('\n\nOrthogonal Procrustes Rotation') }
 	if (type=='oblique')    {message('\n\nOblique Procrustes Rotation:') }
-	message('\nOriginal Loadings:\n'); print(round(loadings,3))
-	message('\nTarget:\n'); print(round(target,3))
-	message('\nProcrustes-Rotated Loadings:\n'); print(round(procrust,3))
+	message('\nOriginal Loadings:\n'); print(round(loadings,3), print.gap=3)
+	message('\nTarget:\n'); print(round(target,3), print.gap=3)
+	message('\nProcrustes-Rotated Loadings:\n'); print(round(procrust,3), print.gap=3)
 	message('\nCongruence Between the Target & Procrustes-Rotated Loadings = ', round(rtproc,3))
 	message('\nProportion of Variance in Target = ', round(pertarget,3))
 	message('\nProportion of Variance in Residual = ', round(perresid,3))
 	message('\nRoot Mean Square Residual = ', round(rmsr,3),'\n')
 }
+
 procrustesOutput <- list(loadingsPROC=procrust, congruence=rtproc, rmsr=rmsr, residmat=resid)
+
 return(invisible(procrustesOutput))
 	
 }

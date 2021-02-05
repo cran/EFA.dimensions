@@ -10,8 +10,11 @@
 # MAP test on the Harman correlation matrix
 MAP(data_Harman, verbose=TRUE)
 
+# DIMTESTS on the Harman correlation matrix
+DIMTESTS(data_Harman, tests = c('EMPKC','HULL','RAWPAR','NEVALSGT1'), Ncases=305, display=2)
+
 # parallel analysis of the Harman correlation matrix
-RAWPAR(data_Harman, extract='PCA', Ndatasets=100, percentile=95,
+RAWPAR(data_Harman, factormodel='PCA', Ndatasets=100, percentile=95,
        Ncases=305, verbose=TRUE)
 }
 }

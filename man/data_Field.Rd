@@ -8,16 +8,18 @@
 \usage{data(data_Field)}
 
 \source{
-Field, A., Miles, J., & Field, Z. (2012). \emph{Discovering statistics using R.} Los Angeles, CA: Sage. }
+Field, A., Miles, J., & Field, Z. (2012). \emph{Discovering statistics using R.} Los Angeles, CA: Sage.}
 
 \examples{
-head(data_Field)
-
 \donttest{
-# principal components analysis	
-PCA(data_Field, corkind='pearson', Nfactors=4, rotate='none', verbose=TRUE)
-		
 # MAP test
 MAP(data_Field, corkind='pearson', verbose=TRUE)
+
+# DIMTESTS
+DIMTESTS(data_Field, corkind='pearson', 
+         tests = c('CD','EMPKC','HULL','RAWPAR','NEVALSGT1'), display=2)
+
+# principal components analysis	
+PCA(data_Field, corkind='pearson', Nfactors=4, rotate='none', verbose=TRUE)
 }
 }

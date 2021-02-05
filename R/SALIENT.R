@@ -4,29 +4,26 @@
 #      Journal of Personality Assessment, 68, 532-560.
 # numsals = The required number of salient loadings for a factor.
 # salvalue = The loading value that is considered salient.
-SALIENT <- function (data, salvalue=.4, numsals=3, corkind='pearson', verbose=FALSE) {
-# determine whether data is a correlation matrix
-if (nrow(data) == ncol(data)) {
-	if (max(diag(data)) == 1 & min(diag(data)) == 1) {datakind = 'correlations'}
-} else{ datakind = 'notcorrels'}
-if (datakind == 'correlations')  rdata <- data 
-if (datakind == 'notcorrels') {
-	ncases <- nrow(data)
-	if (anyNA(data) == TRUE) {
-		data <- na.omit(data)
-		message('\nCases with missing values were found and removed from the data matrix.\n')
-	}
-	if (corkind=='pearson')     rdata <- cor(data, method='pearson') 
-	if (corkind=='kendall')     rdata <- cor(data, method='kendall') 
-	if (corkind=='spearman')    rdata <- cor(data, method='spearman') 
-	if (corkind=='polychoric')  rdata <- POLYCHORIC_R(data) 
-}
-Nfactors <- cbind(NEVALSGT1(rdata)) # Number of eigenvalues > 1
-paf.out <- PA_FA(rdata, Nfactors=Nfactors, verbose=FALSE)
-loadings <- paf.out$structure
-if (Nfactors > 1) loadings <- VARIMAX(loadings, verbose=FALSE)
+
+SALIENT <- function (data, salvalue=.4, numsals=3, corkind='pearson', Ncases=NULL, verbose=TRUE) {
+
+# set up cormat
+cordat <- setupcormat(data, corkind=corkind, Ncases=Ncases)
+cormat <- cordat$cormat
+ctype  <- cordat$ctype
+Ncases <- cordat$Ncases
+
+
+nevalsgt1Output <- NEVALSGT1(cormat, Ncases=Ncases)
+
+Nfactors <-nevalsgt1Output$NfactorsNEVALSGT1 # Number of eigenvalues > 1
+
+loadings <- PA_FA(cormat, Nfactors=Nfactors, Ncases=Ncases, rotate='none', verbose=FALSE)$loadingsNOROT
+
+if (Nfactors > 1) loadings <- VARIMAX(loadings, verbose=FALSE)$loadingsV
 rowmax <- cbind(apply(abs(loadings), 1, max))
-nfSAL <- 0
+
+NfactorsSALIENT <- 0
 for (lupec in 1:ncol(loadings)) {
 	nsalients <- 0
 	for (luper in 1:nrow(loadings)) {
@@ -34,15 +31,23 @@ for (lupec in 1:ncol(loadings)) {
 		nsalients <- nsalients + 1 
 		}
 	}
-	if (nsalients >= numsals)  nfSAL <- nfSAL + 1 
+	if (nsalients >= numsals)  NfactorsSALIENT <- NfactorsSALIENT + 1 
 }
+
+eigenvar <- nevalsgt1Output$eigenvar
+
 if (verbose == TRUE) {
-	message('\n\nThe salient loadings criterion for determining the number of components:')
+	message('\n\nNUMBER OF SALIENT LOADINGS:')
+	message('\nSpecified kind of correlations for this analysis: ', ctype)
 	message('\nThe salient loading value = ', salvalue)
 	message('\nThe required number salient loadings = ', numsals)
 	message('\nThe loading matrix:\n')
-	print(round(loadings,2))
-	message('\nThe number of components according to the salient loadings criterion = ', nfSAL, '\n')
+	print(round(loadings,2), print.gap=3)
+	message('\nThe number of components according to the salient loadings criterion = ', NfactorsSALIENT, '\n')
 }
-return(invisible(nfSAL))
+
+salientOutput <- list(NfactorsSALIENT=NfactorsSALIENT, eigenvar=eigenvar)
+
+return(invisible(salientOutput))
+
 }

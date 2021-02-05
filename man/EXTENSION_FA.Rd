@@ -6,9 +6,13 @@
 	         are then used to decide which factor, if any, a prospective item belongs to.}
 \usage{
 EXTENSION_FA(data, Ncore, Next, higherorder, roottest,  
-             corkind, corkindRAND, extract, rotate, Nfacts, 
-             NfactsHO, Ndatasets, percentile, salvalue, numsals, 
-             iterpaf, iterml, tolerml, ppower, verbose)
+             corkind, 
+             factormodel, rotate, 
+             Nfactors, NfactorsHO, 
+             Ndatasets, percentile, 
+             salvalue, numsals, 
+             iterpaf, ppower, 
+             verbose)
 }
 \arguments{
   \item{data}{
@@ -23,16 +27,6 @@ EXTENSION_FA(data, Ncore, Next, higherorder, roottest,
          extension factor analyses on the remaining columns in data, i.e., using column
          #Ncore+1 to the last column in data. Enter zero if there are no extension variables.}
 
-  \item{corkind}{
-  \code{}The kind of correlation matrix to be used. The options are 'pearson', 'kendall',
-         'spearman', and 'polychoric'.}
-
-  \item{corkindRAND}{
-  \code{}The kind of correlation matrix to be used for the random data when roottest = 'parallel'. 
-         The options are 'pearson', 'kendall', 'spearman', and 'polychoric'. These options are
-         included for research purposes. In most applications, it is probably best to use 
-         Pearson correlations, which is the default.}
-
   \item{higherorder}{
   \code{}Should a higher-order factor analysis be conducted? The options are TRUE or FALSE.}
 
@@ -43,24 +37,28 @@ EXTENSION_FA(data, Ncore, Next, higherorder, roottest,
          'MAP' for Velicer's minimum average partial test;
          'SEscree' for the standard error scree test;
          'nevals>1' for the number of eigenvalues > 1; and
-         'user' for a user-specified number of factors (see Nfacts & NfactsHO below).}
+         'user' for a user-specified number of factors (see Nfactors & NfactorsHO below).}
 
-  \item{Nfacts}{
-  \code{}An integer indicating the user-determined number of factors
-         (required only if roottest = 'user').}
+  \item{corkind}{
+  \code{}The kind of correlation matrix to be used. The options are 'pearson', 'kendall',
+         'spearman', 'gamma', and 'polychoric'.}
 
-  \item{NfactsHO}{
-  \code{}An integer indicating the user-determined number of higher order factors
-         (required only if roottest = 'user' and higherorder = TRUE).}
-
-  \item{extract}{ 
+  \item{factormodel}{ 
   \code{}The factor extraction method. The options are:
   	    'PAF' for principal axis / common factor analysis;
   	    'PCA' for principal components analysis;
   	    'ML' for maximum likelihood.}
 
   \item{rotate}{
-  \code{}The factor rotation method. The options are: 'promax', 'varimax', and 'none'.}
+  \code{}The factor rotation method. The options are: 'PROMAX', , and 'none'.}
+
+  \item{Nfactors}{
+  \code{}An integer indicating the user-determined number of factors
+         (required only if roottest = 'user').}
+
+  \item{NfactorsHO}{
+  \code{}An integer indicating the user-determined number of higher order factors
+         (required only if roottest = 'user' and higherorder = TRUE).}
 
   \item{Ndatasets}{
   \code{}An integer indicating the # of random data sets for parallel analyses (required only
@@ -83,22 +81,14 @@ EXTENSION_FA(data, Ncore, Next, higherorder, roottest,
 
   \item{iterpaf}{
   \code{}The maximum # of iterations for a principal axis / common factor analysis
-         (required only if extract = 'PAF'). Suggested value: 100}
-
-  \item{iterml}{
-  \code{}The maximum # of iterations for a maximum likelihood analysis
-         (required only if extract = 'ML'). Suggested value: 100}
-
-  \item{tolerml}{
-  \code{}The tolerance value for a maximum likelihood analysis
-         (required only if extract = 'ML'). Suggested value: .001}
+         (required only if factormodel = 'PAF'). Suggested value: 100}
 
   \item{ppower}{ 
   \code{}The power value to be used in a promax rotation (required only if
-         rotate = 'promax'). Suggested value: 3}
+         rotate = 'PROMAX'). Suggested value: 3}
                   
   \item{verbose}{
-  \code{}Should detailed results be displayed in console? \cr The options are: TRUE (default) or FALSE.}
+  \code{}Should detailed results be displayed in console? TRUE (default) or FALSE}
 }
 \details{
 Traditional scale development statistics can produce results that are baffling or misunderstood by
@@ -142,30 +132,40 @@ extension variable correlations -- all without computing factor scores.
 	  their correlations with the higher order factor(s)}
 }
 \references{
-       {Gorsuch, R. L. (1997a). Exploratory factor analysis: Its role in item analysis. 
+       {Dwyer, P. S. (1937) The determination of the factor loadings of a given test 
+	from the known factor loadings of other tests. \emph{Psychometrika, 3,} 173-178.}
+\cr\cr {Gorsuch, R. L. (1997a). Exploratory factor analysis: Its role in item analysis. 
        	\emph{Journal of Personality Assessment, 68,} 532-560.}
 \cr\cr {Gorsuch, R. L. (1997b). New procedure for extension analysis in exploratory factor 
 	analysis. \emph{Educational and Psychological Measurement, 57,} 725-740.}
-\cr\cr {Dwyer, P. S. (1937) The determination of the factor loadings of a given test 
-	from the known factor loadings of other tests. \emph{Psychometrika, 3,} 173-178.}
 \cr\cr {Horn, J. L. (1973) On extension analysis and its relation to correlations between 
 	variables and factor scores. \emph{Multivariate Behavioral Research, 8(4),} 477-489.}
 \cr\cr {O'Connor, B. P. (2001). EXTENSION: SAS, SPSS, and MATLAB programs for extension 
-	analysis. \emph{Applied Psychological Measurement, 25,} p. 88.
-	}
+	analysis. \emph{Applied Psychological Measurement, 25,} p. 88.}
 }
 \author{Brian P. O'Connor }
 \examples{
 \donttest{
-EXTENSION_FA(data_RSE, Ncore=7, Next=3, higherorder=TRUE, roottest='MAP',  
-             corkind='pearson', extract='PCA', rotate='promax', Nfacts=4, 
-             NfactsHO=1, Ndatasets=100, percentile=95, salvalue=.40, numsals=3, 
-             iterpaf=200, iterml=30, tolerml=.001, ppower=4, verbose=TRUE)
+EXTENSION_FA(data_RSE, Ncore=7, Next=3, higherorder=TRUE, 
+             roottest='MAP',  
+             corkind='pearson', 
+             factormodel='PCA', rotate='PROMAX', 
+             Nfactors=2, NfactorsHO=1, 
+             Ndatasets=100, percentile=95, 
+             salvalue=.40, numsals=3, 
+             iterpaf=200, 
+             ppower=4, 
+             verbose=TRUE)
 
-EXTENSION_FA(data_NEOPIR, Ncore=12, Next=6, higherorder=TRUE, roottest='MAP',  
-             corkind='pearson', extract='PCA', rotate='promax', Nfacts=4, 
-             NfactsHO=1, Ndatasets=100, percentile=95, salvalue=.40, numsals=3, 
-             iterpaf=200, iterml=30, tolerml=.001, ppower=4, verbose=TRUE)
-
+EXTENSION_FA(data_NEOPIR, Ncore=12, Next=6, higherorder=TRUE, 
+             roottest='MAP',  
+             corkind='pearson', 
+             factormodel='PCA', rotate='PROMAX', 
+             Nfactors=4, NfactorsHO=1, 
+             Ndatasets=100, percentile=95, 
+             salvalue=.40, numsals=3, 
+             iterpaf=200, 
+             ppower=4, 
+             verbose=TRUE)
 }
 }

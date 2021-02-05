@@ -1,6 +1,6 @@
 
 # parallel analysis of eigenvalues (no real data required)
-PARALLEL <- function (Nvars=50, Ncases=300, Ndatasets=100, extract='PCA', percentile=95,
+PARALLEL <- function (Nvars=50, Ncases=300, Ndatasets=100, factormodel='PCA', percentile=95,
                        corkind='pearson', verbose=TRUE){
 evals <- matrix(0, nrow = Nvars, ncol = Ndatasets)
 # pb <- utils::txtProgressBar(min = 0, max = Ndatasets, style = 3) 
@@ -14,13 +14,13 @@ for (nds in 1:Ndatasets) {
 	if (corkind=='spearman')     Rrand <- cor(randat, method='spearman') 
 		
 	# random data eigenvalues
-	if (extract=='PCA')  evals[,nds ] <- eigen(Rrand) $values 
-	if (extract=='PAF') {
+	if (factormodel=='PCA')  evals[,nds ] <- eigen(Rrand) $values 
+	if (factormodel=='PAF') {
 		smc = 1 - (1 / diag(solve(Rrand)))
 		diag(Rrand) <- smc
 		evals[,nds] <- eigen(Rrand) $values 
 	}
-	if (extract=='image') {
+	if (factormodel=='image') {
 		d <-  diag(1 / diag(solve(Rrand)))
 		gvv <- Rrand + d %*% solve(Rrand) %*% d - 2 * d
 		s <- sqrt(d)                  #  Velicer 1974 p 565 formula (7)
@@ -34,8 +34,9 @@ means <- apply(evals, 1, mean)
 for (luper in 1:Nvars) { evals[luper,] <- sort(evals[luper,]) }
 percentiles <- as.matrix(evals[,round((percentile*Ndatasets)/100)])
 results <- cbind(1:Nvars,means,percentiles)
-rownames(results) <- 1:Nvars
-colnames(results) <- c('    Root', '    Mean', '  Percentile')
+rownames(results) <- matrix((''),nrow(results),1)
+colnames(results) <- c('Root', 'Mean', 'Percentile')
+
 if (verbose == TRUE) {
 	message('\n\nPARALLEL ANALYSIS')
 	# specification notices
@@ -43,14 +44,14 @@ if (verbose == TRUE) {
 	if (corkind=='kendall')    ctype <- 'kendall' 
 	if (corkind=='spearman')   ctype <- 'spearman' 
 	message('\nType of correlations specified for the random data eigenvalues: ', ctype)
-	if (extract=='PCA')    message('\nExtraction Method: Principal Components') 
-	if (extract=='PAF')    message('\nExtraction Method: Common Factor Analysis')
-	if (extract=='image')  message('\nExtraction Method: Image Factor Extraction')
+	if (factormodel=='PCA')    message('\nExtraction Method: Principal Components') 
+	if (factormodel=='PAF')    message('\nExtraction Method: Common Factor Analysis')
+	if (factormodel=='image')  message('\nExtraction Method: Image Factor Extraction')
 	message('\nVariables = ', Nvars) 
 	message('\nCases = ', Ncases) 
 	message('\nNdatasets = ', Ndatasets) 
 	message('\nPercentile = ', percentile, '\n') 
-	print(round(results,3))
+	print(round(results,3), print.gap=3)
 }
 parOutput <- list(eigenvalues=results)
 return(invisible(parOutput))

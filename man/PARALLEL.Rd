@@ -1,20 +1,11 @@
 \name{PARALLEL}
 \alias{PARALLEL}
 \title{Parallel analysis of eigenvalues (random data only)}
-\description{Generates eigenvalues for random data sets with specified 
-	numbers of variables and cases. Typically, the eigenvalues derived from an actual 
-	data set are compared to the eigenvalues derived from the random data.  In Horn's 
-	original description of this procedure, the mean eigenvalues from the random data 
-	served as the comparison baseline, whereas the more common current practice is to 
-	use the eigenvalues that correspond to the desired percentile (typically the 95th) 
-	of the distribution of random data eigenvalues.  Factors or components are retained 
-	as long as the ith eigenvalue from the actual data is greater than the ith eigenvalue 
-	from the random data. This function produces only random data eigenvalues and it does 
-	not take real data as input. See the rawpar function in this package for parallel 
-	analyses that also involve real data.
+\description{Generates eigenvalues and corresponding percentile values for 
+	random data sets with specified numbers of variables and cases. 
 }
 \usage{
-PARALLEL(Nvars, Ncases, Ndatasets=100, extract='PCA', percentile='95',
+PARALLEL(Nvars, Ncases, Ndatasets=100, factormodel='PCA', percentile='95',
          corkind='pearson', verbose=TRUE)
 }
 \arguments{
@@ -27,7 +18,7 @@ PARALLEL(Nvars, Ncases, Ndatasets=100, extract='PCA', percentile='95',
   \item{Ndatasets}{
   \code{}An integer indicating the # of random data sets for parallel analyses.}
   	    
-  \item{extract}{ 
+  \item{factormodel}{ 
   \code{}The factor extraction method. The options are:
   	    'PAF' for principal axis / common factor analysis;
   	    'PCA' for principal components analysis.
@@ -42,9 +33,21 @@ PARALLEL(Nvars, Ncases, Ndatasets=100, extract='PCA', percentile='95',
          and 'spearman'.}
                   
   \item{verbose}{
-  \code{}Should detailed results be displayed in console? \cr The options are: TRUE (default) or FALSE.}
+  \code{}Should detailed results be displayed in console? TRUE (default) or FALSE}
 }
 \details{
+This procedure for determining the number of components or factors involves comparing 
+the eigenvalues derived from an actual 
+data set to the eigenvalues derived from the random data. In Horn's 
+original description of this procedure, the mean eigenvalues from the random data 
+served as the comparison baseline, whereas the more common current practice is to 
+use the eigenvalues that correspond to the desired percentile (typically the 95th) 
+of the distribution of random data eigenvalues.  Factors or components are retained 
+as long as the ith eigenvalue from the actual data is greater than the ith eigenvalue 
+from the random data. This function produces only random data eigenvalues and it does 
+not take real data as input. See the RAWPAR function in this package for parallel 
+analyses that also involve real data.
+	
 The PARALLEL function permits users to specify PCA or PAF or image as the 
 factor extraction method. Principal components eigenvalues are often used to determine the number  
 of common factors. This is the default in most statistical software packages, and it is the  
@@ -57,10 +60,9 @@ solely on the shared variance among the variables. The procedures are qualitativ
 Some therefore claim that the eigenvalues from one extraction method should not be used to determine the 
 number of factors for another extraction method. The PAF option in the extract argument for the
 PARALLEL function was included solely for research purposes. It is best to use PCA as the extraction 
-method for regular data analyses. The MAP test (also in this package) is generally more suitable for 
-determining the number of common factors.
+method for regular data analyses.
 }
-\value{The random data eigenvalues}
+\value{Random data eigenvalues}
 \references{
  {Horn, J. L. (1965). A rationale and test for the number of factors in factor analysis. 
  	\emph{Psychometrika, 30,} 179-185.}
@@ -74,7 +76,7 @@ determining the number of common factors.
 \author{Brian P. O'Connor }
 \examples{
 \donttest{
-PARALLEL(Nvars=15, Ncases=250, Ndatasets=100, extract='PCA', percentile=95,
+PARALLEL(Nvars=15, Ncases=250, Ndatasets=100, factormodel='PCA', percentile=95,
          corkind='pearson', verbose=TRUE)
 }
 }

@@ -14,7 +14,7 @@
   	    'Fox' for the polycor package.}
                   
   \item{verbose}{
-  \code{}Should detailed results be displayed in console? \cr The options are: TRUE (default) or FALSE.}
+  \code{}Should detailed results be displayed in console? TRUE (default) or FALSE}
 }
 \details{Applying familiar factor analysis procedures to item-level data can produce 
 	misleading or uninterpretable results. Common factor analysis, maximum likelihood 

@@ -8,16 +8,17 @@
 \usage{data(data_NEOPIR)}
 \references{Costa, P. T., & McCrae, R. R. (1992). \emph{Revised NEO personality 
 		inventory (NEO-PIR) and NEO five-factor inventory (NEO-FFI): Professional 
-		manual.} Odessa, FL: Psychological Assessment Resources..}
+		manual.} Odessa, FL: Psychological Assessment Resources.}
 \examples{
-head(data_NEOPIR) 
-
 \donttest{
 # MAP test on the data_NEOPIR data
 MAP(data_NEOPIR, corkind='pearson', verbose=TRUE)
 
+# DIMTESTS on the data_NEOPIR data
+DIMTESTS(data_NEOPIR, tests = c('EMPKC','HULL','RAWPAR','NEVALSGT1'), Ncases=1000, display=2)
+
 # parallel analysis of the data_NEOPIR data
-RAWPAR(data_NEOPIR, extract='PCA', Ndatasets=100, percentile=95,
+RAWPAR(data_NEOPIR, factormodel='PCA', Ndatasets=100, percentile=95,
        corkind='pearson', verbose=TRUE)
 }
 }
