@@ -20,14 +20,6 @@ if (ncol(loadings) > 1) {
 	rotmatV <- vmaxres$rotmat
 	colnames(rotmatV) <- rownames(rotmatV) <- c(paste('Factor ', 1:ncol(loadingsV), sep=''))
 		
-	eigenvar <- eigvalmat(diag(t(loadingsV) %*% loadingsV))
-
-	# eigenvar <- diag(t(loadingsV) %*% loadingsV)
-	# eigenvar <- cbind(eigenvar,eigenvar/dim(loadingsV)[1])
-	# eigenvar <- cbind(eigenvar,cumsum(eigenvar[,2]))
-	# colnames(eigenvar) <- c('Eigenvalues','Proportion of Variance','Cumulative Variance')
-	# rownames(eigenvar) <- c(paste('Factor ', 1:ncol(loadingsV), sep=''))
-
 	# reproduced correlation matrix
 	cormat_reproduced <- loadingsV %*% t(loadingsV); diag(cormat_reproduced) <- 1
 	
@@ -37,15 +29,12 @@ if (ncol(loadings) > 1) {
 		message('\n\nVarimax Rotated Loadings:\n')
 		print(round(loadingsV,2), print.gap=3)
 		
-		message('\n')
-		print(round(eigenvar,2), print.gap=4)		
-
-		# message('\n\nThe rotation matrix:\n')
-		# print(round(rotmatV,2), print.gap=)
+		message('\n\nThe rotation matrix:\n')
+		print(round(rotmatV,2), print.gap=)
 	}
 }
 
-varimaxOutput <-  list(loadingsV=loadingsV, rotmatV=rotmatV, eigenvar=eigenvar, 
+varimaxOutput <-  list(loadingsNOROT=loadings, loadingsV=loadingsV, rotmatV=rotmatV, 
                        cormat_reproduced=cormat_reproduced)  
 
 return(invisible(varimaxOutput))

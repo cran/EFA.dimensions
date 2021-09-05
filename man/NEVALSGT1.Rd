@@ -43,7 +43,10 @@
 	         
 	This function is included in this package for curiosity and research purposes.
 }
-\value{The number of eigenvalues greater than 1.}
+\value{A list with the following elements:
+ \item{NfactorsNEVALSGT1}{The number of eigenvalues greater than 1.}
+ \item{totvarexplNOROT}{The eigenvalues and total variance explained}
+}
 \references{
        {Fabrigar, L. R., Wegener, D. T., MacCallum, R. C., & Strahan, E. J. (1999). Evaluating the use of 
 	    exploratory factor analysis in psychological research. \emph{Psychological Methods, 4,} 272-299.}

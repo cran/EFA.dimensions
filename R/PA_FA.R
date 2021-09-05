@@ -14,6 +14,9 @@ Ncases <- cordat$Ncases
 
 Nvars <- dim(cormat)[1]
 
+eigenvalues <- eigen(cormat)$values
+
+totvarexplNOROT1 <- VarianceExplained(eigenvalues)
 
 if (is.null(Nfactors)) {		
 	Nfactors <- EMPKC(cormat, Ncases=Ncases, verbose=FALSE)$NfactorsEMPKC
@@ -23,6 +26,8 @@ if (is.null(Nfactors)) {
 converge  <- .001
 rpaf <- as.matrix(cormat)
 smc <- 1 - (1 / diag(solve(rpaf)))
+smcINITIAL <- smc  # initial communalities
+
 for (iter in 1:(iterpaf + 1)) {
 	diag(rpaf) <- smc # putting smcs on the main diagonal of r
 	eigval <-  diag((eigen(rpaf) $values))
@@ -43,13 +48,15 @@ loadings <- as.matrix(loadings)
 rownames(loadings) <- cnoms
 colnames(loadings) <-  c(paste('Factor ', 1:Nfactors, sep=''))
 
+totvarexplNOROT2 <- VarianceExplained(eigenvalues, loadings=loadings)
+
 cormat_reproduced <- loadings %*% t(loadings); diag(cormat_reproduced) <- 1
 
-communalities <- as.matrix(communal) 
-rownames(communalities) <- cnoms
-colnames(communalities) <- 'Communalities'
+Communalities <- cbind(smcINITIAL, communal)   # as.matrix(communal) 
+rownames(Communalities) <- cnoms
+colnames(Communalities) <- c('Initial', 'Extraction')
 
-uniquenesses <- 1 - communalities
+uniquenesses <- 1 - communal
 
 
 # model statistics, based on Revelle
@@ -74,17 +81,18 @@ dfNULL <- Nvars * (Nvars - 1) / 2
 fit_coefficients <- FIT_COEFS(cormat, cormat_reproduced, factormodel='PAF', Ncases=Ncases, 
                               chisqMODEL=chisqMODEL, dfMODEL=dfMODEL, verbose=FALSE) 
 
-eigenvar <- eigvalmat(cbind(diag(eigval)))
-
 
 if (rotate=='none')  {
-	pafOutput <- list(eigenvar=eigenvar, loadingsNOROT=loadings) 
+	pafOutput <- list(totvarexplNOROT1=totvarexplNOROT1, 
+	                  totvarexplNOROT2=totvarexplNOROT2,
+	                  loadingsNOROT=loadings) 
 }
 	
 if (rotate=='VARIMAX' | rotate=='PROMAX') {
 		
 	if (Nfactors==1) {
-		pafOutput <- list(eigenvar=eigenvar, 
+		pafOutput <- list(totvarexplNOROT1=totvarexplNOROT1, 
+		                  totvarexplNOROT2=totvarexplNOROT2, 
 		                  loadingsNOROT=loadings, 
 	                      loadingsROT=loadings,
 	                      structure=loadings,
@@ -93,13 +101,25 @@ if (rotate=='VARIMAX' | rotate=='PROMAX') {
 	if (Nfactors > 1) {
 		if (rotate=='VARIMAX') { 
 			varimaxOutput <- VARIMAX(loadings,verbose=FALSE)
-			pafOutput <- list(eigenvar=varimaxOutput$eigenvar, 
+
+			totvarexplROT <- VarianceExplained(eigenvalues, loadings=varimaxOutput$loadingsV)
+
+			pafOutput <- list(totvarexplNOROT1=totvarexplNOROT1, 
+		                	  totvarexplNOROT2=totvarexplNOROT2, 
+			                  totvarexplROT=totvarexplROT,
 			                  loadingsNOROT=varimaxOutput$loadingsNOROT, 
 			                  loadingsV=varimaxOutput$loadingsV)  
 		} 
 		if (rotate=='PROMAX')  { 
 			promaxOutput <- PROMAX(loadings,verbose=FALSE)
-			pafOutput <- list(eigenvar=promaxOutput$eigenvar, 
+
+			totvarexplROT <- VarianceExplained(eigenvalues, loadings=promaxOutput$structure)
+			# When factors are correlated, sums of squared loadings cannot be added to obtain a total variance, so remove them from the output
+			totvarexplROT <-totvarexplROT[,1]
+
+			pafOutput <- list(totvarexplNOROT1=totvarexplNOROT1, 
+		                	  totvarexplNOROT2=totvarexplNOROT2, 
+			                  totvarexplROT=totvarexplROT,
 			                  loadingsNOROT=promaxOutput$loadingsNOROT, 
 			                  pattern=promaxOutput$pattern,
 			                  structure=promaxOutput$structure, 
@@ -117,7 +137,7 @@ pafOutput <- c(pafOutput,
 		                pvalue=pvalue,
 		                chisqNULL = chisqNULL,
 		                dfNULL = dfNULL,
-		                communalities = communalities,
+		                Communalities = Communalities,
 		                uniquenesses = uniquenesses))
 
 
@@ -130,10 +150,16 @@ if (verbose == TRUE) {
 	} else if (NfactorsWasNull == FALSE) {
 		message('\nThe specified number of factors to extract = ', Nfactors,'\n')
 	}
+
+		message('\nCommunalities:\n')
+		print(round(Communalities,2))
+
+		message('\n\nTotal Variance Explained (Initial Eigenvalues):\n')
+		print(round(totvarexplNOROT1,2), print.gap=4)
+
 	if (max(max(abs(communal-smc))) < converge) {
 
 		message('\nPAF converged in iterations = ', iter,'\n')	
-		print(round(eigenvar,2), print.gap=4)
 
 		message('\n\nChi square = ',round(chisqMODEL,2),'   df = ',dfMODEL,'    p = ',round(pvalue,5))
 
@@ -150,12 +176,14 @@ if (verbose == TRUE) {
 		message('\nCAIC = ', round(fit_coefficients$CAIC,3))
 		message('\nSABIC = ', round(fit_coefficients$SABIC,3))
 
-		# message('\nCommunalities: \n')
-		# print(round(communal,2))
-
 		message('\n\nUnrotated PAF Loadings:\n')
-		print(round(cbind(loadings, communal),2), print.gap=3)
+		print(round(loadings,2), print.gap=3)
+
 		} else { message('\nPAF did not converge in the following number of iterations:  ', (iter-1)) }
+
+		message('\nTotal Variance Explained (Unrotated Sums of Squared Loadings):\n')
+		print(round(pafOutput$totvarexplNOROT2,2), print.gap=4)		
+
 
 	if (Nfactors==1) { message('\nNo rotation because there is only one factor\n') }
 
@@ -167,8 +195,8 @@ if (verbose == TRUE) {
 				message('\nVarimax Rotated Loadings:\n'); 
 				print(round(pafOutput$loadingsV,2), print.gap=3) 
 
-				message('\nEigenvalues and factor proportions of variance:\n')
-				print(round(pafOutput$eigenvar,2), print.gap=4)		
+				message('\nTotal Variance Explained (Rotation Sums of Squared Loadings):\n')
+				print(round(pafOutput$totvarexplROT,2), print.gap=4)		
 		}
 		
 		if (rotate=='PROMAX')  { 
@@ -179,8 +207,8 @@ if (verbose == TRUE) {
 				message('\nPromax Rotation Structure Matrix:\n');    
 				print(round(pafOutput$structure,2), print.gap=3)
 
-				message('\nEigenvalues and factor proportions of variance:\n')
-				print(round(pafOutput$eigenvar,2), print.gap=4)		
+				message('\nRotation Sums of Squared Loadings:\n')
+				print(round(pafOutput$totvarexplROT,2), print.gap=4)		
 	
 				message('\nPromax Rotation Factor Correlations:\n'); 
 				print(round(pafOutput$phi,2), print.gap=3)

@@ -34,7 +34,7 @@ for (lupec in 1:ncol(loadings)) {
 	if (nsalients >= numsals)  NfactorsSALIENT <- NfactorsSALIENT + 1 
 }
 
-eigenvar <- nevalsgt1Output$eigenvar
+totvarexplNOROT <- nevalsgt1Output$totvarexplNOROT
 
 if (verbose == TRUE) {
 	message('\n\nNUMBER OF SALIENT LOADINGS:')
@@ -46,7 +46,7 @@ if (verbose == TRUE) {
 	message('\nThe number of components according to the salient loadings criterion = ', NfactorsSALIENT, '\n')
 }
 
-salientOutput <- list(NfactorsSALIENT=NfactorsSALIENT, eigenvar=eigenvar)
+salientOutput <- list(NfactorsSALIENT=NfactorsSALIENT, totvarexplNOROT=totvarexplNOROT)
 
 return(invisible(salientOutput))
 

@@ -97,19 +97,30 @@ Rgamma  <- function (donnes, verbose=TRUE) {
 
 
 
-# eigenvalue mat
 
-eigvalmat <- function(eigenvalues) {
 
-eigenvar <- cbind(eigenvalues, (eigenvalues / length(eigenvalues)))
+VarianceExplained <- function(eigenvalues, loadings=NULL) {
 
-eigenvar <- cbind(eigenvar,cumsum(eigenvar[,2]))
+	if (is.null(loadings)) {
+		propvar <- eigenvalues / length(eigenvalues)
+		cumvar  <- cumsum(propvar)
+		totvarexpl <- cbind(eigenvalues, propvar, cumvar) 
+	 	colnames(totvarexpl) <- c('Eigenvalues','Proportion of Variance','Cumulative Prop. Variance')
+	} else {
+		sumsqloads <- colSums(loadings**2)
+		propvar <- sumsqloads / length(eigenvalues)
+		cumvar  <- cumsum(propvar)
+		totvarexpl <- cbind(sumsqloads, propvar, cumvar) 
+	 	colnames(totvarexpl) <- c('Sums of Squared Loadings','Proportion of Variance','Cumulative Prop. Variance')
+	}
 
-colnames(eigenvar) <- c('Eigenvalues','Proportion of Variance','Cumulative Prop. Variance')
-rownames(eigenvar) <- c(paste('Factor ', 1:nrow(eigenvar), sep=''))
-
-return(invisible(eigenvar))
+	rownames(totvarexpl) <- c(paste('Factor ', 1:nrow(totvarexpl), sep=''))
+	
+	return(invisible(totvarexpl))
 }
+
+
+
 
 
 
@@ -146,14 +157,14 @@ FIT_COEFS <- function(cormat, cormat_reproduced, factormodel='PCA', Ncases=NULL,
        
      # RMSR
      residuals <- cormat - cormat_reproduced 
-     residuals.upper <- as.matrix(residuals[upper.tri(residuals)])
+     residuals.upper <- as.matrix(residuals[upper.tri(residuals, diag = FALSE)])
      mnsqdresid <- mean(residuals.upper^2) # mean of the off-diagonal squared residuals (as in Waller's MicroFact)
      RMSR <- sqrt(mean(residuals.upper^2)) # rmr is perhaps the more common term for this stat
      # no srmsr computation because it requires the SDs for the variables in the matrix
 
      
      # GFI (McDonald, 1999), & was also from Waller's MicroFact: 1 - mean-squared residual / mean-squared correlation
-	 mnsqdcorrel <- mean(cormat[upper.tri(cormat)]^2)
+	 mnsqdcorrel <- mean(cormat[upper.tri(cormat, diag = FALSE)]^2)
      GFI <- 1 - (mnsqdresid / mnsqdcorrel)
 
 

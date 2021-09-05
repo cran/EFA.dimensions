@@ -15,6 +15,8 @@ eigs         <- eigen(as.matrix(cormat))
 eigenvalues  <- eigs$values
 eigenvectors <- eigs$vectors
 
+totvarexplNOROT <- VarianceExplained(eigenvalues)
+
 
 if (is.null(Nfactors)) {		
 	Nfactors <- EMPKC(cormat, Ncases=Ncases, verbose=FALSE)$NfactorsEMPKC
@@ -33,23 +35,24 @@ cormat_reproduced <- loadings %*% t(loadings); diag(cormat_reproduced) <- 1
 
 fit_coefficients <- FIT_COEFS(cormat, cormat_reproduced, factormodel='PCA', Ncases=Ncases, verbose=FALSE) 
        
-eigenvar <- eigvalmat(eigenvalues)
+communal <- as.matrix(diag(loadings %*% t(loadings))) 
 
-communalities <- as.matrix(diag(loadings %*% t(loadings))) 
-rownames(communalities) <- cnoms
-colnames(communalities) <- 'Communalities'
+Communalities <- cbind(rep(1,length(communal)), communal)   # as.matrix(communal) 
+rownames(Communalities) <- cnoms
+colnames(Communalities) <- c('Initial', 'Extraction')
 
-uniquenesses <- 1 - communalities
+
+uniquenesses <- 1 - communal
 
 
 if (rotate=='none')  { 
-	pcaOutput <- list(eigenvar=eigenvar, loadingsNOROT=loadings) 
+	pcaOutput <- list(totvarexplNOROT=totvarexplNOROT, loadingsNOROT=loadings) 
 }
 
 if (rotate=='PROMAX' | rotate=='VARIMAX') {
 	
 	if (Nfactors==1)  {
-		pcaOutput <- list(eigenvar=eigenvar,
+		pcaOutput <- list(totvarexplNOROT=totvarexplNOROT,
 		                  loadingsNOROT=loadings, 
 	                      loadingsROT=loadings,
 	                      structure=loadings,
@@ -58,14 +61,24 @@ if (rotate=='PROMAX' | rotate=='VARIMAX') {
 	if (Nfactors > 1) {
 		if (rotate=='VARIMAX') { 
 			varimaxOutput <- VARIMAX(loadings,verbose=FALSE)
-			pcaOutput <- list(eigenvar=varimaxOutput$eigenvar,
-			                  loadingsNOROT=varimaxOutput$loadings, 
+
+			totvarexplROT <- VarianceExplained(eigenvalues, loadings=varimaxOutput$loadingsV)
+
+			pcaOutput <- list(totvarexplNOROT=totvarexplNOROT,
+			                  totvarexplROT=totvarexplROT,
+			                  loadingsNOROT=varimaxOutput$loadingsNOROT,
 			                  loadingsV=varimaxOutput$loadingsV) 
 		}  
 		if (rotate=='PROMAX')  { 
 			promaxOutput <- PROMAX(loadings,verbose=FALSE)
-			pcaOutput <- list(eigenvar=promaxOutput$eigenvar,
-			                  loadingsNOROT=promaxOutput$loadings, 
+
+			totvarexplROT <- VarianceExplained(eigenvalues, loadings=promaxOutput$structure)
+			# When factors are correlated, sums of squared loadings cannot be added to obtain a total variance, so remove them from the output
+			totvarexplROT <-totvarexplROT[,1]
+
+			pcaOutput <- list(totvarexplNOROT=totvarexplNOROT,
+			                  totvarexplROT=totvarexplROT,
+			                  loadingsNOROT=promaxOutput$loadingsNOROT, 
 			                  pattern=promaxOutput$pattern,
 			                  structure=promaxOutput$structure, 
 			                  phi=promaxOutput$phi) 
@@ -76,7 +89,7 @@ if (rotate=='PROMAX' | rotate=='VARIMAX') {
 pcaOutput <- c(pcaOutput, 
 		           list(cormat_reproduced=cormat_reproduced, 
 		                fit_coefficients=fit_coefficients,
-		                communalities = communalities,
+		                Communalities = Communalities,
 		                uniquenesses = uniquenesses))
 
 
@@ -92,13 +105,16 @@ if (verbose == TRUE) {
 		message('\nThe specified number of factors to extract = ', Nfactors,'\n')
 	}
 
+	message('\nCommunalities:\n')
+	print(round(Communalities,2))
+
+	message('\n\nTotal Variance Explained (Initial Eigenvalues):\n')
+	print(round(totvarexplNOROT,2), print.gap=4)
+
 	message('\nModel Fit Coefficients:')
 	message('\nRMSR = ', round(fit_coefficients$RMSR,3))
 	message('\nGFI = ',  round(fit_coefficients$GFI,3))
 	message('\nCAF = ',  round(fit_coefficients$CAF,3))
-
-	message('\n\nEigenvalues and factor proportions of variance:\n')
-	print(round(eigenvar,2), print.gap=4)
 
 	message('\nUnrotated PCA Loadings:\n')
 	print(round(pcaOutput$loadingsNOROT[,1:Nfactors],2), print.gap=3)
@@ -113,8 +129,8 @@ if (verbose == TRUE) {
 				message('\nVarimax Rotated Loadings:\n'); 
 				print(round(pcaOutput$loadingsV,2), print.gap=3) 
 
-				message('\nEigenvalues and factor proportions of variance:\n')
-				print(round(pcaOutput$eigenvar,2), print.gap=4)		
+				message('\nTotal Variance Explained (Rotation Sums of Squared Loadings):\n')
+				print(round(pcaOutput$totvarexplROT,2), print.gap=4)		
 			}
 
 			if (rotate=='PROMAX')  { 
@@ -125,8 +141,8 @@ if (verbose == TRUE) {
 				message('\nPromax Rotation Structure Matrix:\n');    
 				print(round(pcaOutput$structure,2), print.gap=3)
 
-				message('\nEigenvalues and factor proportions of variance:\n')
-				print(round(pcaOutput$eigenvar,2), print.gap=4)		
+				message('\nRotation Sums of Squared Loadings:\n')
+				print(round(pcaOutput$totvarexplROT,2), print.gap=4)		
 	
 				message('\nPromax Rotation Factor Correlations:\n'); 
 				print(round(pcaOutput$phi,2), print.gap=3)

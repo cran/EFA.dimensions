@@ -12,6 +12,12 @@ cormat <- cordat$cormat
 ctype  <- cordat$ctype
 Ncases <- cordat$Ncases
 
+smcINITIAL <- 1 - (1 / diag(solve(cormat)))  # initial communalities
+
+eigenvalues <- eigen(cormat)$values
+
+totvarexplNOROT1 <- VarianceExplained(eigenvalues)
+
 
 if (is.null(Nfactors)) {		
 	Nfactors <- EMPKC(cormat, Ncases=Ncases, verbose=FALSE)$NfactorsEMPKC
@@ -33,52 +39,64 @@ loadings <- as.matrix(s %*% l %*% dd)      #  Velicer 1974 p 565 formula (2)
 rownames(loadings) <- cnoms
 colnames(loadings) <-  c(paste('Factor ', 1:Nfactors, sep=''))
 
+totvarexplNOROT2 <- VarianceExplained(eigenvalues, loadings=loadings)
+
 cormat_reproduced <- loadings %*% t(loadings); diag(cormat_reproduced) <- 1
 
 fit_coefficients <- FIT_COEFS(cormat, cormat_reproduced, factormodel='IMAGE', Ncases=Ncases, verbose=FALSE) 
        
-eigenvar <- eigvalmat(cbind(diag(eigval)))
+communal <- as.matrix(diag(loadings %*% t(loadings))) 
 
-communalities <- as.matrix(diag(loadings %*% t(loadings))) 
-rownames(communalities) <- cnoms
-colnames(communalities) <- 'Communalities'
+Communalities <- cbind(smcINITIAL, communal) 
+rownames(Communalities) <- cnoms
+colnames(Communalities) <- c('Initial', 'Extraction')
 
-uniquenesses <- 1 - communalities
+uniquenesses <- 1 - communal
 
 
 if (rotate=='none')   { 
-	imagefaOutput <- list(eigenvar=eigenvar,
-	                      loadingsNOROT=loadings, 
-	                      cormat_reproduced=cormat_reproduced) 
+	imagefaOutput <- list(totvarexplNOROT1=totvarexplNOROT1, 
+	                      totvarexplNOROT2=totvarexplNOROT2,
+	                      loadingsNOROT=loadings) 
 }
 if (rotate=='PROMAX' | rotate=='VARIMAX') {
 
 	if (Nfactors==1) {
-		imagefaOutput <- list(eigenvar=eigenvar, 
+		imagefaOutput <- list(totvarexplNOROT1=totvarexplNOROT1, 
+		                      totvarexplNOROT2=totvarexplNOROT2, 
 		                      loadingsNOROT=loadings, 
 		                      loadingsROT=loadings, 
 		                      structure=loadings, 
-		                      pattern=loadings, 
-			                  cormat_reproduced = cormat_reproduced) 
+		                      pattern=loadings) 
 	} 
 
 	if (Nfactors > 1) {
 		if (rotate=='VARIMAX') { 
 			varimaxOutput <- VARIMAX(loadings,verbose=FALSE)
-			imagefaOutput <- list(eigenvar=varimaxOutput$eigenvar,
-			                      loadingsNOROT=varimaxOutput$loadingsNOROT, 
-			                      loadingsV=varimaxOutput$loadingsV, 
-			                      cormat_reproduced = cormat_reproduced)  
+
+			totvarexplROT <- VarianceExplained(eigenvalues, loadings=varimaxOutput$loadingsV)
+
+			imagefaOutput <- list(totvarexplNOROT1=totvarexplNOROT1,
+		                	      totvarexplNOROT2=totvarexplNOROT2, 
+			                      totvarexplROT=totvarexplROT,
+                                  loadingsNOROT=varimaxOutput$loadingsNOROT,
+                                  loadingsV=varimaxOutput$loadingsV)  
 		} 
 
 		if (rotate=='PROMAX')  { 
 				promaxOutput <- PROMAX(loadings,verbose=FALSE)
-				imagefaOutput <- list(eigenvar=promaxOutput$eigenvar,
-				                      loadingsNOROT=promaxOutput$loadingsNOROT, 
+
+			    totvarexplROT <- VarianceExplained(eigenvalues, loadings=promaxOutput$structure)
+			    # When factors are correlated, sums of squared loadings cannot be added to obtain a total variance, so remove them from the output
+			    totvarexplROT <-totvarexplROT[,1]
+
+				imagefaOutput <- list(totvarexplNOROT1=promaxOutput$totvarexplNOROT1,
+		                        	  totvarexplNOROT2=totvarexplNOROT2, 
+			                          totvarexplROT=totvarexplROT,
+			                          loadingsNOROT=promaxOutput$loadingsNOROT, 
 				                      pattern=promaxOutput$pattern,
 				                      structure=promaxOutput$structure, 
-				                      phi=promaxOutput$phi, 
-			                          cormat_reproduced = cormat_reproduced) 
+				                      phi=promaxOutput$phi) 
 		}
 	}
 }
@@ -87,7 +105,7 @@ if (rotate=='PROMAX' | rotate=='VARIMAX') {
 imagefaOutput <- c(imagefaOutput, 
 		           list(cormat_reproduced=cormat_reproduced, 
 		                fit_coefficients=fit_coefficients,
-		                communalities = communalities,
+		                Communalities = Communalities,
 		                uniquenesses = uniquenesses))
 
 
@@ -103,16 +121,22 @@ if (verbose == TRUE) {
 		message('\nThe specified number of factors to extract = ', Nfactors,'\n')
 	}
 
+	message('\nCommunalities:\n')
+	print(round(Communalities,2))
+
+	message('\n\nTotal Variance Explained (Initial Eigenvalues):\n')
+	print(round(totvarexplNOROT1,2), print.gap=4)
+
 	message('\nModel Fit Coefficients:')
 	message('\nRMSR = ', round(fit_coefficients$RMSR,3))
 	message('\nGFI = ', round(fit_coefficients$GFI,3))
 	message('\nCAF = ', round(fit_coefficients$CAF,3))
 
-	message('\n\nEigenvalues and factor proportions of variance:\n')
-	print(round(eigenvar,2), print.gap=4)
-
 	message('\nUnrotated image Loadings:\n')
 	print(round(imagefaOutput$loadingsNOROT[,1:Nfactors],2), print.gap=3)
+
+	message('\nTotal Variance Explained (Unrotated Sums of Squared Loadings):\n')
+	print(round(imagefaOutput$totvarexplNOROT2,2), print.gap=4)		
 
 	if (Nfactors==1) { message('\nNo rotation because there is only one factor\n') }
 
@@ -125,8 +149,8 @@ if (verbose == TRUE) {
 				message('\nVarimax Rotated Loadings:\n'); 
 				print(round(imagefaOutput$loadingsV,2), print.gap=3) 
 
-				message('\nEigenvalues and factor proportions of variance:\n')
-				print(round(imagefaOutput$eigenvar,2), print.gap=4)		
+				message('\nTotal Variance Explained (Rotation Sums of Squared Loadings):\n')
+				print(round(imagefaOutput$totvarexplROT,2), print.gap=4)		
 		}
 		
 		if (rotate=='PROMAX')  { 
@@ -137,8 +161,8 @@ if (verbose == TRUE) {
 				message('\nPromax Rotation Structure Matrix:\n');    
 				print(round(imagefaOutput$structure,2), print.gap=3)
 
-				message('\nEigenvalues and factor proportions of variance:\n')
-				print(round(imagefaOutput$eigenvar,2), print.gap=4)		
+				message('\nRotation Sums of Squared Loadings:\n')
+				print(round(imagefaOutput$totvarexplROT,2), print.gap=4)		
 	
 				message('\nPromax Rotation Factor Correlations:\n'); 
 				print(round(imagefaOutput$phi,2), print.gap=3)

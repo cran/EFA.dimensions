@@ -43,10 +43,10 @@
 	variance than systematic variance (see O'Connor, 2000, p. 397).
 }
 \value{A list with the following elements:
- \item{eigenvar}{eigenvalues}
+ \item{totvarexplNOROT}{The eigenvalues and total variance explained}
  \item{avgsqrs}{Velicers average squared correlations}
- \item{NfactorsMAP}{number of components according to the original (1976) MAP test}
- \item{NfactorsMAP4}{number of components according to the revised (2000) MAP test}
+ \item{NfactorsMAP}{The number of components according to the original (1976) MAP test}
+ \item{NfactorsMAP4}{The number of components according to the revised (2000) MAP test}
 }
 \references{
  {O'Connor, B. P. (2000). SPSS and SAS programs for determining 

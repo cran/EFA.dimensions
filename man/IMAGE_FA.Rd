@@ -54,7 +54,8 @@ approximation to canonical component analysis. The results are identical to
 the image factor analysis results that are produced by SAS and SPSS.
 }
 \value{A list with the following elements:
- \item{eigenvalues}{The eigenvalues}
+ \item{totvarexplNOROT}{The eigenvalues and total variance explained}
+ \item{totvarexplROT}{The rotation sums of squared loadings and total variance explained for the rotated loadings}
  \item{loadingsNOROT}{The unrotated factor loadings}
  \item{loadingsROT}{The rotated factor loadings (for varimax rotation)}
  \item{structure}{The structure matrix (for promax rotation)}

@@ -19,7 +19,6 @@
  \item{loadingsNOROT}{The unrotated loadings}
  \item{loadingsV}{The varimax-rotated loadings}
  \item{rotmatV}{The rotation matrix}
- \item{eigenvar}{Eigenvalues and factor proportions of variance}
  \item{cormat_reproduced}{The reproduced correlation matrix, based on the rotated loadings}
 }
 \author{Brian P. O'Connor}

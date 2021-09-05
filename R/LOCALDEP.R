@@ -20,6 +20,7 @@ eigs         <- eigen(as.matrix(cormat))
 eigenvalues  <- eigs$values
 eigenvectors <- eigs$vectors
 
+totvarexplNOROT <- VarianceExplained(eigenvalues)
 
 # residuals correls after partialling out the first component
 loadings = eigenvectors %*% sqrt(diag(eigenvalues))
@@ -46,8 +47,6 @@ for (i in 1:(ncol(pr)-1)) {
 	}
 }				
 
-eigenvar <- eigvalmat(eigenvalues)
-
 
 if (verbose == TRUE) { 
 	
@@ -64,8 +63,8 @@ if (verbose == TRUE) {
 
 	message('\nSpecified kind of correlations for this analysis: ', ctype)
 
-	message('\n\nEigenvalues:\n')
-	print(round(eigenvar,5))
+	message('\n\nTotal Variance Explained (Initial Eigenvalues):\n')
+	print(round(totvarexplNOROT,2), print.gap=4)
 	
 	message('\nRatio of the 1st to the 2nd eigenvalue = ', round((eigenvalues[1] / eigenvalues[2]),1))
 	

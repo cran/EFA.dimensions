@@ -18,7 +18,7 @@ plot(roots, eigenvalues, pch=15, xlab='Root', ylab='Eigenvalue', cex.lab=1.3, co
 axis(1, at=roots)
 
 
-eigenvar <- eigvalmat(eigenvalues)
+totvarexplNOROT <- VarianceExplained(eigenvalues)
 
 
 if (verbose == TRUE) {
@@ -27,11 +27,11 @@ if (verbose == TRUE) {
 
 	message('\nSpecified kind of correlations for this analysis: ', ctype)
 
-	message('\n\nEigenvalues and factor proportions of variance:\n')
-	print(round(eigenvar,2), print.gap=4)
+	message('\n\nTotal Variance Explained (Initial Eigenvalues):\n')
+	print(round(totvarexplNOROT,2), print.gap=4)
 
 }
 
-return(invisible(eigenvar))
+return(invisible(totvarexplNOROT))
 
 }

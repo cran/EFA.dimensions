@@ -31,7 +31,7 @@ if (ncol(loadings) == 1)  {
 if (ncol(loadings) > 1) {
 
 	# varimax
-	vmaxres <- varimax(loadings)	 
+	vmaxres <- varimax(loadings, normalize=TRUE)   # SPSS normalizes them
 	loadingsV <- vmaxres$loadings[]	
 	rotmatV <- vmaxres$rotmat
 
@@ -43,9 +43,7 @@ if (ncol(loadings) > 1) {
 	colnames(phi) <- rownames(phi) <- c(paste('Factor ', 1:ncol(loadingsV), sep=''))
 
 	Pstructure <- promaxres$loadings %*% phi  # promax structure
-	Ppattern <- promaxres$loadings[]  # promax loadings/pattern
-
-	eigenvar <- eigvalmat(diag(t(Ppattern) %*% Ppattern))
+	Ppattern   <- promaxres$loadings[]  # promax loadings/pattern
 
 	# reproduced correlation matrix
 	cormat_reproduced <- Pstructure %*% t(Ppattern); diag(cormat_reproduced) <- 1
@@ -61,16 +59,13 @@ if (ncol(loadings) > 1) {
 	
 		message('\n\nPromax Rotation Structure Matrix:\n')
 		print(round(Pstructure,2), print.gap=3)
-
-		message('\nEigenvalues and factor proportions of variance:\n')
-		print(round(eigenvar,2), print.gap=4)		
 	
 		message('\nPromax Rotation Factor Correlations:\n')
 		print(round(phi,2), print.gap=3)
 	}
 
 	promaxOutput <- list(loadingsNOROT=loadings, pattern=Ppattern, structure=Pstructure, 
-	                     phi=phi, eigenvar=eigenvar, cormat_reproduced=cormat_reproduced)
+	                     phi=phi, cormat_reproduced=cormat_reproduced)
 
 }
 return(invisible(promaxOutput))

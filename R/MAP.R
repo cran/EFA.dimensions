@@ -19,6 +19,7 @@ eigs         <- eigen(as.matrix(cormat))
 eigenvalues  <- eigs$values
 eigenvectors <- eigs$vectors
 
+totvarexplNOROT <- VarianceExplained(eigenvalues)
 
 loadings <- eigenvectors %*% sqrt(diag(eigenvalues))
 
@@ -54,8 +55,6 @@ NfactorsMAP4  <- which.min(na.omit(fmfm4[,3])) - 1
 dimnames(fmfm4) <-list(rep('', dim(fmfm4)[1]))
 colnames(fmfm4) <- c('root','Avg.Corr.Sq.','Avg.Corr.power4')
 
-eigenvar <- eigvalmat(eigenvalues)
-
 
 if (verbose == TRUE) { 
 
@@ -69,8 +68,8 @@ if (verbose == TRUE) {
 	
 	message('\nSpecified kind of correlations for this analysis: ', ctype)
 	
-	message('\nEigenvalues:\n')
-	print(round(eigenvar,5), print.gap=3)
+	message('\n\nTotal Variance Explained (Initial Eigenvalues):\n')
+	print(round(totvarexplNOROT,2), print.gap=4)
 	
 	message("\nVelicer's Average Squared Correlations\n")
 	print(round(fmfm4,5), print.gap=3)
@@ -82,7 +81,7 @@ if (verbose == TRUE) {
 	message('\nThe number of components according to the revised (2000) MAP Test is = ', NfactorsMAP4, labels = NULL, '\n')
 }
 
-mapOutput <- list(eigenvar=eigenvar, avgsqrs=fmfm4, NfactorsMAP=NfactorsMAP, NfactorsMAP4=NfactorsMAP4)
+mapOutput <- list(totvarexplNOROT=totvarexplNOROT, avgsqrs=fmfm4, NfactorsMAP=NfactorsMAP, NfactorsMAP4=NfactorsMAP4)
 
 return(invisible(mapOutput))
 

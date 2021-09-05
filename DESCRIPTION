@@ -2,8 +2,8 @@ Package: EFA.dimensions
 Type: Package
 Title: Exploratory Factor Analysis Functions for Assessing
         Dimensionality
-Version: 0.1.7.2
-Date: 2021-02-04
+Version: 0.1.7.3
+Date: 2021-09-05
 Author: Brian P. O'Connor 
 Maintainer: Brian P. O'Connor  <brian.oconnor@ubc.ca>
 Description: Functions for eleven procedures for determining the number of 
@@ -28,6 +28,6 @@ LazyLoad: yes
 LazyData: yes
 License: GPL (>= 2)
 NeedsCompilation: no
-Packaged: 2021-02-05 11:45:17 UTC; brianoconnor
+Packaged: 2021-09-05 12:08:01 UTC; brianoconnor
 Repository: CRAN
-Date/Publication: 2021-02-05 15:20:02 UTC
+Date/Publication: 2021-09-05 12:30:02 UTC

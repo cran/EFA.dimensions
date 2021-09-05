@@ -20,7 +20,6 @@
  \item{pattern}{The pattern matrix (for promax rotation)}
  \item{structure}{The structure matrix (for promax rotation)}
  \item{phi}{The correlations between the factors (for promax rotation)}
- \item{eigenvar}{Eigenvalues and factor proportions of variance (for promax rotation)}
  \item{cormat_reproduced}{The reproduced correlation matrix, based on the rotated loadings}
 }
 \author{Brian P. O'Connor}

@@ -21,7 +21,7 @@
   \item{verbose}{
   \code{}Should detailed results be displayed in console? TRUE (default) or FALSE}
 }
-\value{ \item{eigenvar}{The eigenvalues}
+\value{ \item{totvarexpl}{The eigenvalues and total variance explained}
 }
 \author{Brian P. O'Connor }
 \examples{

@@ -15,6 +15,12 @@ cormat <- cordat$cormat
 ctype  <- cordat$ctype
 Ncases <- cordat$Ncases
 
+smcINITIAL <- 1 - (1 / diag(solve(cormat)))  # initial communalities
+
+eigenvalues <- eigen(cormat)$values
+
+totvarexplNOROT1 <- VarianceExplained(eigenvalues)
+
 
 if (is.null(Nfactors)) {		
 	Nfactors <- EMPKC(cormat, Ncases=Ncases, verbose=FALSE)$NfactorsEMPKC
@@ -54,7 +60,7 @@ if (inherits(essaye1, "try-error")) {
 
 	if (inherits(essaye2, "try-error") == FALSE) {	
 
-		 chisqMODEL <- (Ncases - 1 - (2 * Nvars  +  5) / 6 - (2 * Nfactors) / 3) * faOutput$criteria[1] # from psych ?fa page
+		chisqMODEL <- (Ncases - 1 - (2 * Nvars  +  5) / 6 - (2 * Nfactors) / 3) * faOutput$criteria[1] # from psych ?fa page
 
 		dfMODEL <- faOutput$dof
 		
@@ -93,30 +99,35 @@ dfNULL <- Nvars * (Nvars - 1) / 2
 rownames(loadings) <- cnoms
 colnames(loadings) <- c(paste('Factor ', 1:Nfactors, sep=''))
 
+totvarexplNOROT2 <- VarianceExplained(eigenvalues, loadings=loadings)
+
 cormat_reproduced <- loadings %*% t(loadings); diag(cormat_reproduced) <- 1
 
 fit_coefficients <- FIT_COEFS(cormat, cormat_reproduced, factormodel='ML', Ncases=Ncases, 
                               chisqMODEL=chisqMODEL, dfMODEL=dfMODEL, verbose=FALSE) 
        
-eigenvar <- eigvalmat(colSums(loadings**2))
+communal <- as.matrix(diag(loadings %*% t(loadings))) 
 
+Communalities <- cbind(smcINITIAL, communal) 
+rownames(Communalities) <- cnoms
+colnames(Communalities) <- c('Initial', 'Extraction')
 
-communalities <- as.matrix(diag(loadings %*% t(loadings))) 
-rownames(communalities) <- cnoms
-colnames(communalities) <- 'Communalities'
 
 # uniquenesses <- factanalOutput$uniquenesses
 
 
 
 if (rotate=='none')  { 
-	maxlikeOutput <- list(eigenvar=eigenvar, loadingsNOROT=loadings) 
+	maxlikeOutput <- list(totvarexplNOROT1=totvarexplNOROT1,
+	                      totvarexplNOROT2=totvarexplNOROT2,
+	                      loadingsNOROT=loadings) 
 }
 
 if (rotate=='VARIMAX' | rotate=='PROMAX') {
 		
 	if (Nfactors==1) {
-		maxlikeOutput <- list(eigenvar=eigenvar, 
+		maxlikeOutput <- list(totvarexplNOROT1=totvarexplNOROT1, 
+		                      totvarexplNOROT2=totvarexplNOROT2, 
 		                      loadingsNOROT=loadings, 
 		                      loadingsROT=loadings, 
 		                      structure=loadings, 
@@ -125,13 +136,25 @@ if (rotate=='VARIMAX' | rotate=='PROMAX') {
 	if (Nfactors > 1) {
 		if (rotate=='VARIMAX') { 
 			varimaxOutput <- VARIMAX(loadings,verbose=FALSE)
-			maxlikeOutput <- list(eigenvar=varimaxOutput$eigenvar, 
+
+			totvarexplROT <- VarianceExplained(eigenvalues, loadings=varimaxOutput$loadingsV)
+
+			maxlikeOutput <- list(totvarexplNOROT1=varimaxOutput$totvarexplNOROT1, 
+		                    	  totvarexplNOROT2=totvarexplNOROT2, 
+			                      totvarexplROT=totvarexplROT,
 			                      loadingsNOROT=varimaxOutput$loadingsNOROT, 
 			                      loadingsV=varimaxOutput$loadingsV)  
 		} 
 		if (rotate=='PROMAX')  { 
 			promaxOutput  <- PROMAX(loadings,verbose=FALSE)
-			maxlikeOutput <- list(eigenvar=promaxOutput$eigenvar, 
+
+			totvarexplROT <- VarianceExplained(eigenvalues, loadings=promaxOutput$structure)
+			# When factors are correlated, sums of squared loadings cannot be added to obtain a total variance, so remove them from the output
+			totvarexplROT <-totvarexplROT[,1]
+
+			maxlikeOutput <- list(totvarexplNOROT1=promaxOutput$totvarexplNOROT1, 
+		                	      totvarexplNOROT2=totvarexplNOROT2, 
+			                      totvarexplROT=totvarexplROT,
 			                      loadingsNOROT=promaxOutput$loadingsNOROT, 
 			                      pattern=promaxOutput$pattern, 
 			                      structure=promaxOutput$structure, 
@@ -148,7 +171,7 @@ maxlikeOutput <- c(maxlikeOutput,
 		                pvalue=pvalue,
 		                chisqNULL = chisqNULL,
 		                dfNULL = dfNULL,
-		                communalities = communalities,
+		                Communalities = Communalities,
 		                uniquenesses = uniquenesses))
 
 
@@ -162,7 +185,11 @@ if (verbose == TRUE) {
 		message('\nThe specified number of factors to extract = ', Nfactors,'\n')
 	}
 
-	print(round(eigenvar,2), print.gap=4)
+	message('\nCommunalities:\n')
+	print(round(Communalities,2))
+
+	message('\n\nTotal Variance Explained (Initial Eigenvalues):\n')
+	print(round(totvarexplNOROT1,2), print.gap=4)
 
 	message('\n\nChi square = ',round(chisqMODEL,2),'   df = ',dfMODEL,'    p = ',round(pvalue,5))
 
@@ -182,6 +209,9 @@ if (verbose == TRUE) {
 	message('\n\nUnrotated Maximum Likelihood Loadings:\n')
 	print(round(loadings[,1:Nfactors],2), print.gap=3)
 
+	message('\nTotal Variance Explained (Unrotated Sums of Squared Loadings):\n')
+	print(round(maxlikeOutput$totvarexplNOROT2,2), print.gap=4)		
+
 	if (Nfactors==1) { message('\nNo rotation because there is only one factor\n') }
 
 	if (Nfactors > 1) {
@@ -192,8 +222,8 @@ if (verbose == TRUE) {
 				message('\nVarimax Rotated Loadings:\n'); 
 				print(round(maxlikeOutput$loadingsV,2), print.gap=3) 
 
-				message('\nEigenvalues and factor proportions of variance:\n')
-				print(round(maxlikeOutput$eigenvar,2), print.gap=4)		
+				message('\nTotal Variance Explained (Rotation Sums of Squared Loadings):\n')
+				print(round(maxlikeOutput$totvarexplROT,2), print.gap=4)		
 		}
 		
 		if (rotate=='PROMAX')  { 
@@ -204,8 +234,8 @@ if (verbose == TRUE) {
 				message('\nPromax Rotation Structure Matrix:\n');    
 				print(round(maxlikeOutput$structure,2), print.gap=3)
 
-				message('\nEigenvalues and factor proportions of variance:\n')
-				print(round(maxlikeOutput$eigenvar,2), print.gap=4)		
+				message('\nRotation Sums of Squared Loadings:\n')
+				print(round(maxlikeOutput$totvarexplROT,2), print.gap=4)		
 	
 				message('\nPromax Rotation Factor Correlations:\n'); 
 				print(round(maxlikeOutput$phi,2), print.gap=3)
@@ -333,14 +363,14 @@ return(invisible(maxlikeOutput))
                               # chisqMODEL=chisqMODEL, dfMODEL=dfMODEL, verbose=FALSE) 
        
 
-# eigenvar <- as.matrix(diag(L))
-# eigenvar <- cbind(eigenvar,eigenvar/dim(loadings)[1])
-# eigenvar <- cbind(eigenvar,cumsum(eigenvar[,2]))
-# colnames(eigenvar) <- c('Eigenvalues','Proportion of Variance','Cumulative Variance')
-# rownames(eigenvar) <- c(paste('Factor ', 1:nrow(eigenvar), sep=''))
+# totvarexpl <- as.matrix(diag(L))
+# totvarexpl <- cbind(totvarexpl,totvarexpl/dim(loadings)[1])
+# totvarexpl <- cbind(totvarexpl,cumsum(totvarexpl[,2]))
+# colnames(totvarexpl) <- c('Eigenvalues','Proportion of Variance','Cumulative Variance')
+# rownames(totvarexpl) <- c(paste('Factor ', 1:nrow(totvarexpl), sep=''))
 
 # if (rotate=='none')  { 
-	# maxlikeOutput <- list(eigenvar=eigenvar, loadingsNOROT=loadings, 
+	# maxlikeOutput <- list(totvarexpl=totvarexpl, loadingsNOROT=loadings, 
 	                      # cormat_reproduced=cormat_reproduced, fit_coefficients=fit_coefficients,
 	                      # chisqMODEL=chisqMODEL, dfMODEL=dfMODEL, pvalue=pvalue) 
 # }
@@ -348,7 +378,7 @@ return(invisible(maxlikeOutput))
 # if (rotate=='VARIMAX' | rotate=='PROMAX') {
 		
 	# if (Nfactors==1) {
-		# maxlikeOutput <- list(eigenvar=eigenvar, loadingsNOROT=loadings, 
+		# maxlikeOutput <- list(totvarexpl=totvarexpl, loadingsNOROT=loadings, 
 		                      # loadingsROT=loadings, structure=loadings, pattern=loadings, 
 			                  # cormat_reproduced = cormat_reproduced, fit_coefficients=fit_coefficients,
 	                          # chisqMODEL=chisqMODEL, dfMODEL=dfMODEL, pvalue=pvalue) 
@@ -356,7 +386,7 @@ return(invisible(maxlikeOutput))
 	# if (Nfactors > 1) {
 		# if (rotate=='VARIMAX') { 
 			# varimaxOutput <- VARIMAX(loadings,verbose=FALSE)
-			# maxlikeOutput <- list(eigenvar=varimaxOutput$eigenvar, 
+			# maxlikeOutput <- list(totvarexpl=varimaxOutput$totvarexpl, 
 			                      # loadingsNOROT=varimaxOutput$loadingsNOROT, 
 			                      # loadingsV=varimaxOutput$loadingsV, 
 			                      # cormat_reproduced = cormat_reproduced,
@@ -364,7 +394,7 @@ return(invisible(maxlikeOutput))
 		# } 
 		# if (rotate=='PROMAX')  { 
 			# promaxOutput <- PROMAX(loadings,verbose=FALSE)
-			# maxlikeOutput <- list(eigenvar=promaxOutput$eigenvar, 
+			# maxlikeOutput <- list(totvarexpl=promaxOutput$totvarexpl, 
 			                      # loadingsNOROT=promaxOutput$loadingsNOROT, 
 			                      # pattern=promaxOutput$pattern, structure=promaxOutput$structure, 
 			                      # phi=promaxOutput$phi, 
@@ -385,7 +415,7 @@ return(invisible(maxlikeOutput))
 		# message('\nThe specified number of factors to extract = ', Nfactors,'\n')
 	# }
 
-	# print(round(eigenvar,2), print.gap=4)
+	# print(round(totvarexpl,2), print.gap=4)
 
 	# message('\n\nChi square = ',round(chisqMODEL,2),'   df = ',dfMODEL,'    p = ',round(pvalue,5))
 
@@ -413,8 +443,8 @@ return(invisible(maxlikeOutput))
 				# message('\nVarimax Rotated Loadings:\n'); 
 				# print(round(maxlikeOutput$loadingsV,2), print.gap=3) 
 
-				# message('\nEigenvalues and factor proportions of variance:\n')
-				# print(round(maxlikeOutput$eigenvar,2), print.gap=4)		
+				# message('\nTotal Variance Explained (Rotation Sums of Squared Loadings):\n')
+				# print(round(maxlikeOutput$totvarexpl,2), print.gap=4)		
 		# }
 		
 		# if (rotate=='PROMAX')  { 
@@ -425,8 +455,8 @@ return(invisible(maxlikeOutput))
 				# message('\nPromax Rotation Structure Matrix:\n');    
 				# print(round(maxlikeOutput$structure,2), print.gap=3)
 
-				# message('\nEigenvalues and factor proportions of variance:\n')
-				# print(round(maxlikeOutput$eigenvar,2), print.gap=4)		
+				# message('\nTotal Variance Explained (Rotation Sums of Squared Loadings):\n')
+				# print(round(maxlikeOutput$totvarexpl,2), print.gap=4)		
 	
 				# message('\nPromax Rotation Factor Correlations:\n'); 
 				# print(round(maxlikeOutput$phi,2), print.gap=3)
