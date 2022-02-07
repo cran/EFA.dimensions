@@ -8,28 +8,27 @@
 
 \description{This package provides exploratory factor analysis-related functions for 
 	assessing dimensionality.
-	
-	There are 11 functions for determining the number of 
-	factors (DIMTESTS, EMPKC, HULL, MAP, NEVALSGT1, PARALLEL, RAWPAR, ROOTFIT, SALIENT,  
-	SCREE_PLOT, SESCREE, and SMT). 
-	
-	There are functions for conducting principal components analysis (PCA), principal 
+\cr\cr  
+    There are 11 functions for determining the number of factors (DIMTESTS, EMPKC, 
+	HULL, MAP, NEVALSGT1, PARALLEL, RAWPAR, ROOTFIT, SALIENT, SCREE_PLOT, SESCREE, and SMT).
+\cr\cr  
+    There are also functions for conducting principal components analysis (PCA), principal
 	axis factor analysis (PA_FA), maximum likelihood factor analysis (MAXLIKE_FA), 
 	image factor analysis (IMAGE_FA), and extension factor analysis (EXTENSION_FA), 
-	
+\cr\cr  
 	Varimax rotation (VARIMAX), promax rotation (PROMAX), and Procrustes rotations 
 	(PROCRUSTES) can be performed. 
-	
+\cr\cr  
 	The analyses can be conducted using raw data or correlation matrices as input.
-	
+\cr\cr  
 	The analyses can be conducted using Pearson correlations, Kendall correlations, 
 	Spearman correlations, Goodman-Kruskal gamma correlations (Thompson, 2006), 
 	or polychoric correlations (using the psych and polychor packages). 
-	
+\cr\cr  
 	Additional functions focus on the factorability of a correlation matrix (FACTORABILITY),  
 	the congruences between factors from different datasets (CONGRUENCE), the assessment 
-	of local independence (LOCALDEP), and on the assessment of factor solution 
-	complexity (COMPLEXITY). 
+	of local independence (LOCALDEP), the assessment of factor solution 
+	complexity (COMPLEXITY), and internal consistency (INTERNAL.CONSISTENCY). 
 }
 \references{
 {Auerswald, M., & Moshagen, M. (2019). How to determine the number of factors to 
