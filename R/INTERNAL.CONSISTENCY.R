@@ -1,5 +1,20 @@
 
 
+
+REVERSE_CODE <- function(item, max_value = NULL) {
+	
+	if (is.null(max_value))  max_value <- max(item)
+
+	item_recoded <- max_value + 1 - item
+
+	return(item_recoded)	
+	
+}
+
+
+
+
+
 Cronbach.alpha <- function(data) {
 
 	# Reliability -- see esp the Footnote, at the bottom.pdf
@@ -56,34 +71,71 @@ omega_total <- function(data, factormodel = 'ML') {
 
 
 
-INTERNAL.CONSISTENCY <- function(data, factormodel = 'ML', verbose=TRUE) {
+INTERNAL.CONSISTENCY <- function(data, factormodel = 'ML', reverse_these = NULL, auto_reverse = TRUE, verbose=TRUE) {
 
 	Nitems <- ncol(data)
 
-	item_noms <- colnames(data)
-
-	omega_res <- omega_total(data, factormodel=factormodel)
+	new_data <- data
+	
+	
+	# reverse code these items
+	if (!is.null(reverse_these)) {
 		
-	int.consist_scale <- cbind(omega_res$omega_t, Cronbach.alpha(data), omega_res$rmsr)
+		for (lupe in 1:length(reverse_these)) {
+			
+			new_data[,reverse_these[lupe]] <- REVERSE_CODE(item = data[,reverse_these[lupe]], max_value = NULL)						
+				
+			message('\nItem ', lupe, ' has been reverse-coded, as requested')
+			
+			colnames(new_data)[colnames(new_data) == reverse_these[lupe]] <- paste(reverse_these[lupe], "rev", sep="_")
+		}
+	}
+	
 
-	scale_tot <- rowSums(data)
+	# reverse code every item that has a negative loading on the first principal component	
+	if (auto_reverse & is.null(reverse_these)) {
+				
+		pc1 <- PCA(data, Nfactors = 1, rotate = 'none', verbose = FALSE)$loadingsNOROT
+		
+		for (lupe in 1:ncol(data))  {
+			
+			if (pc1[lupe,1] < 0)  {
+				
+				new_data[,lupe] <- REVERSE_CODE(item = data[,lupe], max_value = NULL)	
+				
+				message('\nItem ', lupe, 
+				        ' has been reverse-coded due to a negative loading on the first principal component')
+				        
+				colnames(new_data)[lupe] <- paste(colnames(new_data)[lupe], "rev", sep="_")								
+			}
+		}
+	}
+
+	item_noms <- colnames(new_data)
+		
+
+	omega_res <- omega_total(new_data, factormodel=factormodel)
+		
+	int.consist_scale <- cbind(omega_res$omega_t, Cronbach.alpha(new_data), omega_res$rmsr)
+
+	scale_tot <- rowSums(new_data)
 	
 	int.consist_dropped    <- matrix(NA, Nitems, 6)
 	item_stats <- matrix(NA, Nitems, 4)
 	freqs <- matrix(NA, Nitems, )
 
-	item_values <- sort(unique(as.vector(as.matrix(data))), decreasing=FALSE)
+	item_values <- sort(unique(as.vector(as.matrix(new_data))), decreasing=FALSE)
 
 	resp_opt_props <- data.frame( matrix(NA, 1, length(item_values))); colnames(resp_opt_props) <- item_values	
 	resp_opt_freqs <- resp_opt_props
 
 	for (lupe in 1:Nitems) {
 
-		omega_res <-omega_total(data[,-lupe])
+		omega_res <-omega_total(new_data[,-lupe])
 		
-		int.consist_dropped[lupe,] <- cbind(omega_res$omega_t, Cronbach.alpha(data[,-lupe]), omega_res$rmsr)  
+		int.consist_dropped[lupe,] <- cbind(omega_res$omega_t, Cronbach.alpha(new_data[,-lupe]), omega_res$rmsr)  
 
-		item_dat <- data[,lupe]
+		item_dat <- new_data[,lupe]
 
 		item_N  <- length(na.omit(item_dat))
 
@@ -103,7 +155,7 @@ INTERNAL.CONSISTENCY <- function(data, factormodel = 'ML', verbose=TRUE) {
 		# if freq = 0 for a response option, create a column for it & enter NA
 		missingcols <- setdiff(colnames(resp_opt_freqs), colnames(freqs))
 
-		freqs[,paste(missingcols,  sep="")] = rep(NA, length(missingcols))
+		freqs[,paste(missingcols,  sep="")] = rep(0, length(missingcols))
         resp_opt_freqs <- rbind.data.frame(resp_opt_freqs, freqs)
 		
 		resp_opt_props_temp <- freqs / sum(freqs, na.rm=TRUE)
@@ -128,7 +180,7 @@ INTERNAL.CONSISTENCY <- function(data, factormodel = 'ML', verbose=TRUE) {
 		message('\n\nReliability, interitem correlations, & 1-factor model fit (rmsr):\n')	
 		print(round(int.consist_scale,2), print.gap=4)
 		
-		message('\n\nReliability, interitem correlations, & 1-factor model fit (rmsr) when an item is int.consist_dropped:\n')	
+		message('\n\nReliability, interitem correlations, & 1-factor model fit (rmsr) when an item is dropped:\n')	
 		print(round(int.consist_dropped,2), print.gap=4)
 		
 		message('\n\nItem statistics:\n')	
@@ -143,7 +195,7 @@ INTERNAL.CONSISTENCY <- function(data, factormodel = 'ML', verbose=TRUE) {
 	}
 
 	output <- list(int.consist_scale=int.consist_scale, int.consist_dropped=int.consist_dropped, item_stats=item_stats,
-	               resp_opt_freqs=resp_opt_freqs, resp_opt_props=resp_opt_props)
+	               resp_opt_freqs=resp_opt_freqs, resp_opt_props=resp_opt_props, new_data=new_data)
 	
 	return(invisible(output))
 

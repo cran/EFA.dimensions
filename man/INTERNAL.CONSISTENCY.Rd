@@ -2,22 +2,34 @@
 \alias{INTERNAL.CONSISTENCY}
 \title{Internal consistency reliability coefficients}
 \description{Internal consistency reliability coefficients}
-\usage{INTERNAL.CONSISTENCY(data, factormodel = 'ML', verbose)}
+\usage{INTERNAL.CONSISTENCY(data, factormodel = 'ML', reverse_these = NULL, 
+	                        auto_reverse = TRUE, verbose)}  
 \arguments{
   \item{data}{
   \code{}An all-numeric dataframe where the rows are cases & the columns are the variables.}
 
   \item{factormodel}{ 
-  \code{}The factor extraction method to be used in the omega computations. The options are:
+  \code{}(optional) The factor extraction method to be used in the omega computations. The options are:
          'ML' for maximum likelihood (the default); and
   	     'PAF' for principal axis / common factor analysis.}
                   
+  \item{reverse_these}{
+  \code{}(optional) A vector of the names of items that should be reverse-coded}
+
+  \item{auto_reverse}{
+  \code{}(optional) Should reverse-coding of items be conducted when warranted? TRUE (default) or FALSE}
+
   \item{verbose}{
-  \code{}Should detailed results be displayed in console? TRUE (default) or FALSE}
+  \code{}(optional) Should detailed results be displayed in console? TRUE (default) or FALSE}
 }
-\details{The following helpful descriptions of Cronbach's alpha and of omega total 
-	are direct quotes from McNeish (2017, pp. 414-417):
-\cr\cr{\bold{Cronbach's Alpha}
+\details{
+When 'auto_reverse = TRUE', the item loadings on the first principal component
+are computed and items with negative loadings are reverse-coded.
+	
+If item names are provided for the 'reverse_these' argument, then auto_reverse is not conducted.
+	
+The following helpful descriptions of Cronbach's alpha and of omega total 
+are direct quotes from McNeish (2017, pp. 414-417):\cr\cr{\bold{Cronbach's Alpha}
 
 "One can interpret the value of Cronbach's alpha in one of many
 different ways:
@@ -136,6 +148,7 @@ before computing scale scores.
  \item{item_stats}{The item means, standard deviations, and item-total correlations}
  \item{resp_opt_freqs}{The response option frequencies}
  \item{resp_opt_props}{The response option proportions}
+ \item{new_data}{The data that was used for the analyses, including any item reverse-codings}
 }
 \references{ 
        {Flora, D. B. (2020). Your coefficient alpha is probably wrong, but which 
@@ -148,6 +161,15 @@ before computing scale scores.
 }
 \author{Brian P. O'Connor }
 \examples{
-# Rosenberg Self-Esteem scale items
-INTERNAL.CONSISTENCY(data_RSE, factormodel = 'PAF', verbose=TRUE)
+# Rosenberg Self-Esteem scale items -- without reverse-coding
+INTERNAL.CONSISTENCY(data_RSE, factormodel = 'PAF', 
+                     reverse_these = NULL, auto_reverse = FALSE, verbose=TRUE)
+
+# Rosenberg Self-Esteem scale items -- with auto_reverse-coding
+INTERNAL.CONSISTENCY(data_RSE, factormodel = 'PAF',
+                     reverse_these = NULL, auto_reverse = TRUE, verbose=TRUE)
+
+# Rosenberg Self-Esteem scale items -- another way of reverse-coding
+INTERNAL.CONSISTENCY(data_RSE, factormodel = 'PAF',
+                     reverse_these = c('Q1','Q2','Q4','Q6','Q7'), verbose=TRUE)
 }

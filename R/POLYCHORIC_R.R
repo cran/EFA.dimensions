@@ -1,16 +1,20 @@
 
 POLYCHORIC_R <- function (data, method='Revelle', verbose=TRUE){
-if (is.integer(data) == FALSE) {
-		if (all((data - trunc(data)) == 0) == FALSE)  {
-		message('\nThe data matrix does not appear to consist of whole numbers and is therefore not appropriate
-		       for the computation of polychoric correlations.')
-		message('\nConsider stopping the program.\n')
-		} 
-}
+
 if (anyNA(data) == TRUE) {
 	data <- na.omit(data)
 	message('\nCases with missing values were found and removed from the data matrix.\n')
 }
+
+if (is.integer(data) == FALSE) {   # thank you Lilla Gurtner @ unibe
+  if (all((data - trunc(data)) == 0) == FALSE) {
+  message('\nThe data matrix does not appear to consist of whole numbers and is therefore not appropriate
+   for the computation of polychoric correlations.')
+  message('\nConsider stopping the program.\n')
+  } 
+}
+
+
 # for (lupec in 1:ncol(data)) {
 	# if (is.numeric(data[,lupec]) & is.integer(data[,lupec]) == FALSE) {
 	# message('\nThe variables in the data matrix should be factors or integers. Numeric non-integer values\n')

@@ -37,13 +37,13 @@ Nvars  <- ncol(data)
 
 # improper specification warnings
 if ((Ncore+Next) > Nvars) {
-	message('\n\nWARNING: More core and/or extension variables were specified than')
-	message('there are variables in the raw data matrix: Expect error messages') 
+	message('\n\nWARNING: More core and/or extension variables were specified than 
+	     there are variables in the raw data matrix: Expect error messages') 
 }
 if (Nvars > (Ncore+Next)){
-	message('\n\nWARNING: There are more variables in the raw data set')
-	message('than there are core & extension variables. The data') 
-	message('matrix was trimmed to core+extension variables.\n')
+	message('\n\nWARNING: There are more variables in the raw data set
+         than there are core & extension variables. The data 
+         matrix was trimmed to core+extension variables.\n')
 	data <- data[,1:(Ncore+Next)]
 	Nvars <- ncol(data) 
 }
@@ -258,16 +258,16 @@ if (higherorder==FALSE | (higherorder==TRUE & Nfactors1 == 1) | (higherorder==TR
 
 # Warning message
 if (higherorder==TRUE & Nfactors1 == 1) {
-	message('\n\nWARNING: Higher Order Factor/Extension Analysis was requested, but there was')
-	message('             only one factor in the lower-order data.')  
-	message('             The higher order analyses were not performed.') 
+	message('\n\nWARNING: Higher Order Factor/Extension Analysis was requested, but there was
+         only one factor in the lower-order data.
+         The higher order analyses were not performed.') 
 }
 
 # Warning message
 if (higherorder==TRUE & rotate != 'PROMAX') {
-	message('\n\nWARNING: Higher Order Factor/Extension Analysis was requested, as was')
-	message('             a ROTATE option that does not produce correlations between between factors.')
-	message('             The higher order analyses were not performed.') 
+	message('\n\nWARNING: Higher Order Factor/Extension Analysis was requested, as was
+         a ROTATE option that does not produce correlations between between factors.
+         The higher order analyses were not performed.') 
 }
 
 if (higherorder==TRUE & Nfactors1 > 1 & rotate == 'PROMAX') {
@@ -313,8 +313,8 @@ if (verbose == TRUE) {
 		print(round(fits1,2))
 	
 		if (warnnf1 == 1) {
-			message('\n\nWARNING: Zero factors were found in the data.')
-			message('             The number of factors was therefore set at 1.') 
+			message('\n\nWARNING: Zero factors were found in the data.
+         The number of factors was therefore set at 1.') 
 		}
 	
 		message('\nNumber of factors in the core variables = ', Nfactors1, '\n')
@@ -354,8 +354,8 @@ if (verbose == TRUE) {
 		print(round(fits2,2))
 	
 		if (warnnf2 == 1) {
-			message('\n\nWARNING: Zero factors were found in the higher order data.')
-			message('             The number of factors was therefore set at 1.')
+			message('\n\nWARNING: Zero factors were found in the higher order data.
+         The number of factors was therefore set at 1.')
 		}
 	
 		message('\nNumber of Factors for the Higher Order Factor Analysis = ', Nfactors2) 
@@ -363,17 +363,17 @@ if (verbose == TRUE) {
 			message('\n\nWARNING: There was only one higher order factor, rotation not performed\n') 
 		}
 	
-		message('\nFactor Intercorrelations from the First Factor Analysis and, in the')
-		message('far-right collumn(s), the Loadings on the Higher Order Factor(s):\n')
+		message('\nFactor Intercorrelations from the First Factor Analysis and, in the
+       far-right collumn(s), the Loadings on the Higher Order Factor(s):\n')
 		print(round(rfflding,2))
 		
-		message('\nCore Variable Loadings on the Lower Order Factors and, in the ')
-		message('far-right collumn(s), their Correlations with the Higher Order Factor(s):\n')
+		message('\nCore Variable Loadings on the Lower Order Factors and, in the
+far-right collumn(s), their Correlations with the Higher Order Factor(s):\n')
 		print(round(ldingsef,2))
 	
 		if (Next > 0) {
-			message('\nExtension Variable Correlations with the Lower Order Factor(s) and, in the')
-			message('far-right collumn(s), their Correlations with the Higher Order Factor(s):\n')
+			message('\nExtension Variable Correlations with the Lower Order Factor(s) and, in the
+far-right collumn(s), their Correlations with the Higher Order Factor(s):\n')
 		print(round(extsef,2)) 
 		}
 	}

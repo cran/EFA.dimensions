@@ -11,3 +11,5 @@ importFrom("psych", polychoric, cor.smooth, fa)
 importFrom("polycor", hetcor)
 
 importFrom("graphics", "axis", "plot")
+
+importFrom("utils", packageDescription)

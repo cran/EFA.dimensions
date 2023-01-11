@@ -166,6 +166,6 @@ EXTENSION_FA(data_NEOPIR, Ncore=12, Next=6, higherorder=TRUE,
              salvalue=.40, numsals=3, 
              iterpaf=200, 
              ppower=4, 
-             verbose=TRUE)
+             verbose=TRUE)             
 }
 }
