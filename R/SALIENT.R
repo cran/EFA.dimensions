@@ -7,6 +7,8 @@
 
 SALIENT <- function (data, salvalue=.4, numsals=3, corkind='pearson', Ncases=NULL, verbose=TRUE) {
 
+data <- MISSING_DROP(data)
+
 # set up cormat
 cordat <- setupcormat(data, corkind=corkind, Ncases=Ncases)
 cormat <- cordat$cormat

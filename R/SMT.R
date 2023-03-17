@@ -41,6 +41,8 @@
 
 SMT <- function (data, corkind='pearson', Ncases=NULL, verbose=TRUE) {
 
+data <- MISSING_DROP(data)
+
 # takes raw data or a correlation matrix
 data <- as.matrix(data)
      

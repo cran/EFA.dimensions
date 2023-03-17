@@ -5,6 +5,8 @@ DIMTESTS <- function(data, tests=c('EMPKC', 'HULL', 'RAWPAR'), corkind='pearson'
                      HULL_method='PAF', HULL_gof='CAF', HULL_cor_method='pearson',
                      CD_cor_method='pearson', display = NULL) {
        
+data <- MISSING_DROP(data)
+
 # set up cormat
 cordat <- setupcormat(data, corkind=corkind, Ncases=Ncases)
 cormat <- cordat$cormat

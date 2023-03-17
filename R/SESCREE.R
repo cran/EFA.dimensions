@@ -6,6 +6,8 @@
 
 SESCREE <- function (data, Ncases=NULL, corkind='pearson', verbose=FALSE) {
 
+data <- MISSING_DROP(data)
+
 # set up cormat
 cordat <- setupcormat(data, corkind=corkind, Ncases=Ncases)
 cormat <- cordat$cormat

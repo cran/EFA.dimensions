@@ -2,6 +2,8 @@
 
 SCREE_PLOT <- function (data, corkind='pearson', Ncases=NULL, verbose=TRUE) {
 
+data <- MISSING_DROP(data)
+
 Nvars <- ncol(data)
 
 # set up cormat

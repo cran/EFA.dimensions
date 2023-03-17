@@ -1,5 +1,31 @@
 
 
+
+
+MISSING_DROP <- function(data) {
+	
+	if (anyNA(data) == TRUE) {
+		
+		# total # of NAs
+		totNAs <- sum(is.na(data))
+		
+		# number of rows (cases) with an NA
+		nrowsNAs <- sum(apply(data, 1, anyNA))
+		
+		data <- na.omit(data)
+		message('\nCases with missing values were found and removed from the data matrix.')
+		
+		message('\nThere were ', nrowsNAs, ' cases with missing values, and ', 
+		        totNAs, ' missing values in total.\n')		
+	}
+	return(invisible(data))
+}
+
+
+
+
+
+
 # set up cormat
 
 setupcormat <- function(data, corkind='pearson', Ncases=NULL) {

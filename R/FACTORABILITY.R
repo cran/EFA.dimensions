@@ -3,6 +3,8 @@
 
 FACTORABILITY <- function (data, corkind='pearson', Ncases=NULL, verbose=TRUE) {
 
+data <- MISSING_DROP(data)
+
 cnoms <- colnames(data) # get colnames
 
 Nvars  <- ncol(data)

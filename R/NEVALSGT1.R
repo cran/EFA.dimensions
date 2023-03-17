@@ -2,6 +2,8 @@
 NEVALSGT1 <- function (data, corkind='pearson', Ncases=NULL, verbose=FALSE) {
 # Number of eigenvalues > 1
 
+data <- MISSING_DROP(data)
+
 Nvars  <- ncol(data)
 
 # set up cormat

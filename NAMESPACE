@@ -1,7 +1,7 @@
 export(COMPLEXITY, CONGRUENCE, DIMTESTS, EMPKC, EXTENSION_FA, FACTORABILITY, IMAGE_FA, 
        INTERNAL.CONSISTENCY, LOCALDEP, MAP, MAXLIKE_FA, NEVALSGT1, PA_FA, PARALLEL, PCA,  
-       POLYCHORIC_R, PROCRUSTES, PROMAX, RAWPAR, ROOTFIT, SALIENT, SCREE_PLOT, SESCREE, 
-       SMT, VARIMAX)
+       POLYCHORIC_R, PROCRUSTES, PROMAX, RAWPAR, RECODE, ROOTFIT, SALIENT, SCREE_PLOT, 
+       SESCREE, SMT, VARIMAX)
 
 importFrom("stats", cor, na.omit, rnorm, cov2cor, pchisq, varimax, factanal, promax, 
            median, sd)
@@ -13,3 +13,5 @@ importFrom("polycor", hetcor)
 importFrom("graphics", "axis", "plot")
 
 importFrom("utils", packageDescription)
+
+importFrom("mirt", mirt)

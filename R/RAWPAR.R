@@ -2,6 +2,8 @@
 RAWPAR <- function (data, randtype='generated', factormodel='PCA', Ndatasets=100, percentile=95,
                     corkind='pearson', corkindRAND='pearson', Ncases=NULL, verbose=TRUE){
 
+data <- MISSING_DROP(data)
+
 Nvars  <- ncol(data)
 
 # set up cormat

@@ -1,11 +1,15 @@
 
 
 
+
+
 REVERSE_CODE <- function(item, max_value = NULL) {
 	
 	if (is.null(max_value))  max_value <- max(item)
 
-	item_recoded <- max_value + 1 - item
+	item_recoded <- (min(item) + max(item)) - item
+
+	# item_recoded <- max_value + 1 - item
 
 	return(item_recoded)	
 	
@@ -16,6 +20,8 @@ REVERSE_CODE <- function(item, max_value = NULL) {
 
 
 Cronbach.alpha <- function(data) {
+	
+	data <- MISSING_DROP(data)
 
 	# Reliability -- see esp the Footnote, at the bottom.pdf
 	itemSDs <- apply(data, 2, sd)
@@ -45,6 +51,8 @@ Cronbach.alpha <- function(data) {
 
 omega_total <- function(data, factormodel = 'ML') {
 
+	data <- MISSING_DROP(data)
+
 	# 2017 McNeish - Thanks Coefficient Alpha, Well Take It From Here?  formula 2, p 417
 
 	# mlfa <- MAXLIKE_FA(data, Nfactors = 1, rotate='none', verbose=FALSE)
@@ -73,6 +81,10 @@ omega_total <- function(data, factormodel = 'ML') {
 
 INTERNAL.CONSISTENCY <- function(data, factormodel = 'ML', reverse_these = NULL, auto_reverse = TRUE, verbose=TRUE) {
 
+	data <- MISSING_DROP(data)
+
+	cnoms <- colnames(data) 
+
 	Nitems <- ncol(data)
 
 	new_data <- data
@@ -85,28 +97,32 @@ INTERNAL.CONSISTENCY <- function(data, factormodel = 'ML', reverse_these = NULL,
 			
 			new_data[,reverse_these[lupe]] <- REVERSE_CODE(item = data[,reverse_these[lupe]], max_value = NULL)						
 				
-			message('\nItem ', lupe, ' has been reverse-coded, as requested')
+			message('\nItem ', cnoms[lupe], ' has been reverse-coded, as requested')
 			
 			colnames(new_data)[colnames(new_data) == reverse_these[lupe]] <- paste(reverse_these[lupe], "rev", sep="_")
 		}
 	}
 	
 
-	# reverse code every item that has a negative loading on the first principal component	
+	# reverse code every item that has a negative loading on the first principal component, BUT NOT IF 
+	# all of the loadings are negative 
 	if (auto_reverse & is.null(reverse_these)) {
 				
 		pc1 <- PCA(data, Nfactors = 1, rotate = 'none', verbose = FALSE)$loadingsNOROT
-		
-		for (lupe in 1:ncol(data))  {
-			
-			if (pc1[lupe,1] < 0)  {
+
+		if (!all(pc1 < 0) | !all(pc1 < 0) ) {
+ 
+	 		for (lupe in 1:ncol(data))  {
 				
-				new_data[,lupe] <- REVERSE_CODE(item = data[,lupe], max_value = NULL)	
-				
-				message('\nItem ', lupe, 
-				        ' has been reverse-coded due to a negative loading on the first principal component')
-				        
-				colnames(new_data)[lupe] <- paste(colnames(new_data)[lupe], "rev", sep="_")								
+				if (pc1[lupe,1] < 0)  {
+					
+					new_data[,lupe] <- REVERSE_CODE(item = data[,lupe], max_value = NULL)	
+					
+					message('\nItem ', cnoms[lupe], 
+					        ' has been reverse-coded due to a negative loading on the first principal component')
+					        
+					colnames(new_data)[lupe] <- paste(colnames(new_data)[lupe], "rev", sep="_")								
+				}
 			}
 		}
 	}
@@ -120,9 +136,9 @@ INTERNAL.CONSISTENCY <- function(data, factormodel = 'ML', reverse_these = NULL,
 
 	scale_tot <- rowSums(new_data)
 	
-	int.consist_dropped    <- matrix(NA, Nitems, 6)
+	int.consist_dropped <- matrix(NA, Nitems, 7)
 	item_stats <- matrix(NA, Nitems, 4)
-	freqs <- matrix(NA, Nitems, )
+	# freqs <- matrix(NA, Nitems, )
 
 	item_values <- sort(unique(as.vector(as.matrix(new_data))), decreasing=FALSE)
 
@@ -133,7 +149,9 @@ INTERNAL.CONSISTENCY <- function(data, factormodel = 'ML', reverse_these = NULL,
 
 		omega_res <-omega_total(new_data[,-lupe])
 		
-		int.consist_dropped[lupe,] <- cbind(omega_res$omega_t, Cronbach.alpha(new_data[,-lupe]), omega_res$rmsr)  
+		r_corxtd_item_total <- cor(rowSums(new_data[,-lupe]), new_data[,lupe] )  
+
+		int.consist_dropped[lupe,] <- cbind(omega_res$omega_t, Cronbach.alpha(new_data[,-lupe]), omega_res$rmsr, r_corxtd_item_total)  
 
 		item_dat <- new_data[,lupe]
 
@@ -165,7 +183,9 @@ INTERNAL.CONSISTENCY <- function(data, factormodel = 'ML', reverse_these = NULL,
 	}
 	
 	dimnames(int.consist_scale) <- list(rep("", dim(int.consist_scale)[1]))
-	colnames(int.consist_scale) <- colnames(int.consist_dropped) <- c('omega','alpha','alpha.z','r_mean','r_median','rmsr')
+	# colnames(int.consist_scale) <- colnames(int.consist_dropped) <- c('omega','alpha','alpha.z','r_mean','r_median','rmsr')
+	colnames(int.consist_scale)   <- c('omega','alpha','alpha.z','r_mean','r_median','rmsr')
+	colnames(int.consist_dropped) <- c('omega','alpha','alpha.z','r_mean','r_median','rmsr','r_corxed_item_total')
 
 	colnames(item_stats) <- c('N','Mean','SD','item_total_r')
 
@@ -180,7 +200,7 @@ INTERNAL.CONSISTENCY <- function(data, factormodel = 'ML', reverse_these = NULL,
 		message('\n\nReliability, interitem correlations, & 1-factor model fit (rmsr):\n')	
 		print(round(int.consist_scale,2), print.gap=4)
 		
-		message('\n\nReliability, interitem correlations, & 1-factor model fit (rmsr) when an item is dropped:\n')	
+		message('\n\nReliability, correlations, & 1-factor model fit (rmsr) when an item is dropped:\n')	
 		print(round(int.consist_dropped,2), print.gap=4)
 		
 		message('\n\nItem statistics:\n')	

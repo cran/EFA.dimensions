@@ -1,10 +1,12 @@
 
 POLYCHORIC_R <- function (data, method='Revelle', verbose=TRUE){
 
-if (anyNA(data) == TRUE) {
-	data <- na.omit(data)
-	message('\nCases with missing values were found and removed from the data matrix.\n')
-}
+data <- MISSING_DROP(data)
+
+# if (anyNA(data) == TRUE) {
+	# data <- na.omit(data)
+	# message('\nCases with missing values were found and removed from the data matrix.\n')
+# }
 
 if (is.integer(data) == FALSE) {   # thank you Lilla Gurtner @ unibe
   if (all((data - trunc(data)) == 0) == FALSE) {
@@ -24,23 +26,48 @@ if (is.integer(data) == FALSE) {   # thank you Lilla Gurtner @ unibe
 	
 	
 # finding the max data value or # of levels (the max function does not work for factors)
-nvalues <- apply(data, MARGIN = 2, function(x) max(x, na.rm=TRUE))
-nvalues <- max(as.numeric(nvalues))
+Nvalues <- apply(data, MARGIN = 2, function(x) max(x, na.rm=TRUE))
+Nvalues <- max(as.numeric(Nvalues))
+
 # use the polychoric function from the psych package (default)
-if (nvalues < 9 & (is.null(method) | method=='Revelle')) {
-	rpolysR <- suppressWarnings(psych::polychoric(data, smooth=TRUE))
-	rpolys <- rpolysR$rho
+if (Nvalues < 9 & (is.null(method) | method=='Revelle')) {
+	# rpolysR <- suppressWarnings(psych::polychoric(data, smooth=TRUE))
+	# rpolys <- rpolysR$rho
+
+	tryRevelle <- function(data){
+		tryCatch(
+			{
+				rpolys <- psych::polychoric(data, smooth=TRUE)$rho
+				return(rpolys)
+			},
+			error=function(e) {
+				message('An error occurred when using method=="Revelle". method was therefore changed to "Fox"')
+				method <<- "Fox"
+				# print(e)
+				return(method)
+			},
+			warning=function(w) {
+				message('A warning occurred when using method=="Revelle". method was therefore changed to "Fox"')
+				method <<- "Fox"
+				# print(w)
+				return(method)
+			}
+		)
+	}
+	
+	rpolys <- tryRevelle(data)
+
 	if (verbose == TRUE) {
 		message('\n\nPolychoric correlations:\n')
 		print(rpolys)
 	}
 }
-if (max(nvalues) > 8) 
+if (max(Nvalues) > 8) 
     {message('\nUsing the Fox polycor package because the maximum number of item categories is > 8\n')}
 	
 		
 # use the hetcor function from the polycor package
-if (method=='Fox' | max(nvalues) > 8) {
+if (method=='Fox' | max(Nvalues) > 8) {
 	data <- as.data.frame(data) # the data for hetcor must be a dataframe
 	rpolysF <- polycor::hetcor(data)
 	rpolys <- rpolysF$correlations
@@ -53,8 +80,10 @@ if (method=='Fox' | max(nvalues) > 8) {
 		print(rpolys)
 	}
 }
+
 return(invisible(rpolys))
 }
+
 # using the polychor function instead of hetcor
 # cnoms <- colnames(data) # get colnames
 # rpolys <- matrix(-9999,ncol(data),ncol(data))

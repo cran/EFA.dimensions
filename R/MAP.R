@@ -3,6 +3,8 @@
 MAP <- function (data, corkind='pearson', Ncases=NULL, verbose=TRUE) {
 # Velicer's MAP test -- takes raw data or a correlation matrix
 
+data <- MISSING_DROP(data)
+
 data <- as.matrix(data)
      
 Nvars  <- ncol(data)
@@ -77,7 +79,7 @@ if (verbose == TRUE) {
 	message('\nThe smallest average squared correlation is ', round(min(na.omit(fmfm4[,2])),5))
 	message('\nThe smallest average 4rth power correlation is ', round(min(na.omit(fmfm4[,3])),5))
 	
-	message('\nThe number of components according to the rriginal (1976) MAP Test is = ', NfactorsMAP,  labels = NULL)
+	message('\nThe number of components according to the original (1976) MAP Test is = ', NfactorsMAP,  labels = NULL)
 	message('\nThe number of components according to the revised (2000) MAP Test is = ', NfactorsMAP4, labels = NULL, '\n')
 }
 

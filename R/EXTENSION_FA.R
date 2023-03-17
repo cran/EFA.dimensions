@@ -32,6 +32,8 @@ EXTENSION_FA <- function (data,
 
 #data(any(isnan(data)'),:) = [];
 
+data <- MISSING_DROP(data)
+
 Ncases <- nrow(data)
 Nvars  <- ncol(data) 
 

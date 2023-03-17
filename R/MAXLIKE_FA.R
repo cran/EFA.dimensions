@@ -7,6 +7,8 @@
 MAXLIKE_FA <- function (data, corkind='pearson', Nfactors=NULL, Ncases=NULL,  
                         rotate='PROMAX', ppower=4, verbose=TRUE) {
 
+data <- MISSING_DROP(data)
+
 cnoms <- colnames(data) # get colnames
 
 # set up cormat

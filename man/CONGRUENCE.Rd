@@ -22,6 +22,11 @@ is based solely on the positions and directions of the factors. The function the
 produces the Tucker-Wrigley-Neuhaus factor solution congruence coefficient as an 
 index of the degree of similarity between between the aligned loading matrices 
 (see Guadagnoli & Velicer, 1991; and ten Berge, 1986, for reviews).
+
+An investigation by Lorenzo-Seva and ten Berg (2006) resulted in the following 
+conclusion: A congruence coefficient 
+"value in the range .85.94 corresponds to a fair similarity, while a value higher 
+than .95 implies that the two factors or components compared can be considered equal."
 }
 \value{ A list with the following elements:
  \item{rcBefore}{The factor solution congruence before factor alignment}
@@ -36,6 +41,10 @@ index of the degree of similarity between between the aligned loading matrices
 	\emph{Multivariate Behavior Research, 26,} 323-343.}
 \cr\cr{ten Berge, J. M. F. (1986). Some relationships between descriptive comparisons 
 	of components from different studies. \emph{Multivariate Behavioral Research, 21,} 29-40.}
+\cr\cr{Lorenzo-Seva, U., & ten Berge, J. M. F. (2006). Tucker's congruence coefficient 
+	as a meaningful index of factor similarity. 
+	\emph{Methodology: European Journal of Research Methods for the Behavioral and 
+	Social Sciences, 2(2),} 5764.}
 }
 \author{Brian P. O'Connor}
 \examples{

@@ -1,6 +1,8 @@
 
 ROOTFIT <- function (data, corkind='pearson', Ncases=NULL, factormodel='PAF', verbose = 'TRUE') {
 
+data <- MISSING_DROP(data)
+
 Nvars <- ncol(data)
 
 # the analyses will be run for 1-factor to (Nvars * .6)-factor solutions

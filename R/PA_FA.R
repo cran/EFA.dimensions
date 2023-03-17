@@ -4,6 +4,8 @@ PA_FA <- function (data, corkind='pearson', Nfactors=NULL, Ncases=NULL, iterpaf=
 
 # CFA / PAF  (Bernstein p 189; smc = from Bernstein p 104)
 
+data <- MISSING_DROP(data)
+
 cnoms <- colnames(data) # get colnames
 
 # set up cormat
