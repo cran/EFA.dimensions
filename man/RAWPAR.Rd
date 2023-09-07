@@ -5,7 +5,7 @@
 	for deciding on the number of components or factors.
 }
 \usage{
-RAWPAR(data, randtype, factormodel, Ndatasets, percentile, 
+RAWPAR(data, randtype, extraction, Ndatasets, percentile, 
        corkind, corkindRAND, Ncases=NULL, verbose)
 }
 \arguments{
@@ -18,7 +18,7 @@ RAWPAR(data, randtype, factormodel, Ndatasets, percentile,
    	    'generated' for random normal data generation;
   	    'permuted' for permutations of the raw data matrix.}
   	    
-  \item{factormodel}{ 
+  \item{extraction}{ 
   \code{}The factor extraction method. The options are:
   	    'PAF' for principal axis / common factor analysis;
   	    'PCA' for principal components analysis.
@@ -47,7 +47,7 @@ RAWPAR(data, randtype, factormodel, Ndatasets, percentile,
 }
 \details{
 	The parallel analysis procedure for deciding on the number of 
-	components or factors involves extracting eigenvalues from random data 
+	components or factors involves extractioning eigenvalues from random data 
 	sets that parallel the actual data set with regard to the number of cases 
 	and variables. For example, if the original data set consists of 305 
 	observations for each of 8 variables, then a series of random data matrices 
@@ -73,7 +73,7 @@ RAWPAR(data, randtype, factormodel, Ndatasets, percentile,
 	eigenvalues are based   solely on the shared variance among the variables. The procedures are 
 	qualitatively different. Some therefore claim that the eigenvalues from one extraction method 
 	should not be used to determine the  number of factors for another extraction method. 
-	The PAF option in the extract argument for the PARALLEL function was included solely for 
+	The PAF option in the extraction argument for the PARALLEL function was included solely for 
 	research purposes. It is best to use PCA as the extraction  method for regular data analyses. 
 	
 	Polychoric correlations are time-consuming to compute. While polychoric correlations should 
@@ -104,23 +104,23 @@ RAWPAR(data, randtype, factormodel, Ndatasets, percentile,
 \examples{
 \donttest{
 # WISC data
-RAWPAR(data_TabFid, randtype='generated', factormodel='PCA', Ndatasets=100,
+RAWPAR(data_TabFid, randtype='generated', extraction='PCA', Ndatasets=100,
        percentile=95, corkind='pearson', verbose=TRUE)
 
 # the Harman (1967) correlation matrix
-RAWPAR(data_Harman, randtype='generated', factormodel='PCA', Ndatasets=100, 
+RAWPAR(data_Harman, randtype='generated', extraction='PCA', Ndatasets=100, 
        percentile=95, corkind='pearson', Ncases=305, verbose=TRUE)
 
 # Rosenberg Self-Esteem scale items, using Pearson correlations
-RAWPAR(data_RSE, randtype='permuted', factormodel='PCA', Ndatasets=100,
+RAWPAR(data_RSE, randtype='permuted', extraction='PCA', Ndatasets=100,
        percentile=95, corkind='pearson', corkindRAND='pearson', verbose=TRUE)
 
 # Rosenberg Self-Esteem scale items, using polychoric correlations
-RAWPAR(data_RSE, randtype='generated', factormodel='PCA', Ndatasets=100,
+RAWPAR(data_RSE, randtype='generated', extraction='PCA', Ndatasets=100,
        percentile=95, corkind='polychoric', verbose=TRUE)
 
 # NEO-PI-R scales
-RAWPAR(data_NEOPIR, randtype='generated', factormodel='PCA', Ndatasets=100, 
+RAWPAR(data_NEOPIR, randtype='generated', extraction='PCA', Ndatasets=100, 
        percentile=95, corkind='pearson', Ncases=305, verbose=TRUE)
 }
 }

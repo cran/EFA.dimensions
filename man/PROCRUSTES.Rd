@@ -52,9 +52,9 @@
 \examples{
 \donttest{
 # RSE data
-PCAoutput_1 <- PCA(data_RSE[1:150,],   Nfactors = 2, rotate='PROMAX', verbose=FALSE)
+PCAoutput_1 <- PCA(data_RSE[1:150,],   Nfactors = 2, rotation='promax', verbose=FALSE)
 
-PCAoutput_2 <- PCA(data_RSE[151:300,], Nfactors = 2, rotate='PROMAX', verbose=FALSE)
+PCAoutput_2 <- PCA(data_RSE[151:300,], Nfactors = 2, rotation='promax', verbose=FALSE)
 
 PROCRUSTES(target=PCAoutput_1$pattern, loadings=PCAoutput_2$pattern, 
            type = 'orthogonal', verbose=TRUE)

@@ -12,14 +12,14 @@
 MAP(data_TabFid, corkind='pearson', verbose=TRUE)
 
 # parallel analysis of the data_TabFid data
-RAWPAR(data_TabFid, factormodel='PCA', Ndatasets=100, percentile=95,
+RAWPAR(data_TabFid, extraction='PCA', Ndatasets=100, percentile=95,
        corkind='pearson', verbose=TRUE)
        
 # DIMTESTS on the data_TabFid data
 DIMTESTS(data_TabFid, tests = c('EMPKC','HULL','RAWPAR'), corkind='pearson', display=1)
 
 # principal axis factor analysis of the data_TabFid data
-PA_FA(data_TabFid, corkind='pearson', Nfactors = 5, iterpaf = 50, 
-      rotate='PROMAX', ppower = 4, verbose=TRUE)       
+EFA(data_TabFid, corkind='pearson', extraction='paf', Nfactors = 5, iterpaf = 50, 
+      rotation='promax', ppower = 4, verbose=TRUE)       
 }
 }

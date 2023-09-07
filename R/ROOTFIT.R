@@ -1,5 +1,5 @@
 
-ROOTFIT <- function (data, corkind='pearson', Ncases=NULL, factormodel='PAF', verbose = 'TRUE') {
+ROOTFIT <- function (data, corkind='pearson', Ncases=NULL, extraction='PAF', verbose = 'TRUE') {
 
 data <- MISSING_DROP(data)
 
@@ -17,7 +17,7 @@ ctype  <- cordat$ctype
 Ncases <- cordat$Ncases
 
  
-if (factormodel=='PCA' | factormodel == 'IMAGE') {
+if (extraction == 'PCA' | extraction == 'pca' | extraction == 'IMAGE' | extraction == 'image') {
 
 	fits <- matrix(-9999,Nroots,5)
 
@@ -34,31 +34,22 @@ if (factormodel=='PCA' | factormodel == 'IMAGE') {
 
 	for (root in 1:Nroots) {
        
-		if (factormodel == 'PCA') {
-			pcaOutput <- PCA(cormat, corkind=corkind, Nfactors=root, Ncases=Ncases, 
-			                 rotate='none', verbose=FALSE)
-	
-			fits[root,3:5] <- cbind(pcaOutput$fit_coefficients$RMSR, 
-			                        pcaOutput$fit_coefficients$GFI, 
-			                        pcaOutput$fit_coefficients$CAF)
-		}
-		if (factormodel == 'IMAGE') {
-			imagefaOutput <- IMAGE_FA(cormat, corkind=corkind, Nfactors=root, Ncases=Ncases, 
-			                          rotate='none', verbose=FALSE)
-	
-			fits[root,3:5] <- cbind(imagefaOutput$fit_coefficients$RMSR, 
-			                        imagefaOutput$fit_coefficients$GFI, 
-			                        imagefaOutput$fit_coefficients$CAF)
-		}
+		if (extraction == 'PCA' | extraction == 'pca') 
+			Output <- PCA(cormat, corkind=corkind, Nfactors=root, Ncases=Ncases, 
+			              rotation='none', verbose=FALSE)
 		
+		if (extraction == 'IMAGE' | extraction=='image') 
+			Output <- EFA(data=cormat, extraction='image', Nfactors=root, Ncases=Ncases, 
+			              rotation='none', verbose=FALSE)		
+		
+		fits[root,3:5] <- unlist(Output$fit_coefs[c('RMSR', 'GFI', 'CAF')])		
 	}
 	colnames(fits) <- c('Root','Eigenvalue','RMSR','GFI','CAF')
 	rownames(fits) <- matrix((''),nrow(fits),1)
 }
 
 
-
-if (factormodel == 'PAF' | factormodel == 'ML') {
+if (extraction != 'PCA' & extraction != 'pca' & extraction != 'IMAGE' & extraction != 'image') {
 
 	fits <- matrix(-9999,Nroots,13)
 
@@ -84,31 +75,16 @@ if (factormodel == 'PAF' | factormodel == 'ML') {
 			break
 		}
 		
-		if (factormodel == 'PAF') 
-			Output <- PA_FA(data, corkind=corkind, Nfactors=root, rotate='none', 
-		                    Ncases=Ncases, iterpaf=100, verbose=FALSE) 
-
-		if (factormodel == 'ML') {
-			essaye <- try(Output <- MAXLIKE_FA(data, corkind=corkind, Nfactors=root, rotate='none', 
-		                                       Ncases=Ncases, verbose=FALSE), silent=TRUE)		                                       
-			if (inherits(essaye, "try-error")) {
-			#	message('\nfactanal produced an error when Nfactors = ', root)
-				fits <- fits[1:(root-1),]
-				break
-			}
-		}
+	essaye <- try(Output <- EFA(data=cormat, extraction=extraction, Nfactors=root, Ncases=Ncases, 
+                                rotation='none', iterpaf=400, verbose=FALSE), silent=TRUE)		                                       
+	if (inherits(essaye, "try-error")) {
+		message('\nfactanal produced an error when Nfactors = ', root)
+		fits <- fits[1:(root-1),]
+		break
+	}
 				
-		fits[root,3:13] <- cbind(Output$fit_coefficients$RMSR, 
-		                         Output$fit_coefficients$GFI,
-		                         Output$fit_coefficients$CAF,
-		                         Output$fit_coefficients$RMSEA,
-		                         Output$fit_coefficients$TLI,
-		                         Output$fit_coefficients$CFI,
-		                         Output$fit_coefficients$MFI,
-		                         Output$fit_coefficients$BIC,
-		                         Output$fit_coefficients$AIC,
-		                         Output$fit_coefficients$CAIC,
-		                         Output$fit_coefficients$SABIC)
+	fits[root,3:13] <- unlist(Output$fit_coefs[c('RMSR', 'GFI', 'CAF','RMSEA','TLI',
+		                                             'CFI','MFI','BIC','AIC','CAIC','SABIC')])
 	}
 	colnames(fits) <- c('Root','Eigenvalue','RMSR','GFI','CAF','RMSEA','TLI','CFI',
 	                    'MFI','BIC','AIC','CAIC','SABIC')
@@ -116,40 +92,21 @@ if (factormodel == 'PAF' | factormodel == 'ML') {
 }
 
 
-if (verbose == 'TRUE' & factormodel=='PCA') {
+if (verbose == 'TRUE') {
 	
 	message('\n\nFit coefficients for N-factor solutions')
 
 	message('\nType of correlations used in the analyses: ', ctype)
 
-	if (factormodel=='PCA')   { message('\nExtraction Method: Principal Components') }
-	if (factormodel=='PAF')   { message('\nExtraction Method: Common Factor Analysis')}
-	if (factormodel=='ML')    { message('\nExtraction Method: Maximum Likelihood Estimation') } 
+	message('\nExtraction Method: ', extraction)
 
 	message('\nThe number of cases = ', Ncases)
-	message('\nThe number of variables = ', Nvars,'\n') 
-
-	print(round(fits,3))
-}
-
-
-if (verbose == 'TRUE' & (factormodel == 'PAF' | factormodel == 'ML')) {
-
-	message('\n\nFit coefficients for N-factor solutions')
-
-	message('\nType of correlations used in the analyses: ', ctype)
-
-	if (factormodel=='PCA')   { message('\nExtraction Method: Principal Components') }
-	if (factormodel=='PAF')   { message('\nExtraction Method: Common Factor Analysis')}
-	if (factormodel=='ML')    { message('\nExtraction Method: Maximum Likelihood Estimation') } 
-
-	message('\nThe number of cases = ', Ncases)
+	
 	message('\nThe number of variables = ', Nvars,'\n') 
 
 	print(round(fits,3))
 }
 
 return(invisible(fits))
-
 }
 

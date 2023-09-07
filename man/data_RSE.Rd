@@ -14,7 +14,7 @@ MAP(data_RSE, corkind='polychoric', verbose=TRUE)
 DIMTESTS(data_RSE, tests = c('CD','EMPKC','HULL','RAWPAR','NEVALSGT1'), Ncases=1000, display=2)
 
 # parallel analysis of the Rosenberg Self-Esteem Scale (RSE) item data
-RAWPAR(data_RSE, factormodel='PCA', Ndatasets=100, percentile=95,
+RAWPAR(data_RSE, extraction='PCA', Ndatasets=100, percentile=95,
        corkind='pearson', verbose=TRUE)
 }
 }

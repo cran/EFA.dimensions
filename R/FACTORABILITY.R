@@ -72,7 +72,7 @@ if (verbose==TRUE) {
 	   KMO >= .9 is marvelous
 	   KMO in the .80s is mertitorious
 	   KMO in the .70s is middling
-	   KMO in the .60s is medicore
+	   KMO in the .60s is mediocre
 	   KMO in the .50s is miserable
 	   KMO < .5 is unacceptable')
 	message('\nConsider excluding items with KMO values < .5 and then re-run the FACTORABILITY analyses.\n')

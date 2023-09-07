@@ -39,9 +39,9 @@ obtained, at which point the number of common factors is identified.
 
 "Simulation studies investigating the performance of sequential Chi-Square model 
 tests (SMT) as an extraction criterion have shown conflicting results. Whereas 
-some studies have shown that SMT has a tendency to overextract (e.g., Linn, 1968; 
+some studies have shown that SMT has a tendency to overextraction (e.g., Linn, 1968; 
 Ruscio & Roche, 2012; Schonemann & Wang, 1972), others have indicated that the SMT 
-has a tendency to underextract (e.g., Green et al., 2015; Hakstian et al., 1982; 
+has a tendency to underextraction (e.g., Green et al., 2015; Hakstian et al., 1982; 
 Humphreys & Montanelli, 1975; Zwick & Velicer, 1986). Hayashi, Bentler, and 
 Yuan (2007) demonstrated that overextraction tendencies are due to violations of 
 regularity assumptions if the number of factors for the test exceeds the true 

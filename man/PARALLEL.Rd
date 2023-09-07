@@ -5,7 +5,7 @@
 	random data sets with specified numbers of variables and cases. 
 }
 \usage{
-PARALLEL(Nvars, Ncases, Ndatasets=100, factormodel='PCA', percentile='95',
+PARALLEL(Nvars, Ncases, Ndatasets=100, extraction='PCA', percentile='95',
          corkind='pearson', verbose=TRUE)
 }
 \arguments{
@@ -18,7 +18,7 @@ PARALLEL(Nvars, Ncases, Ndatasets=100, factormodel='PCA', percentile='95',
   \item{Ndatasets}{
   \code{}An integer indicating the # of random data sets for parallel analyses.}
   	    
-  \item{factormodel}{ 
+  \item{extraction}{ 
   \code{}The factor extraction method. The options are:
   	    'PAF' for principal axis / common factor analysis;
   	    'PCA' for principal components analysis.
@@ -58,7 +58,7 @@ in correlation matrices, including both the variance that is shared among variab
 variances that are unique to the variables. In contrast, principal axis eigenvalues are based  
 solely on the shared variance among the variables. The procedures are qualitatively different.
 Some therefore claim that the eigenvalues from one extraction method should not be used to determine the 
-number of factors for another extraction method. The PAF option in the extract argument for the
+number of factors for another extraction method. The PAF option in the extraction argument for the
 PARALLEL function was included solely for research purposes. It is best to use PCA as the extraction 
 method for regular data analyses.
 }
@@ -76,7 +76,7 @@ method for regular data analyses.
 \author{Brian P. O'Connor }
 \examples{
 \donttest{
-PARALLEL(Nvars=15, Ncases=250, Ndatasets=100, factormodel='PCA', percentile=95,
+PARALLEL(Nvars=15, Ncases=250, Ndatasets=100, extraction='PCA', percentile=95,
          corkind='pearson', verbose=TRUE)
 }
 }

@@ -1,5 +1,5 @@
 
-NEVALSGT1 <- function (data, corkind='pearson', Ncases=NULL, verbose=FALSE) {
+NEVALSGT1 <- function (data, corkind='pearson', Ncases=NULL, verbose=TRUE) {
 # Number of eigenvalues > 1
 
 data <- MISSING_DROP(data)

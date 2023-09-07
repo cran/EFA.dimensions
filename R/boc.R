@@ -30,7 +30,7 @@ MISSING_DROP <- function(data) {
 
 setupcormat <- function(data, corkind='pearson', Ncases=NULL) {
 
-# determine whether data is a correlation matrix
+# determine whether data is a correlation matrix   # there is also a helper function in EFAtools = .is_cormat
 if (nrow(data) == ncol(data)) {
 	if (all(diag(data==1))) {datakind = 'correlations'}} else{ datakind = 'notcorrels'}
 if (datakind == 'correlations')  {
@@ -149,28 +149,29 @@ VarianceExplained <- function(eigenvalues, loadings=NULL) {
 
 
 
-
-
-
 CAF_boc <- function(cormat, cormat_reproduced=NULL) {
 
-if (is.null(cormat_reproduced)) {bigR <- cormat
-} else {bigR <- cormat - cormat_reproduced;  diag(bigR) <- 1}
+	# from 2011 Lorenzo-Seva - The Hull method for selecting the number of common factors
 
-	Rinv <- solve(bigR)
-	Rpart <- cov2cor(Rinv) 
-	cormat_sq <- bigR^2
-	Rpart_sq  <- Rpart^2
+	if (is.null(cormat_reproduced)) {bigR <- cormat
+	} else {bigR <- cormat - cormat_reproduced;  diag(bigR) <- 1}
+
+	# smooth bigR if it is not positive definite
+	if (any(eigen(bigR, symmetric = TRUE, only.values = TRUE)$values <= 0)) 
+		bigR <- suppressWarnings(psych::cor.smooth(bigR))
 	
 	# overall KMO
+	Rinv <- solve(bigR)	
+	Rpart <- cov2cor(Rinv)
+	cormat_sq <- bigR^2
+	Rpart_sq  <- Rpart^2
 	KMOnum <- sum(cormat_sq) - sum(diag(cormat_sq))
 	KMOdenom <- KMOnum + (sum(Rpart_sq) - sum(diag(Rpart_sq))) 
 	KMO <- KMOnum / KMOdenom
 	
 	CAF <- 1 - KMO
 	
-	return(CAF)
-	
+	return(CAF)	
 }
 
 
@@ -178,7 +179,8 @@ if (is.null(cormat_reproduced)) {bigR <- cormat
 
 
 
-FIT_COEFS <- function(cormat, cormat_reproduced, factormodel='PCA', Ncases=NULL, 
+
+FIT_COEFS <- function(cormat, cormat_reproduced, extraction='PCA', Ncases=NULL, 
                       chisqMODEL=NULL, dfMODEL=NULL, verbose=TRUE) {
        
      # RMSR
@@ -225,7 +227,7 @@ FIT_COEFS <- function(cormat, cormat_reproduced, factormodel='PCA', Ncases=NULL,
     fitcoefsOutput <- list(RMSR=RMSR, GFI=GFI, CAF=CAF)
 
 
-if(factormodel == 'PAF' | factormodel == 'ML') {
+if (extraction != 'PCA' & extraction != 'pca' & extraction != 'IMAGE' | extraction != 'image') {
 
 		Nvars <- dim(cormat)[1]
   
@@ -274,7 +276,8 @@ if(factormodel == 'PAF' | factormodel == 'ML') {
 }
 
 
-     if(verbose == TRUE & (factormodel == 'PCA'| factormodel == 'IMAGE')) {
+     if(verbose == TRUE & (extraction == 'PCA' | extraction == 'pca' | 
+        extraction == 'IMAGE' | extraction == 'image')) {
 		
      	message('\n\nFit Coefficients:')
 	
@@ -285,7 +288,8 @@ if(factormodel == 'PAF' | factormodel == 'ML') {
 		message('\nCAF = ', round(CAF,2))
 	}
 
-     if(verbose == TRUE & (factormodel == 'PAF' | factormodel == 'ML')) {
+     if(verbose == TRUE & (extraction != 'PCA' & extraction != 'pca' & 
+        extraction != 'IMAGE' | extraction != 'image')) {
 		
      	message('\n\nFit Coefficients:')
 	
@@ -314,6 +318,331 @@ if(factormodel == 'PAF' | factormodel == 'ML') {
 
 return(invisible(fitcoefsOutput))    
 }     
+
+
+
+
+
+
+
+VARIMAX <- function (loadings, normalize = TRUE, verbose=TRUE) {
+
+# uses the R built-in varimax function & provides additional output
+
+if (is.list(loadings) == 'TRUE')  loadings <- loadings$loadings
+
+if (ncol(loadings) == 1 & verbose==TRUE) {
+	message('\nWARNING: There was only one factor. Rotation was not performed.\n')
+}
+
+if (ncol(loadings) > 1) {
+	
+	vmaxres <- varimax(loadings, normalize=normalize)  # from built-in stats
+	 
+	loadingsV <- vmaxres$loadings[]
+	colnames(loadingsV) <-  c(paste('Factor ', 1:ncol(loadingsV), sep=''))
+
+	rotmatV <- vmaxres$rotmat
+	colnames(rotmatV) <- rownames(rotmatV) <- c(paste('Factor ', 1:ncol(loadingsV), sep=''))
+		
+	# reproduced correlation matrix
+	cormat_reproduced <- loadingsV %*% t(loadingsV); diag(cormat_reproduced) <- 1
+	
+
+	if (verbose == TRUE) {
+
+		message('\n\nVarimax Rotated Loadings:\n')
+		print(round(loadingsV,2), print.gap=3)
+		
+		message('\n\nThe rotation matrix:\n')
+		print(round(rotmatV,2), print.gap=)
+	}
+}
+
+varimaxOutput <-  list(loadingsNOROT=loadings, loadingsV=loadingsV, rotmatV=rotmatV, 
+                       cormat_reproduced=cormat_reproduced)  
+
+return(invisible(varimaxOutput))
+
+}
+
+
+
+
+
+
+# Promax rotation
+
+# from stata.com:
+# The optional argument specifies the promax power. 
+# Values smaller than 4 are recommended, but the choice is yours. Larger promax 
+# powers simplify the loadings (generate numbers closer to zero and one) but 
+# at the cost of additional correlation between factors. Choosing a value is 
+# a matter of trial and error, but most sources find values in excess of 4 
+# undesirable in practice. The power must be greater than 1 but is not 
+# restricted to integers. 
+# Promax rotation is an oblique rotation method that was developed before 
+# the "analytical methods" (based on criterion optimization) became computationally 
+# feasible. Promax rotation comprises an oblique Procrustean rotation of the 
+# original loadings A toward the elementwise #-power of the orthogonal varimax rotation of A. 
+
+
+PROMAX <- function (loadings, ppower=4, verbose=TRUE) {  
+			
+# uses the R built-in promax function & provides additional output
+
+#if (is.list(loadings) == 'TRUE') loadings <- loadings$loadings
+
+if (ncol(loadings) == 1)  {	
+	promaxOutput <- list(loadingsNOROT=loadings, pattern=loadings, structure=loadings)
+	return(invisible(promaxOutput))
+	if (verbose == TRUE) message('\nWARNING: There was only one factor. Rotation was not performed.\n')
+}
+
+if (ncol(loadings) > 1) {
+
+	# varimax
+	vmaxres <- varimax(loadings, normalize=TRUE)   # SPSS normalizes them
+	loadingsV <- vmaxres$loadings[]	
+	rotmatV <- vmaxres$rotmat
+
+	promaxres <- promax(loadingsV, m=ppower)
+
+	bigA <- rotmatV %*% promaxres$rotmat
+
+	phi  <- solve(t(bigA) %*% bigA)
+	colnames(phi) <- rownames(phi) <- c(paste('Factor ', 1:ncol(loadingsV), sep=''))
+
+	Pstructure <- promaxres$loadings %*% phi  # promax structure
+	Ppattern   <- promaxres$loadings[]  # promax loadings/pattern
+
+	# reproduced correlation matrix
+	cormat_reproduced <- Pstructure %*% t(Ppattern); diag(cormat_reproduced) <- 1
+	
+
+	if (verbose == TRUE) {
+	
+		# message('\nUnrotated Loadings:\n')
+		# print(round(B,2))
+	
+		message('\nPromax Rotation Pattern Matrix:\n')
+		print(round(Ppattern,2), print.gap=3)
+	
+		message('\n\nPromax Rotation Structure Matrix:\n')
+		print(round(Pstructure,2), print.gap=3)
+	
+		message('\nPromax Rotation Factor Correlations:\n')
+		print(round(phi,2), print.gap=3)
+	}
+
+	promaxOutput <- list(loadingsNOROT=loadings, pattern=Ppattern, structure=Pstructure, 
+	                     phi=phi, cormat_reproduced=cormat_reproduced)
+
+}
+return(invisible(promaxOutput))
+}
+
+
+
+
+
+
+
+# Image Factor Extraction (Gorsuch 1983, p 113; Velicer 1974, EPM, 34, 564)
+
+IMAGE_FA <- function (cormat, Nfactors, Ncases) {
+
+	smcINITIAL <- 1 - (1 / diag(solve(cormat)))  # initial communalities
+	
+	eigenvalues <- eigen(cormat)$values
+	
+	cnoms <- colnames(cormat)
+		
+	# factor pattern for image analysis Velicer 1974 p 565 formula (2)
+	d <-  diag(1 / diag(solve(cormat)))
+	gvv <- cormat + d %*% solve(cormat) %*% d - 2 * d
+	s <- sqrt(d)                     #  Velicer 1974 p 565 formula (7)
+	r2 <- solve(s) %*%  gvv  %*% solve(s)    #  Velicer 1974 p 565 formula (5)
+	eigval <- diag(eigen(r2) $values)
+	eigvect <- eigen(r2) $vectors
+	l <- eigvect[,1:Nfactors]
+	dd <- sqrt(eigval[1:Nfactors,1:Nfactors])
+	
+	loadingsNOROT <- as.matrix(s %*% l %*% dd)      #  Velicer 1974 p 565 formula (2)
+
+	communalities <- as.matrix(diag(loadingsNOROT %*% t(loadingsNOROT))) 	
+	communalities <- cbind(smcINITIAL, communalities) 
+	rownames(communalities) <- cnoms
+	colnames(communalities) <- c('Initial', 'Extraction')
+		
+	imageOutput <- list(loadingsNOROT=loadingsNOROT, communalities=communalities)
+	
+	return(invisible(imageOutput))
+}
+
+
+
+
+
+
+
+# Maximum likelihood factor analysis - using factanal from stats
+
+MAXLIKE_FA <- function (cormat, Nfactors, Ncases) {
+
+	smcINITIAL <- 1 - (1 / diag(solve(cormat)))  # initial communalities
+	
+	eigenvalues <- eigen(cormat)$values
+	
+	Nvars <- dim(cormat)[2]
+	                       
+	cnoms <- colnames(cormat)
+		
+	# factanal often generates errors
+	# the code below uses fa from psych when factanal produces an error
+	essaye1 <- try(factanalOutput <- 
+	              factanal(covmat = as.matrix(cormat), n.obs = Ncases, factors = Nfactors, 
+	                       rotation = 'none'), silent=TRUE)
+
+	loadingsNOROT <- communalities <- NA	
+	
+	if (inherits(essaye1, "try-error") == FALSE) {
+		
+		# chisqMODEL <- unname(factanalOutput$STATISTIC)
+		
+		# dfMODEL <- unname(factanalOutput$dof)
+		
+		# pvalue <- unname(factanalOutput$PVAL)
+		
+		loadingsNOROT <- factanalOutput$loadings[1:dim(factanalOutput$loadings)[1],
+		                                         1:dim(factanalOutput$loadings)[2], drop=FALSE]
+		
+		# uniquenesses <- factanalOutput$uniquenesses
+	}	
+	
+	if (inherits(essaye1, "try-error")) {
+			
+		# using fa from psych if factanal produces an error
+		essaye2 <- try(faOutput <- fa(cormat, Nfactors, rotate="Promax", fm="mle"), silent=TRUE) 
+	
+		if (inherits(essaye2, "try-error") == FALSE) {	
+	
+			# chisqMODEL <- (Ncases - 1 - (2 * Nvars  +  5) / 6 - (2 * Nfactors) / 3) * faOutput$criteria[1] # from psych ?fa page
+	
+			# dfMODEL <- faOutput$dof
+			
+			# if (dfMODEL > 0) {pvalue <- pchisq(chisqMODEL, dfMODEL, lower.tail = FALSE)} else {pvalue <- NA}
+	
+			loadingsNOROT <- faOutput$Structure[1:dim(faOutput$Structure)[1],
+			                                    1:dim(faOutput$Structure)[2], drop=FALSE]
+	
+			# uniquenesses <- faOutput$uniquenesses
+	}
+		if (inherits(essaye2, "try-error")) 	
+		    message('\nerrors are produced when Nfactors = ', Nfactors, '\n')	
+	}
+		
+	# # the null model
+	# Fnull <- sum(diag((cormat))) - log(det(cormat)) - Nvars  
+	
+	# chisqNULL <-  Fnull * ((Ncases - 1) - (2 * Nvars + 5) / 6 )
+	
+	# dfNULL <- Nvars * (Nvars - 1) / 2
+
+	# if there are no errors
+	if (!all(is.na(loadingsNOROT))) {				       
+		communalities <- as.matrix(diag(loadingsNOROT %*% t(loadingsNOROT))) 	
+		communalities <- cbind(smcINITIAL, communalities) 
+		rownames(communalities) <- cnoms
+		colnames(communalities) <- c('Initial', 'Extraction')
+	}
+	maxlikeOutput <- list(loadingsNOROT=loadingsNOROT, communalities = communalities)
+	
+	return(invisible(maxlikeOutput))
+}
+
+
+
+
+
+
+
+
+PA_FA <- function (cormat, Nfactors, Ncases, iterpaf=100) {
+
+	# CFA / PAF  (Bernstein p 189; smc = from Bernstein p 104)
+	
+	Nvars <- dim(cormat)[1]
+	
+	eigenvalues <- eigen(cormat)$values
+		
+	cnoms <- colnames(cormat)
+		
+	converge  <- .001
+	rpaf <- as.matrix(cormat)
+	smc <- 1 - (1 / diag(solve(rpaf)))
+	smcINITIAL <- smc  # initial communalities
+	
+	for (iter in 1:(iterpaf + 1)) {
+		diag(rpaf) <- smc # putting smcs on the main diagonal of r
+		eigval <-  diag((eigen(rpaf) $values))
+		# substituting zero for negative eigenvalues
+		for (luper in 1:nrow(eigval)) { if (eigval[luper,luper] < 0) { eigval[luper,luper] <- 0 }}
+		eigvect <- eigen(rpaf) $vectors
+		if (Nfactors == 1) {
+			loadingsNOROT <- eigvect[,1:Nfactors] * sqrt(eigval[1:Nfactors,1:Nfactors])
+			communalities <- loadingsNOROT^2
+		}else {
+			loadingsNOROT <- eigvect[,1:Nfactors] %*% sqrt(eigval[1:Nfactors,1:Nfactors])
+			communalities <- rowSums(loadingsNOROT^2) 
+		}
+		if (max(max(abs(communalities-smc))) < converge) { break }
+		if (max(max(abs(communalities-smc))) >= converge  & iter < iterpaf) { smc <- communalities }
+	}
+	loadingsNOROT <- as.matrix(loadingsNOROT)
+	
+	communalities <- as.matrix(diag(loadingsNOROT %*% t(loadingsNOROT))) 	
+	communalities <- cbind(smcINITIAL, communalities) 
+	rownames(communalities) <- cnoms
+	colnames(communalities) <- c('Initial', 'Extraction')
+	
+	pafOutput <- list(loadingsNOROT=loadingsNOROT, communalities=communalities) 
+	
+	return(invisible(pafOutput))
+}
+
+
+
+
+
+
+
+
+
+
+
+
+# Harris, C. W. On factors and factor scores. P 32, 363-379.
+
+# Harris, C. W. (1962). Some Rao-Guttman relationships." Psychometrika, 27,  247-63. 
+
+# HARRIS, CHESTER W. "Canonical Factor Models for the
+# Description of Change." Problems in Measuring Change. (Edited by Chester W.
+# Harris.) Madison: University of Wisconsin Press, 1963. Chapter 8, pp.
+# 138-55. (a) 
+
+# HARRIS, CHESTER W., editor. Problems in Measuring Change. Madison: University of Wisconsin Press, 1963. 259 pp. (b) 
+
+# HARRIS, CHESTER W. "Some Recent Developments in Factor Analysis." Educational and Psychological Measurement 2 4 : 193-206; Summer 1964. 
+
+# HARRIS, CHESTER W., and KAISER, HENRY F. "Oblique Factor Analytic Solutions by Orthogonal Transformations." Psychometrika 29: 347-62; December 1964.
+
+# Guttman, L. (1953). Image theory for the structure of quantitative
+# variates. Psychometrika 18, 277-296.
+
+
+
+
 
 
 

@@ -1,7 +1,7 @@
 
 # Principal Components Analysis
 
-PCA <- function (data, corkind='pearson', Nfactors=NULL, Ncases=NULL, rotate='PROMAX', ppower = 4, verbose=TRUE) {
+PCA <- function (data, corkind='pearson', Nfactors=NULL, Ncases=NULL, rotation='promax', ppower = 3, verbose=TRUE) {
 
 data <- MISSING_DROP(data)
 
@@ -17,7 +17,7 @@ eigs         <- eigen(as.matrix(cormat))
 eigenvalues  <- eigs$values
 eigenvectors <- eigs$vectors
 
-totvarexplNOROT <- VarianceExplained(eigenvalues)
+varexplNOROT1 <- VarianceExplained(eigenvalues)
 
 
 if (is.null(Nfactors)) {		
@@ -27,130 +27,201 @@ if (is.null(Nfactors)) {
 
 
 if (Nfactors == 1) {
-	loadings <- eigenvectors[,1:Nfactors] * sqrt(eigenvalues[1:Nfactors])
-} else {loadings <- eigenvectors[,1:Nfactors] %*% sqrt(diag(eigenvalues[1:Nfactors]))}
-loadings <- as.matrix(loadings)
-rownames(loadings) <- cnoms
-colnames(loadings) <-  c(paste('Factor ', 1:Nfactors, sep=''))
-
-cormat_reproduced <- loadings %*% t(loadings); diag(cormat_reproduced) <- 1
-
-fit_coefficients <- FIT_COEFS(cormat, cormat_reproduced, factormodel='PCA', Ncases=Ncases, verbose=FALSE) 
-       
-communal <- as.matrix(diag(loadings %*% t(loadings))) 
-
-Communalities <- cbind(rep(1,length(communal)), communal)   # as.matrix(communal) 
-rownames(Communalities) <- cnoms
-colnames(Communalities) <- c('Initial', 'Extraction')
+	loadingsNOROT <- eigenvectors[,1:Nfactors] * sqrt(eigenvalues[1:Nfactors])
+} else {loadingsNOROT <- eigenvectors[,1:Nfactors] %*% sqrt(diag(eigenvalues[1:Nfactors]))}
+loadingsNOROT <- as.matrix(loadingsNOROT)
+rownames(loadingsNOROT) <- cnoms
+colnames(loadingsNOROT) <- c(paste('Factor ', 1:Nfactors, sep=''))
 
 
-uniquenesses <- 1 - communal
+cormat_reprod <- loadingsNOROT %*% t(loadingsNOROT); diag(cormat_reprod) <- 1
+      
+
+# communalities
+communalities <- as.matrix(diag(loadingsNOROT %*% t(loadingsNOROT))) 
+communalities <- cbind(rep(1,length(communalities)), communalities)   # as.matrix(communalities) 
+rownames(communalities) <- cnoms
+colnames(communalities) <- c('Initial', 'Extraction')
+uniquenesses <- 1 - communalities
 
 
-if (rotate=='none')  { 
-	pcaOutput <- list(totvarexplNOROT=totvarexplNOROT, loadingsNOROT=loadings) 
-}
+fit_coefs <- FIT_COEFS(cormat, cormat_reprod, extraction='PCA', Ncases=Ncases, verbose=FALSE) 
 
-if (rotate=='PROMAX' | rotate=='VARIMAX') {
+
+
+# rotation   library(GPArotation)
+
+varexplROT <- loadingsROT <- structure <- pattern <- phi <- NA
+
+if (Nfactors > 1) {
+
+	# orthogonal rotations
 	
-	if (Nfactors==1)  {
-		pcaOutput <- list(totvarexplNOROT=totvarexplNOROT,
-		                  loadingsNOROT=loadings, 
-	                      loadingsROT=loadings,
-	                      structure=loadings,
-	                      pattern=loadings)  
+	if (rotation == 'varimax') 
+		loadingsROT <- VARIMAX(loadingsNOROT, verbose=FALSE)$loadingsV
+	
+	if (rotation == 'quartimax') 
+		loadingsROT <- GPArotation::quartimax(loadingsNOROT)$loadings
+
+	if (rotation == 'bentlerT') 
+		loadingsROT <- GPArotation::bentlerT(loadingsNOROT)$loadings
+
+	if (rotation == 'equamax') 
+		loadingsROT <- psych::equamax(loadingsNOROT)$loadings
+
+	if (rotation == 'geominT') 
+		loadingsROT <- GPArotation::geominT(loadingsNOROT)$loadings
+
+	if (rotation == 'bifactorT') 
+		loadingsROT <- GPArotation::bifactorT(loadingsNOROT)$loadings
+
+	if (rotation == 'entropy') 
+		loadingsROT <- GPArotation::entropy(loadingsNOROT)$loadings
+
+	# GPArotation::parsimax(loadings)   not an exported object from 'namespace:GPArotation'
+
+
+	# oblique rotations
+	
+	if (rotation == 'promax' | rotation == 'PROMAX') {
+		promaxOutput <- PROMAX(loadingsNOROT, ppower=ppower, verbose=FALSE)
+		pattern <- promaxOutput$pattern
+		structure <- promaxOutput$structure
+		phi <- promaxOutput$phi
 	}
-	if (Nfactors > 1) {
-		if (rotate=='VARIMAX') { 
-			varimaxOutput <- VARIMAX(loadings,verbose=FALSE)
 
-			totvarexplROT <- VarianceExplained(eigenvalues, loadings=varimaxOutput$loadingsV)
+	if (rotation == 'quartimin') {
+		outp <- GPArotation::quartimin(loadingsNOROT)
+		pattern <- outp$loadings
+		phi <- outp$Phi
+		structure <- pattern %*% phi
+	}
 
-			pcaOutput <- list(totvarexplNOROT=totvarexplNOROT,
-			                  totvarexplROT=totvarexplROT,
-			                  loadingsNOROT=varimaxOutput$loadingsNOROT,
-			                  loadingsV=varimaxOutput$loadingsV) 
-		}  
-		if (rotate=='PROMAX')  { 
-			promaxOutput <- PROMAX(loadings,verbose=FALSE)
+	if (rotation == 'oblimin') {
+		outp <- GPArotation::oblimin(loadingsNOROT)
+		pattern <- outp$loadings
+		phi <- outp$Phi
+		structure <- pattern %*% phi
+	}
 
-			totvarexplROT <- VarianceExplained(eigenvalues, loadings=promaxOutput$structure)
-			# When factors are correlated, sums of squared loadings cannot be added to 
-			# obtain a total variance, so remove them from the output
-			totvarexplROT <-totvarexplROT[,1]
+	if (rotation == 'oblimax') {
+		outp <- GPArotation::oblimax(loadingsNOROT)
+		pattern <- outp$loadings
+		phi <- outp$Phi
+		structure <- pattern %*% phi
+	}
 
-			pcaOutput <- list(totvarexplNOROT=totvarexplNOROT,
-			                  totvarexplROT=totvarexplROT,
-			                  loadingsNOROT=promaxOutput$loadingsNOROT, 
-			                  pattern=promaxOutput$pattern,
-			                  structure=promaxOutput$structure, 
-			                  phi=promaxOutput$phi) 
-		}
+	if (rotation == 'simplimax') {
+		outp <- GPArotation::simplimax(loadingsNOROT)
+		pattern <- outp$loadings
+		phi <- outp$Phi
+		structure <- pattern %*% phi
+	}
+
+	if (rotation == 'bentlerQ') {
+		outp <- GPArotation::bentlerQ(loadingsNOROT)
+		pattern <- outp$loadings
+		phi <- outp$Phi
+		structure <- pattern %*% phi
+	}
+
+	if (rotation == 'geominQ') {
+		outp <- GPArotation::geominQ(loadingsNOROT)
+		pattern <- outp$loadings
+		phi <- outp$Phi
+		structure <- pattern %*% phi
+	}
+
+	if (rotation == 'bifactorQ') {
+		outp <- GPArotation::bifactorQ(loadingsNOROT)
+		pattern <- outp$loadings
+		phi <- outp$Phi
+		structure <- pattern %*% phi
+	}
+
+
+	if (!anyNA(loadingsROT)) varexplROT <- VarianceExplained(eigenvalues, loadings=loadingsROT)
+
+	if (!anyNA(structure)) {			
+		colnames(structure) <- colnames(phi) <- c(paste('Factor ', 1:Nfactors, sep=''))
+		rownames(phi) <- c(paste('Factor ', 1:Nfactors, sep=''))		
+		varexplROT <- VarianceExplained(eigenvalues, loadings=structure)
+		# when factors are correlated, sums of squared loadings cannot be added to obtain a total variance, so remove them from the output
+		varexplROT <- varexplROT[,1]
 	}
 }
 
-pcaOutput <- c(pcaOutput, 
-		           list(cormat_reproduced=cormat_reproduced, 
-		                fit_coefficients=fit_coefficients,
-		                Communalities = Communalities,
-		                uniquenesses = uniquenesses))
+
+pcaOutput <- list(loadingsNOROT = loadingsNOROT,
+                  loadingsROT = loadingsROT,
+			      pattern = pattern,
+			      structure = structure, 
+			      phi = phi,
+                  varexplNOROT1 = varexplNOROT1,
+                  varexplROT = varexplROT,
+			      cormat_reprod = cormat_reprod,
+			      fit_coefs = fit_coefs,
+                  communalities = communalities,
+                  uniquenesses = uniquenesses)
 
 
 if (verbose == TRUE) {
-     message('\n\nPrincipal Components Analysis')
+     message('\n\n\nPrincipal Components Analysis')
 
      message('\nSpecified kind of correlations for this analysis: ', ctype)
 
 	if (NfactorsWasNull == TRUE) {
 		message('\nNfactors was not specified and so the EMPKC test was conducted to determine')
-		message('the number of factors to extract: Nfactors = ', Nfactors,'\n')		
+		message('the number of factors to extraction: Nfactors = ', Nfactors,'\n')		
 	} else if (NfactorsWasNull == FALSE) {
-		message('\nThe specified number of factors to extract = ', Nfactors,'\n')
+		message('\nThe specified number of factors to extraction = ', Nfactors,'\n')
 	}
 
 	message('\nCommunalities:\n')
-	print(round(Communalities,2))
+	print(round(communalities,2))
 
 	message('\n\nTotal Variance Explained (Initial Eigenvalues):\n')
-	print(round(totvarexplNOROT,2), print.gap=4)
+	print(round(varexplNOROT1,2), print.gap=4)
 
 	message('\nModel Fit Coefficients:')
-	message('\nRMSR = ', round(fit_coefficients$RMSR,3))
-	message('\nGFI = ',  round(fit_coefficients$GFI,3))
-	message('\nCAF = ',  round(fit_coefficients$CAF,3))
+	message('\nRMSR = ', round(fit_coefs$RMSR,3))
+	message('\nGFI = ',  round(fit_coefs$GFI,3))
+	message('\nCAF = ',  round(fit_coefs$CAF,3))
 
 	message('\nUnrotated PCA Loadings:\n')
 	print(round(pcaOutput$loadingsNOROT[,1:Nfactors],2), print.gap=3)
 
-		if (Nfactors==1) { message('\nNo rotation because there is only one component\n') }
+	if (Nfactors == 1)  message('\nNo rotation because there is only one component\n')
 
-		if (Nfactors > 1) {
-			if (rotate=='none')    {message('\nRotation Procedure:  No Rotation\n')}
+	if (Nfactors > 1) {
+		
+		if (rotation == 'none')   message('\nRotation procedure:  No rotation')
 
-			if (rotate=='VARIMAX') {
-				
-				message('\nVarimax Rotated Loadings:\n'); 
-				print(round(pcaOutput$loadingsV,2), print.gap=3) 
+		if (rotation != 'none') {
 
-				message('\nTotal Variance Explained (Rotation Sums of Squared Loadings):\n')
-				print(round(pcaOutput$totvarexplROT,2), print.gap=4)		
+			message('\n\nThe specified rotation procedure: ', rotation)	
+			
+			if (!anyNA(loadingsROT)) {
+				message('\n\nRotated Loadings:\n')	
+				print(round(pcaOutput$loadingsROT,2), print.gap=3) 
 			}
-
-			if (rotate=='PROMAX')  { 
-
-				message('\nPromax Rotation Pattern Matrix:\n');      
-				print(round(pcaOutput$pattern,2), print.gap=3)
-
-				message('\nPromax Rotation Structure Matrix:\n');    
-				print(round(pcaOutput$structure,2), print.gap=3)
-
-				message('\nRotation Sums of Squared Loadings:\n')
-				print(round(pcaOutput$totvarexplROT,2), print.gap=4)		
+				
+			if (!anyNA(pattern)) { 
 	
-				message('\nPromax Rotation Factor Correlations:\n'); 
+				message('\n\nPattern Matrix (standardized factor loadings):\n');      
+				print(round(pcaOutput$pattern,2), print.gap=3)
+	
+				message('\n\nStructure Matrix:\n');    
+				print(round(pcaOutput$structure,2), print.gap=3)
+	
+				message('\n\nFactor Correlations:\n'); 
 				print(round(pcaOutput$phi,2), print.gap=3)
 			}
+		
+			message('\n\nTotal Variance Explained (Rotation Sums of Squared Loadings):\n')
+			print(round(pcaOutput$varexplROT,2), print.gap=4)		
 		}
+	}
 }
 
 return(invisible(pcaOutput))

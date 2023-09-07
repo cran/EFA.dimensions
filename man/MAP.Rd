@@ -37,7 +37,7 @@
 	squared partial correlation. The average squared coefficient in the original 
 	correlation matrix is also computed, and if this coefficient happens to be lower 
 	than the lowest average squared partial correlation, then no components should be 
-	extracted from the correlation matrix. Statistically, components are retained as 
+	extractioned from the correlation matrix. Statistically, components are retained as 
 	long as the variance in the correlation matrix represents systematic variance. 
 	Components are no longer retained when there is proportionately more unsystematic 
 	variance than systematic variance (see O'Connor, 2000, p. 397).

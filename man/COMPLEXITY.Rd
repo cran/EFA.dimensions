@@ -44,15 +44,15 @@
 \examples{
 \donttest{
 # the Harman (1967) correlation matrix
-PCAoutput <- PCA(data_Harman, Nfactors = 2, Ncases = 305, rotate='PROMAX', verbose=FALSE)
+PCAoutput <- PCA(data_Harman, Nfactors = 2, Ncases = 305, rotation='promax', verbose=FALSE)
 COMPLEXITY(loadings=PCAoutput$structure, verbose=TRUE)
 
 # Rosenberg Self-Esteem scale items
-PCAoutput <- PCA(data_RSE, Nfactors = 2, rotate='PROMAX', verbose=FALSE)
+PCAoutput <- PCA(data_RSE, Nfactors = 2, rotation='promax', verbose=FALSE)
 COMPLEXITY(loadings=PCAoutput$structure, verbose=TRUE)
 
 # NEO-PI-R scales
-PCAoutput <- PCA(data_NEOPIR, Nfactors = 5, rotate='PROMAX', verbose=FALSE)
+PCAoutput <- PCA(data_NEOPIR, Nfactors = 5, rotation='promax', verbose=FALSE)
 COMPLEXITY(loadings=PCAoutput$structure, verbose=TRUE)
 }
 }

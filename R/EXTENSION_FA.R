@@ -4,7 +4,7 @@
 # SMT, EMPKC
 # MAP not the default
 # Nfactors=NULL
-# permit factormodel=='image'
+# permit extraction=='image'
 
 
 
@@ -12,7 +12,7 @@ EXTENSION_FA <- function (data,
 		 Ncore=ncol(data), Next=0, higherorder=TRUE, 
 		 roottest='EMPKC',  
          corkind='pearson',  
-         factormodel='PAF', rotate='PROMAX', 
+         extraction='PAF', rotation='promax', 
          Nfactors, NfactorsHO, 
          Ndatasets=100, percentile=95, 
          salvalue=.4, numsals=3, 
@@ -65,14 +65,14 @@ if (roottest=='SEscree')   ntype <- 'Standard Error Scree'
 if (roottest=='#evals>1')  ntype <- '# of Eigenvalues > 1' 
 if (roottest=='user')      ntype <- 'User-Specified' 
 
-if (factormodel=='PAF')   etype <- 'Principal Axis / Common Factor Analysis' 
-if (factormodel=='PCA')   etype <- 'Principal Components' 
-if (factormodel=='ML')    etype <- 'Maximum Likelihood' 
-#if (factormodel=='image') etype <- 'Image Analysis' 
+if (extraction=='PAF')   etype <- 'Principal Axis / Common Factor Analysis' 
+if (extraction=='PCA')   etype <- 'Principal Components' 
+if (extraction=='ML')    etype <- 'Maximum Likelihood' 
+#if (extraction=='image') etype <- 'Image Analysis' 
 
-if (rotate=='PROMAX')  rtype <- 'Promax' 
-if (rotate=='VARIMAX') rtype <-  
-if (rotate=='none')    rtype <- 'No Rotation' 
+if (rotation=='promax')  rtype <- 'Promax' 
+if (rotation=='varimax') rtype <- 'Varimax'
+if (rotation=='none')    rtype <- 'No Rotation' 
 
 # correlation matrix
 if (corkind=='pearson')      rdata <- cor(data, method='pearson') 
@@ -93,7 +93,7 @@ rcore <- rdata[1:Ncore,1:Ncore];
 evals1 <- cbind(eigen(rcore) $values)
 
 # fit coefficients for the core variables
-fits1 <- ROOTFIT(data, corkind='pearson', factormodel=factormodel, verbose = 'FALSE')
+fits1 <- ROOTFIT(data, corkind='pearson', extraction=extraction, verbose = 'FALSE')
 
 # number of factors for the core variables
 if (roottest == 'user') { Nfactors1 <- Nfactors
@@ -108,32 +108,32 @@ if (Nfactors1==0) {
 
 
 # factor extraction
-if (factormodel=='PCA') {
-	pca.out <- PCA(rcore, corkind=corkind, Nfactors=Nfactors1, Ncases=Ncases, rotate='none', verbose=FALSE)
+if (extraction=='PCA') {
+	pca.out <- PCA(rcore, corkind=corkind, Nfactors=Nfactors1, Ncases=Ncases, rotation='none', verbose=FALSE)
 	lding1 <- pca.out$loadingsNOROT
 }
-if (factormodel=='PAF')  {
-	paf.out <- PA_FA(rcore, corkind=corkind, Nfactors=Nfactors1, Ncases=Ncases, iterpaf=iterpaf, rotate='none', verbose=FALSE)
+if (extraction=='PAF')  {
+	paf.out <- PA_FA(rcore, Nfactors=Nfactors1, Ncases=Ncases, iterpaf=iterpaf)
 	lding1 <- paf.out$loadingsNOROT
 }
-if (factormodel=='ML') {	
-	maxlike.out <- MAXLIKE_FA(rcore, corkind=corkind, Nfactors=Nfactors1, Ncases=Ncases, rotate='none', verbose=FALSE)
+if (extraction=='ML') {	
+	maxlike.out <- MAXLIKE_FA(rcore, Nfactors=Nfactors1, Ncases=Ncases)
 	lding1 <- maxlike.out$loadingsNOROT
 }
-#if (factormodel=='image') lding1 <- IMAGE_FA(rcore, Nfactors=Nfactors1, Ncases=Ncases, 'loadings')
+#if (extraction=='image') lding1 <- IMAGE_FA(rcore, Nfactors=Nfactors1, Ncases=Ncases, 'loadings')
 
 
 # rotation, which also gives the factor intercorrelations
 if (Nfactors1==1)  rff <- 1 
 
 if (Nfactors1 > 1) {
-	if (rotate=='PROMAX') {
+	if (rotation=='promax') {
         promax.out <- PROMAX(lding1, ppower=ppower, verbose=FALSE) 
         lding1 <- promax.out$structure
 		rff    <- promax.out$phi
 		diag(rff) <- 1  # some other functions sometimes read the diagonal 1s as not 1s
     }
-	if (rotate=='VARIMAX') lding1 <- VARIMAX(lding1, verbose=FALSE)$loadingsV             
+	if (rotation=='varimax') lding1 <- VARIMAX(lding1, verbose=FALSE)$loadingsV             
 }
 lding1 <- cbind(lding1)
 
@@ -157,13 +157,13 @@ if (Nfactors1 > 1)  sef1 <- peo %*% t(pfo)
 if (Nfactors1 == 1) sef1 <- peo %*% pfo
 
 # higher order factor/extension analysis
-if (higherorder==TRUE & Nfactors1 > 1 & rotate=='PROMAX') {
+if (higherorder==TRUE & Nfactors1 > 1 & rotation=='promax') {
 
 # eigenvalues for the higher order variables (factors)
 evals2 <- cbind(eigen(rff)$values)     
 
 # fit coefficients for the higher order factors
-fits2 <- ROOTFIT(rff, corkind='pearson', Ncases=Ncases, factormodel=factormodel, verbose = 'FALSE')
+fits2 <- ROOTFIT(rff, corkind='pearson', Ncases=Ncases, extraction=extraction, verbose = 'FALSE')
 
 # number of factors for the higher order factors
 if (roottest == 'user') { Nfactors2 <- NfactorsHO
@@ -178,24 +178,24 @@ if (Nfactors2==0) {
 }
 
 # factor extraction
-if (factormodel=='PCA') {
-	pca.out <- PCA(rff, corkind=corkind, Nfactors=Nfactors2, Ncases=Ncases, rotate='none', verbose=FALSE)
+if (extraction=='PCA') {
+	pca.out <- PCA(rff, corkind=corkind, Nfactors=Nfactors2, Ncases=Ncases, rotation='none', verbose=FALSE)
 	lding2 <- pca.out$loadingsNOROT
 }
-if (factormodel=='PAF')  {
-	paf.out <- PA_FA(rff, corkind=corkind, Nfactors=Nfactors2, Ncases=Ncases, iterpaf=iterpaf, rotate='none', verbose=FALSE)
+if (extraction=='PAF')  {
+	paf.out <- PA_FA(rff, Nfactors=Nfactors2, Ncases=Ncases, iterpaf=iterpaf)
 	lding2 <- paf.out$loadingsNOROT
 }
-if (factormodel=='ML') {	
-	maxlike.out <- MAXLIKE_FA(rff, corkind=corkind, Nfactors=Nfactors2, Ncases=Ncases, rotate='none', verbose=FALSE)
+if (extraction=='ML') {	
+	maxlike.out <- MAXLIKE_FA(rff, Nfactors=Nfactors2, Ncases=Ncases)
 	lding2 <- maxlike.out$loadingsNOROT
 }
-#if (factormodel=='image') lding2 <- IMAGE_FA(rff, Nfactors=Nfactors2, Ncases=Ncases, 'loadings')
+#if (extraction=='image') lding2 <- IMAGE_FA(rff, Nfactors=Nfactors2, Ncases=Ncases, 'loadings')
 
 
 # rotation, which also gives the factor intercorrelations
 if (Nfactors1 > 1) {
-	if (rotate=='PROMAX') {
+	if (rotation=='promax') {
         promax.out <- PROMAX(lding2, ppower=ppower, verbose=FALSE) 
         lding2 <- promax.out$structure
 		#rff    <- promax.out$phi
@@ -241,7 +241,7 @@ sef <- peo %*% pfo
 	# sef <- peo * pfo[1,]
 }
 
-if (higherorder==FALSE | (higherorder==TRUE & Nfactors1 == 1) | (higherorder==TRUE & rotate != 'PROMAX')){
+if (higherorder==FALSE | (higherorder==TRUE & Nfactors1 == 1) | (higherorder==TRUE & rotation != 'promax')){
 	# Core Variable Loadings on the Factors
 	corelding <- cbind((1:nrow(lding1)), lding1)
 	colnames(corelding) <- cbind(matrix(('Variable'),1,1), (matrix(('Factor'),1,ncol(lding1))))
@@ -266,13 +266,13 @@ if (higherorder==TRUE & Nfactors1 == 1) {
 }
 
 # Warning message
-if (higherorder==TRUE & rotate != 'PROMAX') {
+if (higherorder==TRUE & rotation != 'promax') {
 	message('\n\nWARNING: Higher Order Factor/Extension Analysis was requested, as was
          a ROTATE option that does not produce correlations between between factors.
          The higher order analyses were not performed.') 
 }
 
-if (higherorder==TRUE & Nfactors1 > 1 & rotate == 'PROMAX') {
+if (higherorder==TRUE & Nfactors1 > 1 & rotation == 'promax') {
 	# Factor Intercorrelations from the First Factor Analysis and, in the
 	# far-right collumn(s), the Loadings on the Higher Order Factor(s):
 	rfflding <- cbind((1:nrow(lding2)), rff, lding2)
@@ -310,7 +310,7 @@ if (verbose == TRUE) {
 	message('\nFactor Extraction Procedure: ', etype)
 	message('\nRotation Procedure: ', rtype, '\n');
 	
-	if (higherorder==FALSE | (higherorder==TRUE & Nfactors1 == 1) | (higherorder==TRUE & rotate != 'PROMAX')) {
+	if (higherorder==FALSE | (higherorder==TRUE & Nfactors1 == 1) | (higherorder==TRUE & rotation != 'promax')) {
 		message('\nEigenvalues & Fit Coefficients for the Core Variables:\n')
 		print(round(fits1,2))
 	
@@ -323,7 +323,7 @@ if (verbose == TRUE) {
 	
 		if (Nfactors1 == 1)  message('\n\nWARNING: There was only one factor, rotation not performed\n') 
 	
-		if (rotate == 'PROMAX' & Nfactors1 > 1) {
+		if (rotation == 'promax' & Nfactors1 > 1) {
 			message('\nFactor Intercorrelations:\n')
 			print(round(rff,2))
 		}
@@ -347,7 +347,7 @@ if (verbose == TRUE) {
 		}
 	}
 
-	if (higherorder==TRUE & Nfactors1 > 1 & rotate == 'PROMAX') {
+	if (higherorder==TRUE & Nfactors1 > 1 & rotation == 'promax') {
 		message('\nEigenvalues & Fit Coefficients for the First Set of Core Variables:\n')
 		print(round(fits1,2))
 	

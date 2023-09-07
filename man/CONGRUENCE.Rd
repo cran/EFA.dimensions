@@ -51,19 +51,19 @@ than .95 implies that the two factors or components compared can be considered e
 \donttest{
 # Rosenberg Self-Esteem scale items
 loadings <- PCA(data_RSE[1:150,],   corkind='pearson', Nfactors = 3, 
-                rotate='VARIMAX', verbose=FALSE)
+                rotation='varimax', verbose=FALSE)
 
 target   <- PCA(data_RSE[151:300,], corkind='pearson', Nfactors = 3, 
-                rotate='VARIMAX', verbose=FALSE)
-CONGRUENCE(target = target$loadingsV, loadings = loadings$loadingsV, verbose=TRUE)
+                rotation='varimax', verbose=FALSE)
+CONGRUENCE(target = target$loadingsROT, loadings = loadings$loadingsROT, verbose=TRUE)
 
 
 # NEO-PI-R scales
 loadings <- PCA(data_NEOPIR[1:500,], corkind='pearson', Nfactors = 3, 
-                rotate='VARIMAX', verbose=FALSE)
+                rotation='varimax', verbose=FALSE)
 
 target <- PCA(data_NEOPIR[501:1000,], corkind='pearson', Nfactors = 3, 
-              rotate='VARIMAX', verbose=FALSE)
-CONGRUENCE(target$loadingsV, loadings$loadingsV, verbose=TRUE)
+              rotation='varimax', verbose=FALSE)
+CONGRUENCE(target$loadingsROT, loadings$loadingsROT, verbose=TRUE)
 }
 }

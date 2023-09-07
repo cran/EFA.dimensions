@@ -49,25 +49,31 @@ Cronbach.alpha <- function(data) {
 
 
 
-omega_total <- function(data, factormodel = 'ML') {
+omega_total <- function(data, extraction = 'ML') {
 
 	data <- MISSING_DROP(data)
 
 	# 2017 McNeish - Thanks Coefficient Alpha, Well Take It From Here?  formula 2, p 417
 
-	# mlfa <- MAXLIKE_FA(data, Nfactors = 1, rotate='none', verbose=FALSE)
+	# mlfa <- MAXLIKE_FA(data, Nfactors = 1, rotation='none', verbose=FALSE)
+	
+	cormat <- cor(data)
 
-	if (factormodel == 'ML') efa_output <- MAXLIKE_FA(data, Nfactors = 1, rotate='none', verbose=FALSE)
+	if (extraction == 'ML') efa_output <- MAXLIKE_FA(cormat, Nfactors = 1)
 
-	if (factormodel == 'PAF') efa_output <- PA_FA(data, Nfactors = 1, rotate='none', verbose=FALSE)
+	if (extraction == 'PAF') efa_output <- PA_FA(cormat, Nfactors = 1)
 	
 	loadings <- efa_output$loadingsNOROT
 	
-	errors <- efa_output$uniquenesses
+	errors <- 1 - efa_output$communalities
 	
 	omega_t <- sum(loadings)**2 / (sum(loadings)**2 + sum(errors))
 
-	rmsr <- efa_output$fit_coefficients$RMSR
+    # RMSR
+    cormat_reproduced <- loadings %*% t(loadings); diag(cormat_reproduced) <- 1
+    residuals <- cormat - cormat_reproduced 
+    residuals.upper <- as.matrix(residuals[upper.tri(residuals, diag = FALSE)])
+    rmsr <- sqrt(mean(residuals.upper^2)) # rmr is perhaps the more common term for this stat
 	
 	output <- list(omega_t=omega_t, rmsr=rmsr)
 	
@@ -79,7 +85,7 @@ omega_total <- function(data, factormodel = 'ML') {
 
 
 
-INTERNAL.CONSISTENCY <- function(data, factormodel = 'ML', reverse_these = NULL, auto_reverse = TRUE, verbose=TRUE) {
+INTERNAL.CONSISTENCY <- function(data, extraction = 'ML', reverse_these = NULL, auto_reverse = TRUE, verbose=TRUE) {
 
 	data <- MISSING_DROP(data)
 
@@ -108,7 +114,7 @@ INTERNAL.CONSISTENCY <- function(data, factormodel = 'ML', reverse_these = NULL,
 	# all of the loadings are negative 
 	if (auto_reverse & is.null(reverse_these)) {
 				
-		pc1 <- PCA(data, Nfactors = 1, rotate = 'none', verbose = FALSE)$loadingsNOROT
+		pc1 <- PCA(data, Nfactors = 1, rotation = 'none', verbose = FALSE)$loadingsNOROT
 
 		if (!all(pc1 < 0) | !all(pc1 < 0) ) {
  
@@ -129,16 +135,19 @@ INTERNAL.CONSISTENCY <- function(data, factormodel = 'ML', reverse_these = NULL,
 
 	item_noms <- colnames(new_data)
 		
+	if (Nitems < 3) 			
+		int.consist_scale <- cbind(NA, Cronbach.alpha(new_data), NA)
 
-	omega_res <- omega_total(new_data, factormodel=factormodel)
+	if (Nitems > 2) {
+		omega_res <- omega_total(new_data, extraction=extraction)
 		
-	int.consist_scale <- cbind(omega_res$omega_t, Cronbach.alpha(new_data), omega_res$rmsr)
+	 	int.consist_scale <- cbind(omega_res$omega_t, Cronbach.alpha(new_data), omega_res$rmsr)
+	}
 
 	scale_tot <- rowSums(new_data)
 	
 	int.consist_dropped <- matrix(NA, Nitems, 7)
 	item_stats <- matrix(NA, Nitems, 4)
-	# freqs <- matrix(NA, Nitems, )
 
 	item_values <- sort(unique(as.vector(as.matrix(new_data))), decreasing=FALSE)
 
@@ -147,11 +156,25 @@ INTERNAL.CONSISTENCY <- function(data, factormodel = 'ML', reverse_these = NULL,
 
 	for (lupe in 1:Nitems) {
 
-		omega_res <-omega_total(new_data[,-lupe])
-		
-		r_corxtd_item_total <- cor(rowSums(new_data[,-lupe]), new_data[,lupe] )  
+		if (Nitems == 2) 			
+			int.consist_dropped[lupe,] <- cbind(NA, NA, NA, NA, NA, NA, NA)
 
-		int.consist_dropped[lupe,] <- cbind(omega_res$omega_t, Cronbach.alpha(new_data[,-lupe]), omega_res$rmsr, r_corxtd_item_total)  
+		if (Nitems == 3) {		
+			r_corxtd_item_total <- cor(rowSums(new_data[,-lupe]), new_data[,lupe] )  
+
+			int.consist_dropped[lupe,] <- cbind(NA, Cronbach.alpha(new_data[,-lupe]), NA, r_corxtd_item_total)
+
+	# colnames(int.consist_dropped) <- c('omega','alpha','alpha.z','r_mean','r_median','rmsr','r_corxed_item_total')
+		}
+
+
+		if (Nitems > 3) {
+			omega_res <-omega_total(new_data[,-lupe])
+			
+			r_corxtd_item_total <- cor(rowSums(new_data[,-lupe]), new_data[,lupe] )  
+	
+			int.consist_dropped[lupe,] <- cbind(omega_res$omega_t, Cronbach.alpha(new_data[,-lupe]), omega_res$rmsr, r_corxtd_item_total)
+		}
 
 		item_dat <- new_data[,lupe]
 
@@ -178,12 +201,10 @@ INTERNAL.CONSISTENCY <- function(data, factormodel = 'ML', reverse_these = NULL,
 		
 		resp_opt_props_temp <- freqs / sum(freqs, na.rm=TRUE)
 		# names(resp_opt_props_temp) <- c(0,3,2,4,1);  resp_opt_props_temp	# to verify rbinding by colname	
-		resp_opt_props <- rbind.data.frame(resp_opt_props, resp_opt_props_temp)
-		
+		resp_opt_props <- rbind.data.frame(resp_opt_props, resp_opt_props_temp)		
 	}
 	
 	dimnames(int.consist_scale) <- list(rep("", dim(int.consist_scale)[1]))
-	# colnames(int.consist_scale) <- colnames(int.consist_dropped) <- c('omega','alpha','alpha.z','r_mean','r_median','rmsr')
 	colnames(int.consist_scale)   <- c('omega','alpha','alpha.z','r_mean','r_median','rmsr')
 	colnames(int.consist_dropped) <- c('omega','alpha','alpha.z','r_mean','r_median','rmsr','r_corxed_item_total')
 
@@ -196,6 +217,9 @@ INTERNAL.CONSISTENCY <- function(data, factormodel = 'ML', reverse_these = NULL,
 
 
 	if (verbose) {
+
+		if (Nitems < 4) 			
+		message('\nNA values below indicate that a statistic could not be computed.')	
 		
 		message('\n\nReliability, interitem correlations, & 1-factor model fit (rmsr):\n')	
 		print(round(int.consist_scale,2), print.gap=4)

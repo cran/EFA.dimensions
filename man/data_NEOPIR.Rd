@@ -18,7 +18,7 @@ MAP(data_NEOPIR, corkind='pearson', verbose=TRUE)
 DIMTESTS(data_NEOPIR, tests = c('EMPKC','HULL','RAWPAR','NEVALSGT1'), Ncases=1000, display=2)
 
 # parallel analysis of the data_NEOPIR data
-RAWPAR(data_NEOPIR, factormodel='PCA', Ndatasets=100, percentile=95,
+RAWPAR(data_NEOPIR, extraction='PCA', Ndatasets=100, percentile=95,
        corkind='pearson', verbose=TRUE)
 }
 }

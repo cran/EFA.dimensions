@@ -4,7 +4,7 @@
 # for factor analysis: the standard error scree test. 
 # Educational and Psychological Measurement, 56(3), 443-451.
 
-SESCREE <- function (data, Ncases=NULL, corkind='pearson', verbose=FALSE) {
+SESCREE <- function (data, Ncases=NULL, corkind='pearson', verbose=TRUE) {
 
 data <- MISSING_DROP(data)
 

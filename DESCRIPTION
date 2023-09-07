@@ -2,8 +2,8 @@ Title: Exploratory Factor Analysis Functions for Assessing
         Dimensionality
 Package: EFA.dimensions
 Type: Package
-Version: 0.1.7.7
-Date: 2023-03-16
+Version: 0.1.7.9
+Date: 2023-09-06
 Authors@R: person(given = c("Brian", "P."), 
                   family = "O'Connor", 
                   role =c("aut","cre"), 
@@ -22,16 +22,16 @@ Description: Functions for eleven procedures for determining the number of
     the congruences between factors from different datasets, the assessment of local
     independence, the assessment of factor solution complexity, and internal consistency.
     Auerswald & Moshagen (2019, ISSN:1939-1463);
-    Fabrigar & Wegener (2012, ISBN:978-0-19-973417-7);
     Field, Miles, & Field (2012, ISBN:978-1-4462-0045-2);
+    Mulaik (2010, ISBN:978-1-4200-9981-2);
     O'Connor (2000, <doi:10.3758/bf03200807>);
     O'Connor (2001, ISSN:0146-6216).
-Imports: stats, psych, polycor, EFAtools, utils, mirt
+Imports: stats, psych, polycor, EFAtools, utils, mirt, GPArotation
 Suggests: lattice
 LazyLoad: yes
 LazyData: yes
 License: GPL (>= 2)
 NeedsCompilation: no
-Packaged: 2023-03-17 10:06:53 UTC; brianoconnor
+Packaged: 2023-09-07 05:56:46 UTC; brianoconnor
 Repository: CRAN
-Date/Publication: 2023-03-17 11:30:18 UTC
+Date/Publication: 2023-09-07 08:40:12 UTC

@@ -70,7 +70,7 @@ From Auerswald & Moshagen (2019):
 
 "The Empirical Kaiser Criterion (EKC; Braeken & van Assen, 2017) is an approach 
 that incorporates random sample variations of the eigenvalues in Kaiser's criterion. 
-On a population level, the criterion is equivalent to Kaiser's criterion and extracts 
+On a population level, the criterion is equivalent to Kaiser's criterion and extractions 
 all factors with associated eigenvalues of the correlation matrix greater than one. 
 However, on a sample level, the criterion takes the distribution of eigenvalues for 
 normally distributed data into account." (p. 474)

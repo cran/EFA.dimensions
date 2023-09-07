@@ -6,7 +6,7 @@
 	         "Kaiser-Guttman", or "Guttman-Kaiser" rule for determining
 	         the number of components or factors in a correlation matrix.
 }
-\usage{NEVALSGT1(data, corkind, Ncases, verbose)}
+\usage{NEVALSGT1(data, corkind, Ncases, verbose=TRUE)}
 \arguments{
  \item{data}{
  \code{}An all-numeric dataframe where the rows are cases & the columns are the variables,

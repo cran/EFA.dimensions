@@ -1,5 +1,5 @@
 
-RAWPAR <- function (data, randtype='generated', factormodel='PCA', Ndatasets=100, percentile=95,
+RAWPAR <- function (data, randtype='generated', extraction='PCA', Ndatasets=100, percentile=95,
                     corkind='pearson', corkindRAND='pearson', Ncases=NULL, verbose=TRUE){
 
 data <- MISSING_DROP(data)
@@ -32,13 +32,13 @@ if (datakind == 'notcorrels')   {
 }
 
 # real data eigenvalues
-if (factormodel=='PCA')  realevals <- eigen(cormat) $values 
-if (factormodel=='PAF') {
+if (extraction=='PCA')  realevals <- eigen(cormat) $values 
+if (extraction=='PAF') {
 	smc = 1 - (1 / diag(solve(cormat)))
 	diag(cormat) <- smc
 	realevals <- eigen(cormat) $values 
 }
-if (factormodel=='image') { # Gorsuch 1983, p 113; Velicer 1974, EPM, 34, 564
+if (extraction=='image') { # Gorsuch 1983, p 113; Velicer 1974, EPM, 34, 564
 	d <-  diag(1 / diag(solve(cormat)))
 	gvv <- cormat + d %*% solve(cormat) %*% d - 2 * d
 	s <- sqrt(d)                  #  Velicer 1974 p 565 formula (7)
@@ -66,12 +66,12 @@ for (nds in 1:Ndatasets) {
 	if (corkindRAND=='gamma' & wholenums==0)       { Rrand <- cor(randat, method='pearson') }
 		
 	# random data eigenvalues
-	if (factormodel=='PCA') { evals[,nds ] <- eigen(Rrand) $values }
-	if (factormodel=='PAF') {
+	if (extraction=='PCA') { evals[,nds ] <- eigen(Rrand) $values }
+	if (extraction=='PAF') {
 		smc = 1 - (1 / diag(solve(Rrand)))
 		diag(Rrand) <- smc
 		evals[,nds] <- eigen(Rrand) $values }
-	if (factormodel=='image') {
+	if (extraction=='image') {
 		d <-  diag(1 / diag(solve(Rrand)))
 		gvv <- Rrand + d %*% solve(Rrand) %*% d - 2 * d
 		s <- sqrt(d)                  #  Velicer 1974 p 565 formula (7)
@@ -114,9 +114,9 @@ if (verbose == TRUE) {
 		message('\nThe permuted data option does not work when the entered data are a correlation matrix.')
 		message('\nSwitching to generated random data instead of permuted random data.')
 	}
-	if (factormodel=='PCA')    message('\nExtraction Method: Principal Components') 
-	if (factormodel=='PAF')    message('\nExtraction Method: Common Factor Analysis')
-	if (factormodel=='image')  message('\nExtraction Method: Image Factor Extraction') 
+	if (extraction=='PCA')    message('\nExtraction Method: Principal Components') 
+	if (extraction=='PAF')    message('\nExtraction Method: Common Factor Analysis')
+	if (extraction=='image')  message('\nExtraction Method: Image Factor Extraction') 
 	message('\nVariables = ', Nvars) 
 	message('\nCases = ', Ncases) 
 	message('\nNdatasets = ', Ndatasets) 

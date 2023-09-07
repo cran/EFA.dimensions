@@ -3,7 +3,7 @@
 \title{Factor fit coefficients}
 \description{A variety of fit coefficients for the possible N-factor solutions 
 	in exploratory factor analysis}
-\usage{ROOTFIT(data, corkind='pearson', Ncases=NULL, factormodel='PAF', verbose)}
+\usage{ROOTFIT(data, corkind='pearson', Ncases=NULL, extraction='PAF', verbose)}
 \arguments{
   \item{data}{
   \code{}An all-numeric dataframe where the rows are cases & the columns are the 
@@ -19,7 +19,7 @@
   \code{}The number of cases upon which a correlation matrix is based. Required only 
   if data is a correlation matrix.}
 
-  \item{factormodel}{ 
+  \item{extraction}{ 
   \code{}The factor extraction method. The options are:
   	    'PAF' for principal axis / common factor analysis;
   	    'PCA' for principal components analysis.
@@ -71,9 +71,9 @@ with q common factors as 1 minus the KMO index of the estimated residual matrix.
 
 "The values of CAF are in the range [0, 1] and if they are close to zero it means that 
 a substantial amount of common variance is still present in the residual matrix after 
-the q factors have been extracted (implying that more factors should be extracted). 
+the q factors have been extractioned (implying that more factors should be extractioned). 
 Values of CAF close to one mean that the residual matrix is free of common variance 
-after the q factors have been extracted (i.e., no more factors should be extracted)." 
+after the q factors have been extractioned (i.e., no more factors should be extractioned)." 
 }\cr\cr{\strong{RMSEA - Root Mean Square Error of Approximation (absolute fit)}
 
 Schermelleh-Engel (2003): "The Root Mean Square Error of Approximation (RMSEA;
@@ -200,18 +200,18 @@ have suggested that the SABIC is a useful tool in comparing models.
 \examples{
 \donttest{
 # the Harman (1967) correlation matrix
-ROOTFIT(data_Harman, Ncases = 305, factormodel='ML')
-ROOTFIT(data_Harman, Ncases = 305, factormodel='PAF')
-ROOTFIT(data_Harman, Ncases = 305, factormodel='PCA')
+ROOTFIT(data_Harman, Ncases = 305, extraction='ml')
+ROOTFIT(data_Harman, Ncases = 305, extraction='paf')
+ROOTFIT(data_Harman, Ncases = 305, extraction='pca')
 
 # RSE data
-ROOTFIT(data_RSE, corkind='pearson', factormodel='ML')
-ROOTFIT(data_RSE, corkind='pearson', factormodel='PAF')
-ROOTFIT(data_RSE, corkind='pearson', factormodel='PCA')
+ROOTFIT(data_RSE, corkind='pearson', extraction='ml')
+ROOTFIT(data_RSE, corkind='pearson', extraction='paf')
+ROOTFIT(data_RSE, corkind='pearson', extraction='pca')
 
 # NEO-PI-R scales
-ROOTFIT(data_NEOPIR, corkind='pearson', factormodel='ML')
-ROOTFIT(data_NEOPIR, corkind='pearson', factormodel='PAF')
-ROOTFIT(data_NEOPIR, corkind='pearson', factormodel='PCA')
+ROOTFIT(data_NEOPIR, corkind='pearson', extraction='ml')
+ROOTFIT(data_NEOPIR, corkind='pearson', extraction='paf')
+ROOTFIT(data_NEOPIR, corkind='pearson', extraction='pca')
 }
 }

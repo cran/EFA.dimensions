@@ -20,9 +20,9 @@
 
 # "Simulation studies investigating the performance of sequential Chi-Square model 
 # tests (SMT) as an extraction criterion have shown conflicting results. Whereas 
-# some studies have shown that SMT has a tendency to overextract (e.g., Linn, 1968; 
+# some studies have shown that SMT has a tendency to overextraction (e.g., Linn, 1968; 
 # Ruscio & Roche, 2012; Schonemann & Wang, 1972), others have indicated that the SMT 
-# has a tendency to underextract (e.g., Green et al., 2015; Hakstian et al., 1982; 
+# has a tendency to underextraction (e.g., Green et al., 2015; Hakstian et al., 1982; 
 # Humphreys & Montanelli, 1975; Zwick & Velicer, 1986). Hayashi, Bentler, and 
 # Yuan (2007) demonstrated that overextraction tendencies are due to violations of 
 # regularity assumptions if the number of factors for the test exceeds the true 
@@ -73,22 +73,33 @@ if (pvalue < .05) {
 	
 	for (root in 1:(dim(cormat)[1]-2)) {	
 	
-			dof <- 0.5 * ((Nvars - root)^2 - Nvars - root) # The degrees of freedom for the model
-			if (dof < 1) {
-				if (verbose == 'TRUE') {
-					message('\nThe degrees of freedom for the model with ',
-					    root,' factors is < 1 and so the procedure was stopped.')}
-				break
-			}
-	
-			mlOutput <- MAXLIKE_FA(cormat, Nfactors=root, Ncases=Ncases, rotate='none', verbose=FALSE)
-			pvalues <- rbind(pvalues, 
-			                 cbind(root, eigenvalues[root], mlOutput$chisqMODEL, mlOutput$dfMODEL, 
-			                       mlOutput$pvalue), deparse.level=0)
-			if (mlOutput$pvalue > .05) {
-				NfactorsSMT <- root
-				break
-			}	
+		dof <- 0.5 * ((Nvars - root)^2 - Nvars - root) # The degrees of freedom for the model
+		if (dof < 1) {
+			if (verbose == 'TRUE') {
+				message('\nThe degrees of freedom for the model with ',
+				    root,' factors is < 1 and so the procedure was stopped.')}
+			break
+		}
+
+		mlOutput <- EFA(cormat, extraction = 'ml', rotation='none', Nfactors=root, Ncases=Ncases, verbose=FALSE)
+
+		pvalues <- rbind(pvalues, 
+		                 cbind(root, eigenvalues[root], mlOutput$chisqMODEL, mlOutput$dfMODEL, 
+		                       mlOutput$pvalue), deparse.level=0)
+		if (mlOutput$pvalue > .05) {
+			NfactorsSMT <- root
+			break
+		}	
+
+
+		# mlOutput <- MAXLIKE_FA(cormat, Nfactors=root, Ncases=Ncases)
+		# pvalues <- rbind(pvalues, 
+		                 # cbind(root, eigenvalues[root], mlOutput$chisqMODEL, mlOutput$dfMODEL, 
+		                       # mlOutput$pvalue), deparse.level=0)
+		# if (mlOutput$pvalue > .05) {
+			# NfactorsSMT <- root
+			# break
+		# }	
 	}
 }
 rownames(pvalues) <- rep('',dim(pvalues)[1])
@@ -150,11 +161,11 @@ return(invisible(smtOutput))
 # psych::fa(data_RSE,4,rotate ="none", fm="ml")$PVAL
 # psych::fa(data_RSE,5,rotate ="none", fm="ml")$PVAL
 
-# factanal(data_RSE, factors=1, rotation ="none")
-# factanal(data_RSE, factors=2, rotation ="none")
-# factanal(data_RSE, factors=3, rotation ="none")
-# factanal(data_RSE, factors=4, rotation ="none")
-# factanal(data_RSE, factors=5, rotation ="none")
+# factanal(data_RSE, factors=1, rotate ="none")
+# factanal(data_RSE, factors=2, rotate ="none")
+# factanal(data_RSE, factors=3, rotate ="none")
+# factanal(data_RSE, factors=4, rotate ="none")
+# factanal(data_RSE, factors=5, rotate ="none")
 
 # chi_fun(data_RSE)
 

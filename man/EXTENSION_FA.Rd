@@ -7,7 +7,7 @@
 \usage{
 EXTENSION_FA(data, Ncore, Next, higherorder, roottest,  
              corkind, 
-             factormodel, rotate, 
+             extraction, rotation, 
              Nfactors, NfactorsHO, 
              Ndatasets, percentile, 
              salvalue, numsals, 
@@ -43,14 +43,14 @@ EXTENSION_FA(data, Ncore, Next, higherorder, roottest,
   \code{}The kind of correlation matrix to be used. The options are 'pearson', 'kendall',
          'spearman', 'gamma', and 'polychoric'.}
 
-  \item{factormodel}{ 
+  \item{extraction}{ 
   \code{}The factor extraction method. The options are:
   	    'PAF' for principal axis / common factor analysis;
   	    'PCA' for principal components analysis;
   	    'ML' for maximum likelihood.}
 
-  \item{rotate}{
-  \code{}The factor rotation method. The options are: 'PROMAX', , and 'none'.}
+  \item{rotation}{
+  \code{}The factor rotation method. The options are: 'promax', 'varimax', and 'none'.}
 
   \item{Nfactors}{
   \code{}An integer indicating the user-determined number of factors
@@ -81,11 +81,11 @@ EXTENSION_FA(data, Ncore, Next, higherorder, roottest,
 
   \item{iterpaf}{
   \code{}The maximum # of iterations for a principal axis / common factor analysis
-         (required only if factormodel = 'PAF'). Suggested value: 100}
+         (required only if extraction = 'PAF'). Suggested value: 100}
 
   \item{ppower}{ 
   \code{}The power value to be used in a promax rotation (required only if
-         rotate = 'PROMAX'). Suggested value: 3}
+         rotation = 'promax'). Suggested value: 3}
                   
   \item{verbose}{
   \code{}Should detailed results be displayed in console? TRUE (default) or FALSE}
@@ -149,7 +149,7 @@ extension variable correlations -- all without computing factor scores.
 EXTENSION_FA(data_RSE, Ncore=7, Next=3, higherorder=TRUE, 
              roottest='MAP',  
              corkind='pearson', 
-             factormodel='PCA', rotate='PROMAX', 
+             extraction='PCA', rotation='promax', 
              Nfactors=2, NfactorsHO=1, 
              Ndatasets=100, percentile=95, 
              salvalue=.40, numsals=3, 
@@ -160,7 +160,7 @@ EXTENSION_FA(data_RSE, Ncore=7, Next=3, higherorder=TRUE,
 EXTENSION_FA(data_NEOPIR, Ncore=12, Next=6, higherorder=TRUE, 
              roottest='MAP',  
              corkind='pearson', 
-             factormodel='PCA', rotate='PROMAX', 
+             extraction='PCA', rotation='promax', 
              Nfactors=4, NfactorsHO=1, 
              Ndatasets=100, percentile=95, 
              salvalue=.40, numsals=3, 

@@ -2,13 +2,13 @@
 \alias{INTERNAL.CONSISTENCY}
 \title{Internal consistency reliability coefficients}
 \description{Internal consistency reliability coefficients}
-\usage{INTERNAL.CONSISTENCY(data, factormodel = 'ML', reverse_these = NULL, 
+\usage{INTERNAL.CONSISTENCY(data, extraction = 'ML', reverse_these = NULL, 
 	                        auto_reverse = TRUE, verbose)}  
 \arguments{
   \item{data}{
   \code{}An all-numeric dataframe where the rows are cases & the columns are the variables.}
 
-  \item{factormodel}{ 
+  \item{extraction}{ 
   \code{}(optional) The factor extraction method to be used in the omega computations. The options are:
          'ML' for maximum likelihood (the default); and
   	     'PAF' for principal axis / common factor analysis.}
@@ -25,6 +25,8 @@
 \details{
 When 'auto_reverse = TRUE', the item loadings on the first principal component
 are computed and items with negative loadings are reverse-coded.
+
+If error messages are produced, try using 'auto_reverse = FALSE'.
 	
 If item names are provided for the 'reverse_these' argument, then auto_reverse is not conducted.
 	
@@ -162,14 +164,14 @@ before computing scale scores.
 \author{Brian P. O'Connor }
 \examples{
 # Rosenberg Self-Esteem scale items -- without reverse-coding
-INTERNAL.CONSISTENCY(data_RSE, factormodel = 'PAF', 
+INTERNAL.CONSISTENCY(data_RSE, extraction = 'PAF', 
                      reverse_these = NULL, auto_reverse = FALSE, verbose=TRUE)
 
 # Rosenberg Self-Esteem scale items -- with auto_reverse-coding
-INTERNAL.CONSISTENCY(data_RSE, factormodel = 'PAF',
+INTERNAL.CONSISTENCY(data_RSE, extraction = 'PAF',
                      reverse_these = NULL, auto_reverse = TRUE, verbose=TRUE)
 
 # Rosenberg Self-Esteem scale items -- another way of reverse-coding
-INTERNAL.CONSISTENCY(data_RSE, factormodel = 'PAF',
+INTERNAL.CONSISTENCY(data_RSE, extraction = 'PAF',
                      reverse_these = c('Q1','Q2','Q4','Q6','Q7'), verbose=TRUE)
 }

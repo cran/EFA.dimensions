@@ -20,6 +20,6 @@ DIMTESTS(data_Field, corkind='pearson',
          tests = c('CD','EMPKC','HULL','RAWPAR','NEVALSGT1'), display=2)
 
 # principal components analysis	
-PCA(data_Field, corkind='pearson', Nfactors=4, rotate='none', verbose=TRUE)
+PCA(data_Field, corkind='pearson', Nfactors=4, rotation='none', verbose=TRUE)
 }
 }

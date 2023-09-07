@@ -8,7 +8,7 @@
 	plot. The number of components to retain is the point where the standard error 
 	exceeds 1/m, where m is the numbers of variables.
 }
-\usage{SESCREE(data, Ncases=NULL, corkind, verbose)}
+\usage{SESCREE(data, Ncases=NULL, corkind, verbose=TRUE)}
 \arguments{
  \item{data}{
  \code{}An all-numeric dataframe where the rows are cases & the columns are the variables,
