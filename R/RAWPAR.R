@@ -1,6 +1,9 @@
 
 RAWPAR <- function (data, randtype='generated', extraction='PCA', Ndatasets=100, percentile=95,
-                    corkind='pearson', corkindRAND='pearson', Ncases=NULL, verbose=TRUE){
+                    corkind='pearson', corkindRAND='pearson', Ncases=NULL, verbose=TRUE, factormodel){
+
+ # deprecated  
+if (!missing(factormodel))  extraction <- factormodel
 
 data <- MISSING_DROP(data)
 

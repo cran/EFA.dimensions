@@ -18,7 +18,8 @@ EXTENSION_FA <- function (data,
          salvalue=.4, numsals=3, 
          iterpaf=200, 
          ppower=4, 
-         verbose=TRUE){
+         verbose=TRUE,
+		     factormodel, rotate){
          	
 #  Factor & Extension Analysis 
 
@@ -32,6 +33,10 @@ EXTENSION_FA <- function (data,
 
 #data(any(isnan(data)'),:) = [];
 
+# deprecated  
+if (!missing(factormodel))  extraction <- factormodel
+if (!missing(rotate))       rotation <- rotate
+  
 data <- MISSING_DROP(data)
 
 Ncases <- nrow(data)

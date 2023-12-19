@@ -1,8 +1,11 @@
 
 # Principal Components Analysis
 
-PCA <- function (data, corkind='pearson', Nfactors=NULL, Ncases=NULL, rotation='promax', ppower = 3, verbose=TRUE) {
+PCA <- function (data, corkind='pearson', Nfactors=NULL, Ncases=NULL, rotation='promax', ppower = 3, verbose=TRUE, rotate) {
 
+# deprecated  
+if (!missing(rotate))       rotation <- rotate
+  
 data <- MISSING_DROP(data)
 
 cnoms <- colnames(data) # get colnames
@@ -18,6 +21,9 @@ eigenvalues  <- eigs$values
 eigenvectors <- eigs$vectors
 
 varexplNOROT1 <- VarianceExplained(eigenvalues)
+
+# Ratio of the 1st to the 2nd initial eigenvalues
+evals12ratio <- eigenvalues[1] / eigenvalues[2]
 
 
 if (is.null(Nfactors)) {		
@@ -154,13 +160,14 @@ if (Nfactors > 1) {
 
 pcaOutput <- list(loadingsNOROT = loadingsNOROT,
                   loadingsROT = loadingsROT,
-			      pattern = pattern,
-			      structure = structure, 
-			      phi = phi,
+			            pattern = pattern,
+			            structure = structure, 
+			            phi = phi,
                   varexplNOROT1 = varexplNOROT1,
                   varexplROT = varexplROT,
-			      cormat_reprod = cormat_reprod,
-			      fit_coefs = fit_coefs,
+			            evals12ratio = evals12ratio,
+			            cormat_reprod = cormat_reprod,
+			            fit_coefs = fit_coefs,
                   communalities = communalities,
                   uniquenesses = uniquenesses)
 
@@ -183,6 +190,8 @@ if (verbose == TRUE) {
 	message('\n\nTotal Variance Explained (Initial Eigenvalues):\n')
 	print(round(varexplNOROT1,2), print.gap=4)
 
+	message('\nRatio of the 1st to the 2nd initial eigenvalues = ', round(evals12ratio,1))
+	
 	message('\nModel Fit Coefficients:')
 	message('\nRMSR = ', round(fit_coefs$RMSR,3))
 	message('\nGFI = ',  round(fit_coefs$GFI,3))

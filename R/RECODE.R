@@ -46,7 +46,17 @@ RECODE <- function(data, old = NULL, new = NULL, type = 'reverse', max_value = N
 	
 			# For each item response, compute the percent value on the real/used item, & then find
 			# the corresponding value on the desired new item metric for the same percentage.
-							 
+
+		  # check if the specified real_min & real_max are true for the data
+		  if (min(data) < real_min) {
+		    real_min <- min(data)
+		    message('\nreal_min has been reset to the smallest value in the data: ', min(data))
+		  }
+		  if (max(data) > real_max) {
+		    real_max <- max(data)
+		    message('\nreal_max has been reset to the largest value in the data: ', max(data))
+		  }
+		  
 			# get the percentage value for the old/real response options
 			percent <- (real_min:real_max - real_min) / (real_max - real_min)
 			  
@@ -54,8 +64,9 @@ RECODE <- function(data, old = NULL, new = NULL, type = 'reverse', max_value = N
 			newscore <- (percent * (new_max - new_min)) + new_min
 			  
 			# now go through the items, converting the old/real responses to the new values
-			data_recoded <- newscore[data]    
-  		}
+      #	data_recoded <- newscore[data]  # simple, but problem = doesn't work with 0s
+			data_recoded <- c(newscore, data)[match(data, c(percent, data))]
+  	}
 	}
 		
 	return(invisible(data_recoded))

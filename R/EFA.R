@@ -1,4 +1,25 @@
 
+
+PA_FA      <- function( ... ) { .Defunct("EFA", package="EFA.dimensions") }
+
+MAXLIKE_FA <- function( ... ) { .Defunct("EFA", package="EFA.dimensions") }
+
+IMAGE_FA   <- function( ... ) { .Defunct("EFA", package="EFA.dimensions") }
+
+
+
+# MAXLIKE_FA <- function( ..., top=FALSE, shrink=1.0, textcolor=NULL )
+# {
+#   .Defunct("EFA", package="EFA.dimensions")
+# }
+# 
+# IMAGE_FA <- function( ..., top=FALSE, shrink=1.0, textcolor=NULL )
+# {
+#   .Defunct("EFA", package="EFA.dimensions")
+# }
+
+
+
 EFA <- function (data, extraction = 'paf', corkind='pearson', Nfactors=NULL, Ncases=NULL, iterpaf=100, 
                  rotation='promax', ppower = 3, verbose=TRUE) {
 
@@ -17,6 +38,9 @@ Nvars <- dim(cormat)[1]
 eigenvalues <- eigen(cormat)$values
 
 varexplNOROT1 <- VarianceExplained(eigenvalues)
+
+# Ratio of the 1st to the 2nd initial eigenvalues
+evals12ratio <- eigenvalues[1] / eigenvalues[2]
 
 if (is.null(Nfactors)) {		
 	Nfactors <- EMPKC(cormat, Ncases=Ncases, verbose=FALSE)$NfactorsEMPKC
@@ -245,15 +269,16 @@ if (Nfactors > 1) {
 
 efaOutput <- list(loadingsNOROT = loadingsNOROT,
                   loadingsROT = loadingsROT,
-			      pattern = pattern,
-			      structure = structure, 
-			      phi = phi,
+			            pattern = pattern,
+			            structure = structure, 
+			            phi = phi,
                   varexplNOROT1 = varexplNOROT1,
                   varexplNOROT2 = varexplNOROT2,
                   varexplROT = varexplROT,
-			      cormat_reprod = cormat_reprod,
-			      fit_coefs = fit_coefs,
-			      chisqMODEL = chisqMODEL, 
+			            evals12ratio = evals12ratio,
+			            cormat_reprod = cormat_reprod,
+			            fit_coefs = fit_coefs,
+			            chisqMODEL = chisqMODEL, 
                   dfMODEL = dfMODEL, 
                   pvalue = pvalue,
                   chisqNULL = chisqNULL,
@@ -282,6 +307,8 @@ if (verbose == TRUE) {
 	message('\n\nTotal Variance Explained (Initial Eigenvalues):\n')
 	print(round(varexplNOROT1,2), print.gap=4)
 
+	message('\nRatio of the 1st to the 2nd initial eigenvalues = ', round(evals12ratio,1))
+	
 	message('\n\nChi square = ',round(chisqMODEL,2),'   df = ',dfMODEL,'    p = ',round(pvalue,5))
 
 	message('\n\nModel Fit Coefficients:')

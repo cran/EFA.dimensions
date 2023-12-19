@@ -2,8 +2,8 @@ Title: Exploratory Factor Analysis Functions for Assessing
         Dimensionality
 Package: EFA.dimensions
 Type: Package
-Version: 0.1.7.9
-Date: 2023-09-06
+Version: 0.1.8.1
+Date: 2023-12-18
 Authors@R: person(given = c("Brian", "P."), 
                   family = "O'Connor", 
                   role =c("aut","cre"), 
@@ -32,6 +32,6 @@ LazyLoad: yes
 LazyData: yes
 License: GPL (>= 2)
 NeedsCompilation: no
-Packaged: 2023-09-07 05:56:46 UTC; brianoconnor
+Packaged: 2023-12-19 01:15:56 UTC; brianoconnor
 Repository: CRAN
-Date/Publication: 2023-09-07 08:40:12 UTC
+Date/Publication: 2023-12-19 04:00:03 UTC

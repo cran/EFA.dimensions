@@ -5,8 +5,8 @@
 	as recommended by Gorsuch. Factors are retained when they consist of a specified minimum 
 	number (or more) variables that have a specified minimum (or higher) loading value.}
 \usage{SALIENT(data, salvalue=.4, numsals=3, max_cross=NULL, min_eigval=.7, corkind='pearson', 
-         extraction = 'paf', rotation='promax', loading_mat = 'structure',  
-         ppower = 3, iterpaf=100, Ncases=NULL, verbose=TRUE)}
+        extraction = 'paf', rotation='promax', loading_mat = 'structure',  
+         ppower = 3, iterpaf=100, Ncases=NULL, verbose=TRUE, factormodel, rotate)}
 \arguments{
  \item{data}{
  \code{}An all-numeric dataframe where the rows are cases & the columns are the variables,
@@ -59,6 +59,12 @@
                                                           
   \item{verbose}{
   \code{}(optional) Should detailed results be displayed in console? TRUE (default) or FALSE}
+  
+  \item{factormodel}{ 
+  \code{}(Deprecated.) Use 'extraction' instead.}
+  
+  \item{rotate}{ 
+  \code{}(Deprecated.) Use 'rotation' instead.}
 }
 \details{
 	In this procedure for determining the number of factors, factors are retained when 

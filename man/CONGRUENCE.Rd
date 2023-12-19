@@ -23,7 +23,7 @@ produces the Tucker-Wrigley-Neuhaus factor solution congruence coefficient as an
 index of the degree of similarity between between the aligned loading matrices 
 (see Guadagnoli & Velicer, 1991; and ten Berge, 1986, for reviews).
 
-An investigation by Lorenzo-Seva and ten Berg (2006) resulted in the following 
+An investigation by Lorenzo-Seva and ten Berge (2006) resulted in the following 
 conclusion: A congruence coefficient 
 "value in the range .85.94 corresponds to a fair similarity, while a value higher 
 than .95 implies that the two factors or components compared can be considered equal."

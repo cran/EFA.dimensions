@@ -6,7 +6,7 @@
 }
 \usage{
 PARALLEL(Nvars, Ncases, Ndatasets=100, extraction='PCA', percentile='95',
-         corkind='pearson', verbose=TRUE)
+         corkind='pearson', verbose=TRUE, factormodel)
 }
 \arguments{
   \item{Nvars}{
@@ -34,6 +34,9 @@ PARALLEL(Nvars, Ncases, Ndatasets=100, extraction='PCA', percentile='95',
                   
   \item{verbose}{
   \code{}Should detailed results be displayed in console? TRUE (default) or FALSE}
+  
+  \item{factormodel}{ 
+  \code{}(Deprecated.) Use 'extraction' instead.}
 }
 \details{
 This procedure for determining the number of components or factors involves comparing 

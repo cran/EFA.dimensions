@@ -1,7 +1,11 @@
 
 # parallel analysis of eigenvalues (no real data required)
 PARALLEL <- function (Nvars=50, Ncases=300, Ndatasets=100, extraction='PCA', percentile=95,
-                       corkind='pearson', verbose=TRUE){
+                       corkind='pearson', verbose=TRUE, factormodel){
+  
+# deprecated  
+if (!missing(factormodel))  extraction <- factormodel
+
 evals <- matrix(0, nrow = Nvars, ncol = Ndatasets)
 # pb <- utils::txtProgressBar(min = 0, max = Ndatasets, style = 3) 
 for (nds in 1:Ndatasets) { 

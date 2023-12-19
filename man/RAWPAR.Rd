@@ -6,7 +6,7 @@
 }
 \usage{
 RAWPAR(data, randtype, extraction, Ndatasets, percentile, 
-       corkind, corkindRAND, Ncases=NULL, verbose)
+       corkind, corkindRAND, Ncases=NULL, verbose, factormodel)
 }
 \arguments{
   \item{data}{
@@ -44,6 +44,9 @@ RAWPAR(data, randtype, extraction, Ndatasets, percentile,
                   
   \item{verbose}{
   \code{}Should detailed results be displayed in console? TRUE (default) or FALSE}
+  
+  \item{factormodel}{ 
+  \code{}(Deprecated.) Use 'extraction' instead.}
 }
 \details{
 	The parallel analysis procedure for deciding on the number of 

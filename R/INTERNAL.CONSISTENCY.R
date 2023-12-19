@@ -53,19 +53,21 @@ omega_total <- function(data, extraction = 'ML') {
 
 	data <- MISSING_DROP(data)
 
+	Ncases <- nrow(data)
+	
 	# 2017 McNeish - Thanks Coefficient Alpha, Well Take It From Here?  formula 2, p 417
 
 	# mlfa <- MAXLIKE_FA(data, Nfactors = 1, rotation='none', verbose=FALSE)
 	
 	cormat <- cor(data)
 
-	if (extraction == 'ML') efa_output <- MAXLIKE_FA(cormat, Nfactors = 1)
+	if (extraction == 'ML') efa_output <- MAXLIKE_FA(cormat, Nfactors = 1, Ncases=Ncases)
 
 	if (extraction == 'PAF') efa_output <- PA_FA(cormat, Nfactors = 1)
 	
 	loadings <- efa_output$loadingsNOROT
 	
-	errors <- 1 - efa_output$communalities
+	errors <- 1 - efa_output$communalities[,2]
 	
 	omega_t <- sum(loadings)**2 / (sum(loadings)**2 + sum(errors))
 
@@ -83,9 +85,10 @@ omega_total <- function(data, extraction = 'ML') {
 
 
 
+INTERNAL.CONSISTENCY <- function(data, extraction = 'ML', reverse_these = NULL, auto_reverse = TRUE, verbose=TRUE, factormodel) {
 
-
-INTERNAL.CONSISTENCY <- function(data, extraction = 'ML', reverse_these = NULL, auto_reverse = TRUE, verbose=TRUE) {
+  # deprecated  
+  if (!missing(factormodel))  extraction <- factormodel
 
 	data <- MISSING_DROP(data)
 
@@ -169,7 +172,7 @@ INTERNAL.CONSISTENCY <- function(data, extraction = 'ML', reverse_these = NULL, 
 
 
 		if (Nitems > 3) {
-			omega_res <-omega_total(new_data[,-lupe])
+			omega_res <- omega_total(new_data[,-lupe], extraction=extraction)
 			
 			r_corxtd_item_total <- cor(rowSums(new_data[,-lupe]), new_data[,lupe] )  
 	

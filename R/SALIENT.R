@@ -5,8 +5,12 @@
 
 SALIENT <- function (data, salvalue=.4, numsals=3, max_cross=NULL, min_eigval=.7, corkind='pearson',  
                      extraction = 'paf', rotation='promax', loading_mat = 'structure',  
-                     ppower = 3, iterpaf=100, Ncases=NULL, verbose=TRUE) {
+                     ppower = 3, iterpaf=100, Ncases=NULL, verbose=TRUE, factormodel, rotate) {
 
+# deprecated  
+if (!missing(factormodel))  extraction <- factormodel
+if (!missing(rotate))       rotation <- rotate
+  
 data <- MISSING_DROP(data)
 
 if (is.null(max_cross))  max_cross = 10

@@ -3,7 +3,7 @@
 \title{Internal consistency reliability coefficients}
 \description{Internal consistency reliability coefficients}
 \usage{INTERNAL.CONSISTENCY(data, extraction = 'ML', reverse_these = NULL, 
-	                        auto_reverse = TRUE, verbose)}  
+	                        auto_reverse = TRUE, verbose=TRUE, factormodel)}  
 \arguments{
   \item{data}{
   \code{}An all-numeric dataframe where the rows are cases & the columns are the variables.}
@@ -21,6 +21,9 @@
 
   \item{verbose}{
   \code{}(optional) Should detailed results be displayed in console? TRUE (default) or FALSE}
+  
+  \item{factormodel}{ 
+  \code{}(Deprecated.) Use 'extraction' instead.}
 }
 \details{
 When 'auto_reverse = TRUE', the item loadings on the first principal component
@@ -31,7 +34,9 @@ If error messages are produced, try using 'auto_reverse = FALSE'.
 If item names are provided for the 'reverse_these' argument, then auto_reverse is not conducted.
 	
 The following helpful descriptions of Cronbach's alpha and of omega total 
-are direct quotes from McNeish (2017, pp. 414-417):\cr\cr{\bold{Cronbach's Alpha}
+are direct quotes from McNeish (2017, pp. 414-417):
+
+\strong{Cronbach's Alpha}
 
 "One can interpret the value of Cronbach's alpha in one of many
 different ways:
@@ -106,7 +111,8 @@ alpha. In the presence of a multidimensional scale, Cronbach's alpha
 may still estimate the interrelatedness of the items accurately and
 the interrelatedness of multidimensional items can in fact be quite
 high."
-}\cr\cr{\bold{Omega total}
+
+\strong{Omega total}
 
 "Omega total is an internal consistency coefficient that assumes that
 the scale is unidimensional. Omega estimates the reliability for the
@@ -121,7 +127,8 @@ and actually subsumes Cronbach's alpha as a special case. More simply,
 if tau equivalence is met, omega total will yield the same result as
 Cronbach's alpha but omega total has the flexibility to accommodate
 congeneric scales, unlike Cronbach's alpha."
-}\cr\cr{\bold{Root Mean Square Residual (rmsr)}
+
+\strong{Root Mean Square Residual (rmsr)}
 
 rmsr is an index of the overall badness-of-fit.
 It is the square root of the mean of the squared residuals (the residuals being
@@ -130,7 +137,8 @@ implied by the N-factor model). rmsr is 0 when there is perfect model fit. A
 value less than .08 is generally considered a good fit. The rmsr coefficient is 
 included in the internal consistency output as an index of the degree of fit of 
 a one-factor model to the item data. 
-}\cr\cr{\bold{Standardized Cronbach's Alpha}
+
+\strong{Standardized Cronbach's Alpha}
 
 Standardized alpha should be used when items have different scale
 ranges, e.g., some items are 1-to-7, and other items are 1-to-4, or
@@ -138,7 +146,6 @@ ranges, e.g., some items are 1-to-7, and other items are 1-to-4, or
 alpha is based on correlations, wherein the items have identical
 standard deviations. Items in different metrics should be standardized
 before computing scale scores.
-}
 }
 \value{A list with the following elements:
  \item{int.consist_scale}{A vector with the scale omega, Cronbach's alpha, 
@@ -158,7 +165,7 @@ before computing scale scores.
        	\emph{Advances in Methods and Practices in Psychological Science, 3(4),} 484501.}
 \cr\cr {McNeish, D. (2018). Thanks coefficient alpha, we'll take it from here. 
 	    \emph{Psychological Methods, 23(3),} 412433.}
-\cr\cr {Revelle, W., & Condon, D. M. (2019). Reliability from  to : A tutorial. 
+\cr\cr {Revelle, W., & Condon, D. M. (2019). Reliability from alpha to omega: A tutorial. 
 	    \emph{Psychological Assessment, 31(12),} 13951411.}
 }
 \author{Brian P. O'Connor }

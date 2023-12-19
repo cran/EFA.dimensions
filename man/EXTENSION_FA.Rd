@@ -12,7 +12,7 @@ EXTENSION_FA(data, Ncore, Next, higherorder, roottest,
              Ndatasets, percentile, 
              salvalue, numsals, 
              iterpaf, ppower, 
-             verbose)
+             verbose, factormodel, rotate)
 }
 \arguments{
   \item{data}{
@@ -89,6 +89,12 @@ EXTENSION_FA(data, Ncore, Next, higherorder, roottest,
                   
   \item{verbose}{
   \code{}Should detailed results be displayed in console? TRUE (default) or FALSE}
+  
+  \item{factormodel}{ 
+  \code{}(Deprecated.) Use 'extraction' instead.}
+  
+  \item{rotate}{ 
+  \code{}(Deprecated.) Use 'rotation' instead.}
 }
 \details{
 Traditional scale development statistics can produce results that are baffling or misunderstood by

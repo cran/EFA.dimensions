@@ -1,5 +1,8 @@
 
-ROOTFIT <- function (data, corkind='pearson', Ncases=NULL, extraction='PAF', verbose = 'TRUE') {
+ROOTFIT <- function (data, corkind='pearson', Ncases=NULL, extraction='PAF', verbose = 'TRUE', factormodel) {
+
+# deprecated  
+if (!missing(factormodel))  extraction <- factormodel
 
 data <- MISSING_DROP(data)
 

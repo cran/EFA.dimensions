@@ -1,7 +1,5 @@
 
 
-
-
 MISSING_DROP <- function(data) {
 	
 	if (anyNA(data) == TRUE) {
@@ -20,8 +18,6 @@ MISSING_DROP <- function(data) {
 	}
 	return(invisible(data))
 }
-
-
 
 
 

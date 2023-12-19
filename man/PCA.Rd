@@ -3,7 +3,7 @@
 \title{Principal components analysis}
 \description{Principal components analysis}
 \usage{PCA(data, corkind='pearson', Nfactors=NULL, Ncases=NULL, rotation='promax', 
-	       ppower=3, verbose=TRUE)}
+	 ppower=3, verbose=TRUE, rotate)}
 \arguments{
   \item{data}{
   \code{}An all-numeric dataframe where the rows are cases & the columns are 
@@ -34,6 +34,9 @@
                   
   \item{verbose}{
   \code{}Should detailed results be displayed in console? TRUE (default) or FALSE}
+  
+  \item{rotate}{ 
+  \code{}(Deprecated.) Use 'rotation' instead.}
 }
 \value{A list with the following elements:
  \item{loadingsNOROT}{The unrotated factor loadings}

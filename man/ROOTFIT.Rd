@@ -3,7 +3,7 @@
 \title{Factor fit coefficients}
 \description{A variety of fit coefficients for the possible N-factor solutions 
 	in exploratory factor analysis}
-\usage{ROOTFIT(data, corkind='pearson', Ncases=NULL, extraction='PAF', verbose)}
+\usage{ROOTFIT(data, corkind='pearson', Ncases=NULL, extraction='PAF', verbose, factormodel)}
 \arguments{
   \item{data}{
   \code{}An all-numeric dataframe where the rows are cases & the columns are the 
@@ -27,16 +27,21 @@
                   
   \item{verbose}{
   \code{}Should detailed results be displayed in console? TRUE (default) or FALSE}
+  
+  \item{factormodel}{ 
+  \code{}(Deprecated.) Use 'extraction' instead.}
 }
 \details{
-{\strong{ Eigenvalue}	
+\strong{ Eigenvalue}	
 	
 An eigenvalue is the variance of the factor. More specifically, an eigenvalue is the
 the variance of the linear combination of the variables for a factor. There are 
 as many eigenvalues for a correlation or covariance matrix as there are variables 
 in the matrix. The sum of the eigenvalues is equal to the number of variables. 
 An eigenvalue of one means that a factor explains as much variance as one variable.
-}\cr\cr{\strong{RMSR -- Root Mean Square Residual (absolute fit)}
+
+
+\strong{RMSR -- Root Mean Square Residual (absolute fit)}
 
 RMSR (or perhaps more commonly, RMR) is an index of the overall badness-of-fit.
 It is the square root of the mean of the squared residuals (the residuals being
@@ -48,12 +53,16 @@ analyses. This is because the values in covariance matrices are scale-dependent.
 However, the RMSR coefficient that is provided in this package is based on
 correlation coefficients (not covariances) and therefore does not have this
 problem.
-}\cr\cr{\strong{GFI (absolute fit)}
+
+
+\strong{GFI (absolute fit)}
  
 The GFI (McDonald, 1999) is an index of how closely a correlation matrix is reproduced by 
 the factor solution. It is equal to 1.0 - mean-squared residual / mean-squared 
 correlation, ignoring the diagonals.
-}\cr\cr{\strong{CAF (common part accounted for)}
+
+
+\strong{CAF (common part accounted for)}
 
 Lorenzo-Seva, Timmerman, & Kiers (2011): "We now propose an alternative 
 goodness-of-fit index that can be used with any extraction 
@@ -74,7 +83,9 @@ a substantial amount of common variance is still present in the residual matrix 
 the q factors have been extractioned (implying that more factors should be extractioned). 
 Values of CAF close to one mean that the residual matrix is free of common variance 
 after the q factors have been extractioned (i.e., no more factors should be extractioned)." 
-}\cr\cr{\strong{RMSEA - Root Mean Square Error of Approximation (absolute fit)}
+
+
+\strong{RMSEA - Root Mean Square Error of Approximation (absolute fit)}
 
 Schermelleh-Engel (2003): "The Root Mean Square Error of Approximation (RMSEA;
 Steiger, 1990) is a measure of approximate fit in the population and is
@@ -107,7 +118,8 @@ informative fit indices" (Diamantopoulos and Siguaw, 2000: 85) due to its
 sensitivity to the number of estimated parameters in the model. In other words,
 the RMSEA favours parsimony in that it will choose the model with the lesser
 number of parameters."
-}\cr\cr{\strong{TLI -- Tucker Lewis Index (incremental fit)}
+
+\strong{TLI -- Tucker Lewis Index (incremental fit)}
 
 The Tucker-Lewis index, TLI, is also sometimes called the non-normed fit index,
 NNFI, or the Bentler-Bonett non-normed fit index, or RHO2. The TLI penalizes for
@@ -125,7 +137,8 @@ affected by sample size (Bentler, 1990; Bollen, 1990; Hu & Bentler, 1995,
 Kenny (2020): "The TLI (and the CFI) depends on the average size of the
 correlations in the data. If the average correlation between variables is not
 high, then the TLI will not be very high."
-}\cr\cr{\strong{CFI - Comparative Fit Index (incremental fit)}
+
+\strong{CFI - Comparative Fit Index (incremental fit)}
 	
 Schermelleh-Engel (2003): "The CFI ranges from zero to one with higher values
 indimessageing better fit. A rule of thumb for this index is that .97 is indicative
@@ -147,11 +160,13 @@ Kenny (2020): "Because the TLI and CFI are highly correlated only one of the two
 should be reported. The CFI is reported more often than the TLI, but I think the
 CFI,s penalty for complexity of just 1 is too low and so I prefer the TLI even
 though the CFI is reported much more frequently than the TLI."
-}\cr\cr{\strong{MFI -- (absolute fit)}
+
+\strong{MFI -- (absolute fit)}
 
 An absolute fit index proposed by MacDonald and Marsh (1990) that does not depend on 
 a comparison with another model.
-}\cr\cr{\strong{AIC -- Akaike Information Criterion (degree of parsimony index)}
+
+\strong{AIC -- Akaike Information Criterion (degree of parsimony index)}
 	
 Kenny (2020): "The AIC is a comparative measure of fit and so it is meaningful 
 only when two different models are estimated. Lower values indicate a better fit 
@@ -161,23 +176,25 @@ not really meaningful as it is the difference in AIC that really matters. The
 AIC makes the researcher pay a penalty of two for every parameter that is estimated. 
 One advantage of the AIC, BIC, and SABIC measures is that they can be computed for 
 models with zero degrees of freedom, i.e., saturated or just-identified models."
-}\cr\cr{\strong{CAIC -- Consistent Akaike Information Criterion (degree of parsimony index)}
+
+\strong{CAIC -- Consistent Akaike Information Criterion (degree of parsimony index)}
 
 A version of AIC that adjusts for sample size. Lower values indicate a better fit.
-}\cr\cr{\strong{BIC -- Bayesian Information Criterion (degree of parsimony index)}
+
+\strong{BIC -- Bayesian Information Criterion (degree of parsimony index)}
 
 Lower values indicate a better fit.
 
 Kenny (2020): "Whereas the AIC has a penalty of 2 for every parameter estimated, 
 the BIC increases the penalty as sample size increases. The BIC places a high value 
 on parsimony (perhaps too high)."
-}\cr\cr{\strong{SABIC -- Sample-Size Adjusted BIC (degree of parsimony index)}
+
+\strong{SABIC -- Sample-Size Adjusted BIC (degree of parsimony index)}
 
 Kenny (2020): "Like the BIC, the sample-size adjusted BIC or SABIC places a penalty 
 for adding parameters based on sample size, but not as high a penalty as the BIC.  
 Several recent simulation studies (Enders & Tofighi, 2008; Tofighi, & Enders, 2007) 
 have suggested that the SABIC is a useful tool in comparing models.
-}
 }
 \value{A list with eigenvalues & fit coefficients.}
 \references{
