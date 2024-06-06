@@ -173,7 +173,7 @@ before computing scale scores.
 # Rosenberg Self-Esteem scale items -- without reverse-coding
 INTERNAL.CONSISTENCY(data_RSE, extraction = 'PAF', 
                      reverse_these = NULL, auto_reverse = FALSE, verbose=TRUE)
-
+\donttest{
 # Rosenberg Self-Esteem scale items -- with auto_reverse-coding
 INTERNAL.CONSISTENCY(data_RSE, extraction = 'PAF',
                      reverse_these = NULL, auto_reverse = TRUE, verbose=TRUE)
@@ -181,4 +181,5 @@ INTERNAL.CONSISTENCY(data_RSE, extraction = 'PAF',
 # Rosenberg Self-Esteem scale items -- another way of reverse-coding
 INTERNAL.CONSISTENCY(data_RSE, extraction = 'PAF',
                      reverse_these = c('Q1','Q2','Q4','Q6','Q7'), verbose=TRUE)
+}
 }

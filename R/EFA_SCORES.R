@@ -1,10 +1,16 @@
 
 
-
-
-EFA_SCORES <- function(loadings=NULL, loadings_type='structure', data=NULL, cormat=NULL, corkind='pearson', 
+EFA_SCORES <- function(loadings=NULL, loadings_type='structure', data=NULL, 
+                       cormat=NULL, corkind='pearson', 
                        phi=NULL, method = 'Thurstone', verbose = TRUE) {
 
+if (all(is.na(loadings)))
+  message('\nThere are no values for "loadings". Expect errors.')
+  
+if (all(is.na(phi)))
+  message('\nThere are no values for "phi".')
+  
+  
 # get the variable names
 noms <- NULL
 if (!is.null(loadings))                 noms <- rownames(loadings)
@@ -29,9 +35,13 @@ if (is.null(data)) {
 if (is.null(cormat))	
 	message('\n\ndata and cormat were not provided, limiting the analytic options.')
 
+# Nfactors
+if (!is.null(loadings) & method != 'PCA')  Nfactors <- ncol(loadings)
+if (method == 'PCA')                       Nfactors <- ncol(cormat)
+
 if (is.null(phi)) {  # if NULL, set phi to an identity matrix
-	phi <- diag(1,Nvars,Nvars)
-	rownames(phi) <- colnames(phi) <- c(paste('Factor ', 1:Nvars, sep=''))
+	phi <- diag(1,Nfactors,Nfactors)
+	rownames(phi) <- colnames(phi) <- c(paste('Factor ', 1:Nfactors, sep=''))
 	message('\n\nphi was not provided and so an identity matrix will be created and used in the factor ')
 	message('score computations. This assumes that the correlations between the factors are all zero.')
 	message('A phi matrix should be provided if the factors are correlated.')
@@ -49,13 +59,8 @@ if (method != 'PCA') {
 		pattern <- loadings
 		structure <- pattern %*% phi
 	}
-}	
+}
 
-# Nfactors
-if (!is.null(loadings) & method != 'PCA')  Nfactors <- ncol(loadings)
-if (method == 'PCA')                       Nfactors <- ncol(cormat)
-
-	
 
 # factor score coefficients
 

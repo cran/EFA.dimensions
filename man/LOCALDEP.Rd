@@ -71,6 +71,9 @@
 }
 \author{Brian P. O'Connor}
 \examples{
+\donttest{
 # Rosenberg Self-Esteem scale items
 LOCALDEP(data_RSE)
 }
+}
+
