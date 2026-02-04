@@ -64,6 +64,7 @@ loadings <- PCA(data_NEOPIR[1:500,], corkind='pearson', Nfactors = 3,
 
 target <- PCA(data_NEOPIR[501:1000,], corkind='pearson', Nfactors = 3, 
               rotation='varimax', verbose=FALSE)
+              
 CONGRUENCE(target$loadingsROT, loadings$loadingsROT, verbose=TRUE)
 }
 }

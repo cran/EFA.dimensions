@@ -60,43 +60,43 @@
 
 
 EMPKC <- function (data, corkind='pearson', Ncases=NULL, verbose=TRUE) {
-
-data <- MISSING_DROP(data)
-
-Nvars  <- ncol(data)
-
-# set up cormat
-cordat <- setupcormat(data, corkind=corkind, Ncases=Ncases)
-cormat <- cordat$cormat
-ctype  <- cordat$ctype
-Ncases <- cordat$Ncases
-
-
-eigenvalues <- eigen(cormat)$values
-
-refs <- rep(0,Nvars)
-for (lupeNvars in 1:Nvars) {
-	refs[lupeNvars] <- max( ((1 + sqrt(Nvars / Ncases))^2) * (Nvars - sum(refs)) / 
-	                        (Nvars - lupeNvars + 1) ,1)
-}
-
-NfactorsEMPKC <- which(eigenvalues <= refs)[1]-1
-
-
-if (verbose == TRUE) {
-	message('\n\nEMPIRICAL KAISER CRITERION')
-	message('\nKind of correlations analyzed: ', ctype,'\n')
-	evals <- cbind(1:Nvars, eigenvalues, refs)
-	rownames(evals) <- rep('',dim(evals)[1])
-	colnames(evals) <- c('Nfactors', 'Eigenvalue','Reference Values')
-	print(round(evals,3), print.gap=4, row.names=FALSE)
-	message('\nThe number of factors according to the Empirical Kaiser Criterion = ', NfactorsEMPKC,'\n')
-}
-
-empkcOutput <- list(NfactorsEMPKC=NfactorsEMPKC, eigenvalues=eigenvalues, refvalues=refs)
-
-return(invisible(empkcOutput))
-
+  
+  data <- MISSING_DROP(data)
+  
+  Nvars  <- ncol(data)
+  
+  # set up cormat
+  cordat <- setupcormat(data, corkind=corkind, Ncases=Ncases)
+  cormat <- cordat$cormat
+  ctype  <- cordat$ctype
+  Ncases <- cordat$Ncases
+  
+  
+  eigenvalues <- eigen(cormat)$values
+  
+  refs <- rep(0,Nvars)
+  for (lupeNvars in 1:Nvars) {
+    refs[lupeNvars] <- max( ((1 + sqrt(Nvars / Ncases))^2) * (Nvars - sum(refs)) / 
+                              (Nvars - lupeNvars + 1) ,1)
+  }
+  
+  NfactorsEMPKC <- which(eigenvalues <= refs)[1]-1
+  
+  
+  if (verbose == TRUE) {
+    message('\n\nEMPIRICAL KAISER CRITERION')
+    message('\nKind of correlations analyzed: ', ctype,'\n')
+    evals <- cbind(1:Nvars, eigenvalues, refs)
+    rownames(evals) <- rep('',dim(evals)[1])
+    colnames(evals) <- c('Nfactors', 'Eigenvalue','Reference Values')
+    print(round(evals,3), print.gap=4, row.names=FALSE)
+    message('\nThe number of factors according to the Empirical Kaiser Criterion = ', NfactorsEMPKC,'\n')
+  }
+  
+  empkcOutput <- list(NfactorsEMPKC=NfactorsEMPKC, eigenvalues=eigenvalues, refvalues=refs)
+  
+  return(invisible(empkcOutput))
+  
 }
 
 
@@ -104,13 +104,13 @@ return(invisible(empkcOutput))
 
 # # Empirical Kaiser:
 # EKC <- function(dat) {
-  # corx <- cor(dat)
-  # valuesx <- eigen(corx)$values
-  
-  # refs <- rep(0,dim(dat)[2])
-  # for (iii in 1:dim(dat)[2]) {
-    # refs[iii] <- max( ((1 + sqrt(dim(dat)[2]/dim(dat)[1]))^2) * (dim(dat)[2]-sum(refs))/
-                        # (dim(dat)[2]-iii+1) ,1)
-  # }
-  # return(which(valuesx<=refs)[1]-1)
+# corx <- cor(dat)
+# valuesx <- eigen(corx)$values
+
+# refs <- rep(0,dim(dat)[2])
+# for (iii in 1:dim(dat)[2]) {
+# refs[iii] <- max( ((1 + sqrt(dim(dat)[2]/dim(dat)[1]))^2) * (dim(dat)[2]-sum(refs))/
+# (dim(dat)[2]-iii+1) ,1)
+# }
+# return(which(valuesx<=refs)[1]-1)
 # }

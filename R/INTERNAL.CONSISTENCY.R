@@ -85,8 +85,20 @@ omega_total <- function(data, extraction = 'ML') {
 
 
 
-INTERNAL.CONSISTENCY <- function(data, extraction = 'ML', reverse_these = NULL, auto_reverse = TRUE, verbose=TRUE, factormodel) {
+INTERNAL_CONSISTENCY <- function(data, extraction = 'ML', reverse_these = NULL, 
+                                 auto_reverse = TRUE, verbose=TRUE, factormodel) {
 
+  # if (as.character(match.call()[[1]]) == "INTERNAL.CONSISTENCY") {
+  #   warning('\nThe name of this function has been changed:
+  #            \nplease use INTERNAL_CONSISTENCY instead of INTERNAL.CONSISTENCY\n\n', call. = FALSE) 
+  # }
+  
+  if (as.character(match.call()[[1]]) == "INTERNAL.CONSISTENCY") {
+    message('\nThe name of this function has been changed:
+please use INTERNAL_CONSISTENCY instead of INTERNAL.CONSISTENCY.
+(Both names still work and produce the same results.)\n') 
+  }
+  
   # deprecated  
   if (!missing(factormodel))  extraction <- factormodel
 
@@ -248,5 +260,6 @@ INTERNAL.CONSISTENCY <- function(data, extraction = 'ML', reverse_these = NULL, 
 
 }
 
+INTERNAL.CONSISTENCY <- INTERNAL_CONSISTENCY
 
 

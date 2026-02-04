@@ -5,7 +5,7 @@
 	random data sets with specified numbers of variables and cases. 
 }
 \usage{
-PARALLEL(Nvars, Ncases, Ndatasets=100, extraction='PCA', percentile='95',
+PARALLEL(Nvars=20, Ncases=300, Ndatasets=100, extraction='PCA', percentile='95',
          corkind='pearson', verbose=TRUE, factormodel)
 }
 \arguments{

@@ -40,168 +40,70 @@
 
 
 SMT <- function (data, corkind='pearson', Ncases=NULL, verbose=TRUE) {
-
-data <- MISSING_DROP(data)
-
-# takes raw data or a correlation matrix
-data <- as.matrix(data)
-     
-Nvars  <- ncol(data)
-
-# set up cormat
-cordat <- setupcormat(data, corkind=corkind, Ncases=Ncases)
-cormat <- cordat$cormat
-ctype  <- cordat$ctype
-Ncases <- cordat$Ncases
-
-
-NfactorsSMT <- NA
-
-eigenvalues <- eigen(cormat)$values
-
- 
-# the null model
-Fnull <- sum(diag((cormat))) - log(det(cormat)) - Nvars  
-chisqNULL <-  Fnull * ((Ncases - 1) - (2 * Nvars + 5) / 6 )
-dfNULL <- Nvars * (Nvars - 1) / 2
-if (dfNULL > 0) {pvalue <- pchisq(chisqNULL, dfNULL, lower.tail = FALSE)} else {pvalue <- NA}
-
-if (pvalue > .05) NfactorsSMT <- 0
-
-pvalues <- c(0, NA, chisqNULL, dfNULL, pvalue)
-if (pvalue < .05) {
-	
-	for (root in 1:(dim(cormat)[1]-2)) {	
-	
-		dof <- 0.5 * ((Nvars - root)^2 - Nvars - root) # The degrees of freedom for the model
-		if (dof < 1) {
-			if (verbose == 'TRUE') {
-				message('\nThe degrees of freedom for the model with ',
-				    root,' factors is < 1 and so the procedure was stopped.')}
-			break
-		}
-
-		mlOutput <- EFA(cormat, extraction = 'ml', rotation='none', Nfactors=root, Ncases=Ncases, verbose=FALSE)
-
-		pvalues <- rbind(pvalues, 
-		                 cbind(root, eigenvalues[root], mlOutput$chisqMODEL, mlOutput$dfMODEL, 
-		                       mlOutput$pvalue), deparse.level=0)
-		if (mlOutput$pvalue > .05) {
-			NfactorsSMT <- root
-			break
-		}	
-
-
-		# mlOutput <- MAXLIKE_FA(cormat, Nfactors=root, Ncases=Ncases)
-		# pvalues <- rbind(pvalues, 
-		                 # cbind(root, eigenvalues[root], mlOutput$chisqMODEL, mlOutput$dfMODEL, 
-		                       # mlOutput$pvalue), deparse.level=0)
-		# if (mlOutput$pvalue > .05) {
-			# NfactorsSMT <- root
-			# break
-		# }	
-	}
-}
-rownames(pvalues) <- rep('',dim(pvalues)[1])
-colnames(pvalues) <- c('Nfactors', 'eigenvalue', 'Chi-Square', 'df', 'pvalue')
-
-smtOutput <- list(NfactorsSMT=NfactorsSMT, pvalues=pvalues)
-
-
-if (verbose == TRUE) {
-	message('\n\nSEQUENTIAL CHI-SQUARE MODEL TEST')
-	message('\nSpecified kind of correlations for this analysis: ', ctype)
-	message('\nThe number of factors according to the sequential chi-square model test= ', NfactorsSMT,'\n')
-	print(round(pvalues,6), print.gap=4, row.names=FALSE)
-}
-
-return(invisible(smtOutput))
-}
-
-
-
-# # ss = SMT(data_NEOPIR); ss
-
-# ss = SMT(data_RSE); ss
-
-
-
-# chi_fun <- function(dat) {
-  # max_fac <- min(dim(dat)[2]-2,dim(dat)[2]/2+2)
-  # ps <- rep(0,max_fac)
   
-  # zerofac <- psych::fa(dat,1,rotate ="none", fm="ml")
-  # if (pchisq(zerofac$null.chisq,zerofac$null.dof,lower.tail = F)<0.05) {
-    # return(0)
-  # }
+  data <- MISSING_DROP(data)
   
-  # for (iii in 1:max_fac) {
-    # temp <- psych::fa(dat,iii,rotate ="none", fm="ml")
-    # ps[iii] <- temp$PVAL
-  # }
-  # if(any(ps>0.05,na.rm=T)) {
-    # return(which(ps>0.05)[1])
-  # } else {
-    # return(0)
-  # }
+  # takes raw data or a correlation matrix
+  data <- as.matrix(data)
   
-# }
-
-
-
-# MAXLIKE_FA(data_RSE, Nfactors = 1, rotate='none', verbose=FALSE)$pvalue
-# MAXLIKE_FA(data_RSE, Nfactors = 2, rotate='none', verbose=FALSE)$pvalue
-# MAXLIKE_FA(data_RSE, Nfactors = 3, rotate='none', verbose=FALSE)$pvalue
-# MAXLIKE_FA(data_RSE, Nfactors = 4, rotate='none', verbose=FALSE)$pvalue
-# MAXLIKE_FA(data_RSE, Nfactors = 5, rotate='none', verbose=FALSE)$pvalue
-
-# psych::fa(data_RSE,1,rotate ="none", fm="ml")$PVAL
-# psych::fa(data_RSE,2,rotate ="none", fm="ml")$PVAL
-# psych::fa(data_RSE,3,rotate ="none", fm="ml")$PVAL
-# psych::fa(data_RSE,4,rotate ="none", fm="ml")$PVAL
-# psych::fa(data_RSE,5,rotate ="none", fm="ml")$PVAL
-
-# factanal(data_RSE, factors=1, rotate ="none")
-# factanal(data_RSE, factors=2, rotate ="none")
-# factanal(data_RSE, factors=3, rotate ="none")
-# factanal(data_RSE, factors=4, rotate ="none")
-# factanal(data_RSE, factors=5, rotate ="none")
-
-# chi_fun(data_RSE)
-
-# # chi_fun(cor(data_RSE))
-
-# hull_fun(data_RSE, 5)
-
-
-
-# MAXLIKE_FA(data_NEOPIR, Nfactors = 1, rotate='none', verbose=FALSE)$pvalue
-# MAXLIKE_FA(data_NEOPIR, Nfactors = 2, rotate='none', verbose=FALSE)$pvalue
-# MAXLIKE_FA(data_NEOPIR, Nfactors = 3, rotate='none', verbose=FALSE)$pvalue
-# MAXLIKE_FA(data_NEOPIR, Nfactors = 4, rotate='none', verbose=FALSE)$pvalue
-# MAXLIKE_FA(data_NEOPIR, Nfactors = 5, rotate='none', verbose=FALSE)$pvalue
-# MAXLIKE_FA(data_NEOPIR, Nfactors = 6, rotate='none', verbose=FALSE)$pvalue
-# MAXLIKE_FA(data_NEOPIR, Nfactors = 7, rotate='none', verbose=FALSE)$pvalue
-
-# psych::fa(data_NEOPIR,1,rotate ="none", fm="ml")$PVAL
-# psych::fa(data_NEOPIR,2,rotate ="none", fm="ml")$PVAL
-# psych::fa(data_NEOPIR,3,rotate ="none", fm="ml")$PVAL
-# psych::fa(data_NEOPIR,4,rotate ="none", fm="ml")$PVAL
-# psych::fa(data_NEOPIR,5,rotate ="none", fm="ml")$PVAL
-# psych::fa(data_NEOPIR,6,rotate ="none", fm="ml")$PVAL
-# psych::fa(data_NEOPIR,7,rotate ="none", fm="ml")$PVAL
-
-# factanal(data_NEOPIR, factors=1, rotate ="none")
-# factanal(data_NEOPIR, factors=1, rotate ="none")
-# factanal(data_NEOPIR, factors=1, rotate ="none")
-# factanal(data_NEOPIR, factors=1, rotate ="none")
-# factanal(data_NEOPIR, factors=1, rotate ="none")
-# factanal(data_NEOPIR, factors=1, rotate ="none")
-# factanal(data_NEOPIR, factors=1, rotate ="none")
-
-
-# chi_fun(data_NEOPIR)
-
-# hull_fun(data_NEOPIR, 9)
-
-
+  Nvars  <- ncol(data)
+  
+  # set up cormat
+  cordat <- setupcormat(data, corkind=corkind, Ncases=Ncases)
+  cormat <- cordat$cormat
+  ctype  <- cordat$ctype
+  Ncases <- cordat$Ncases
+  
+  
+  NfactorsSMT <- NA
+  
+  eigenvalues <- eigen(cormat)$values
+  
+  
+  # the null model
+  Fnull <- sum(diag((cormat))) - log(det(cormat)) - Nvars  
+  chisqNULL <-  Fnull * ((Ncases - 1) - (2 * Nvars + 5) / 6 )
+  dfNULL <- Nvars * (Nvars - 1) / 2
+  if (dfNULL > 0) {pvalue <- pchisq(chisqNULL, dfNULL, lower.tail = FALSE)} else {pvalue <- NA}
+  
+  if (pvalue > .05) NfactorsSMT <- 0
+  
+  pvalues <- c(0, NA, chisqNULL, dfNULL, pvalue)
+  if (pvalue < .05) {
+    
+    for (root in 1:(dim(cormat)[1]-2)) {	
+      
+      dof <- 0.5 * ((Nvars - root)^2 - Nvars - root) # The degrees of freedom for the model
+      if (dof < 1) {
+        if (verbose == 'TRUE') {
+          message('\nThe degrees of freedom for the model with ',
+                  root,' factors is < 1 and so the procedure was stopped.')}
+        break
+      }
+      
+      mlOutput <- EFA(cormat, extraction = 'ml', rotation='none', Nfactors=root, Ncases=Ncases, verbose=FALSE)
+      
+      pvalues <- rbind(pvalues, 
+                       cbind(root, eigenvalues[root], mlOutput$chisqMODEL, mlOutput$dfMODEL, 
+                             mlOutput$pvalue), deparse.level=0)
+      if (mlOutput$pvalue > .05) {
+        NfactorsSMT <- root
+        break
+      }	
+    }
+  }
+  rownames(pvalues) <- rep('',dim(pvalues)[1])
+  colnames(pvalues) <- c('Nfactors', 'eigenvalue', 'Chi-Square', 'df', 'pvalue')
+  
+  smtOutput <- list(NfactorsSMT=NfactorsSMT, pvalues=pvalues)
+  
+  
+  if (verbose == TRUE) {
+    message('\n\nSEQUENTIAL CHI-SQUARE MODEL TEST')
+    message('\nSpecified kind of correlations for this analysis: ', ctype)
+    message('\nThe number of factors according to the sequential chi-square model test= ', NfactorsSMT,'\n')
+    print(round(pvalues,6), print.gap=4, row.names=FALSE)
+  }
+  
+  return(invisible(smtOutput))
+}

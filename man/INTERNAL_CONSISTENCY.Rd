@@ -1,8 +1,9 @@
-\name{INTERNAL.CONSISTENCY}
+\name{INTERNAL_CONSISTENCY}
+\alias{INTERNAL_CONSISTENCY}
 \alias{INTERNAL.CONSISTENCY}
 \title{Internal consistency reliability coefficients}
 \description{Internal consistency reliability coefficients}
-\usage{INTERNAL.CONSISTENCY(data, extraction = 'ML', reverse_these = NULL, 
+\usage{INTERNAL_CONSISTENCY(data, extraction = 'ML', reverse_these = NULL, 
 	                        auto_reverse = TRUE, verbose=TRUE, factormodel)}  
 \arguments{
   \item{data}{
@@ -128,6 +129,17 @@ if tau equivalence is met, omega total will yield the same result as
 Cronbach's alpha but omega total has the flexibility to accommodate
 congeneric scales, unlike Cronbach's alpha."
 
+"There are multiple variations of omega including omega hierarchical, 
+omega total, and what we will refer to as 'Revelles
+omega total.' Omega hierarchical is useful for scales that may not be 
+truly unidimensional and may contain additional minor dimensions. 
+Omega hierarchical attempts to parse out the 
+variability attributable to subfactors and calculates reliability for 
+a general factor that applies to all items."
+
+The INTERNAL_CONSISTENCY function only provides omega total, as described above.  
+See the "psych" package for omega hierarchical and for Revelles omega total.
+
 \strong{Root Mean Square Residual (rmsr)}
 
 rmsr is an index of the overall badness-of-fit.
@@ -171,15 +183,15 @@ before computing scale scores.
 \author{Brian P. O'Connor }
 \examples{
 # Rosenberg Self-Esteem scale items -- without reverse-coding
-INTERNAL.CONSISTENCY(data_RSE, extraction = 'PAF', 
+INTERNAL_CONSISTENCY(data_RSE, extraction = 'PAF', 
                      reverse_these = NULL, auto_reverse = FALSE, verbose=TRUE)
 \donttest{
 # Rosenberg Self-Esteem scale items -- with auto_reverse-coding
-INTERNAL.CONSISTENCY(data_RSE, extraction = 'PAF',
+INTERNAL_CONSISTENCY(data_RSE, extraction = 'PAF',
                      reverse_these = NULL, auto_reverse = TRUE, verbose=TRUE)
 
 # Rosenberg Self-Esteem scale items -- another way of reverse-coding
-INTERNAL.CONSISTENCY(data_RSE, extraction = 'PAF',
+INTERNAL_CONSISTENCY(data_RSE, extraction = 'PAF',
                      reverse_these = c('Q1','Q2','Q4','Q6','Q7'), verbose=TRUE)
 }
 }

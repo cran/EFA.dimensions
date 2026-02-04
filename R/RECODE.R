@@ -58,14 +58,19 @@ RECODE <- function(data, old = NULL, new = NULL, type = 'reverse', max_value = N
 		  }
 		  
 			# get the percentage value for the old/real response options
-			percent <- (real_min:real_max - real_min) / (real_max - real_min)
+			# percent <- (real_min:real_max - real_min) / (real_max - real_min)
+			percent <- (seq (real_min, real_max, length.out = 500) - real_min) / (real_max - real_min)
 			  
 			# compute the corresponding new possible response option values 
 			newscore <- (percent * (new_max - new_min)) + new_min
 			  
 			# now go through the items, converting the old/real responses to the new values
       #	data_recoded <- newscore[data]  # simple, but problem = doesn't work with 0s
-			data_recoded <- c(newscore, data)[match(data, c(percent, data))]
+			# data_recoded <- c(newscore, data)[match(data, c(percent, data))]  # just gives the indices
+			data_percent <- data / real_max
+			locs <- apply(as.matrix(data_percent), 1, function(x) which.min(abs( percent - x)))
+			data_recoded <- newscore[locs]
+			# head(newscore);  head(data_recoded)
   	}
 	}
 		

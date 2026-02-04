@@ -1,5 +1,32 @@
 
 
+
+# eigenvalues for PCA, PAF, & image -- used by PARALLEL & RAWPAR
+eigvals <- function(cormatrix, extraction) {
+  
+  if (extraction=='PCA')  evals <- eigen(cormatrix)$values
+  
+  if (extraction=='PAF') {
+    smc <- 1 - (1 / diag(solve(cormatrix)))
+    diag(cormatrix) <- smc
+    evals <- eigen(cormatrix)$values 
+  }
+  
+  if (extraction=='image') { # Gorsuch 1983, p 113; Velicer 1974, EPM, 34, 564
+    d <-  diag(1 / diag(solve(cormatrix)))
+    gvv <- cormatrix + d %*% solve(cormatrix) %*% d - 2 * d
+    s <- sqrt(d)                  #  Velicer 1974 p 565 formula (7)
+    r2 <- solve(s) %*%  gvv  %*% solve(s)  # Velicer 1974 p 565 formula (5)
+    evals <- cbind(eigen(r2)$values) 
+  }
+  
+  return(invisible(evals))
+}
+
+
+
+
+
 MISSING_DROP <- function(data) {
 	
 	if (anyNA(data) == TRUE) {
@@ -23,39 +50,70 @@ MISSING_DROP <- function(data) {
 
 
 # set up cormat
-
 setupcormat <- function(data, corkind='pearson', Ncases=NULL) {
-
-# determine whether data is a correlation matrix   # there is also a helper function in EFAtools = .is_cormat
-if (nrow(data) == ncol(data)) {
-	if (all(diag(data==1))) {datakind = 'correlations'}} else{ datakind = 'notcorrels'}
-if (datakind == 'correlations')  {
-	cormat <- as.matrix(data)
-	ctype <- 'from user'
-	if (is.null(Ncases)) message('\nNcases must be provided when data is a correlation matrix.\n')
-}
- 
-if (datakind == 'notcorrels') {
-	Ncases <- nrow(data)
-	if (anyNA(data) == TRUE) {
-		data <- na.omit(data)
-		message('\nCases with missing values were found and removed from the data matrix.\n')
-	}
-	if (corkind=='pearson')     {cormat <- cor(data, method='pearson');  ctype <- 'Pearson'}
-	if (corkind=='kendall')     {cormat <- cor(data, method='kendall');  ctype <- 'Kendall'}
-	if (corkind=='spearman')    {cormat <- cor(data, method='spearman'); ctype <- 'Spearman'} 
-	if (corkind=='polychoric')  {cormat <- POLYCHORIC_R(data);           ctype <- 'polychoric'}
-	if (corkind=='gamma')       {cormat <- Rgamma(data, verbose=FALSE);  ctype <- 'Goodman-Kruskal gamma'}
-}
-
-# smooth cormat if it is not positive definite
-eigenvalues <- eigen(cormat)$values
-if (min(eigenvalues) <= 0)  cormat <- psych::cor.smooth(cormat)
-
-
-setupcormatOutput <- list(cormat=cormat, ctype=ctype, Ncases=Ncases, datakind=datakind) 
-
-return(invisible(setupcormatOutput))
+  
+  # determine whether data is a correlation matrix   
+  # there is also a helper function in EFAtools = .is_cormat
+  if (nrow(data) == ncol(data)) {
+    if (all(diag(data==1))) {datakind = 'correlations'}} else{ datakind = 'notcorrels'}
+  if (datakind == 'correlations')  {
+    cormat <- as.matrix(data)
+    ctype <- 'from user'
+    if (is.null(Ncases)) message('\nNcases must be provided when data is a correlation matrix.\n')
+  }
+  
+  if (datakind == 'notcorrels') {
+    
+    Ncases <- nrow(data)
+    
+    if (anyNA(data) == TRUE) {
+      data <- na.omit(data)
+      message('\nCases with missing values were found and removed from the data matrix.\n')
+    }
+    
+    if (corkind=='pearson')     {cormat <- cor(data, method='pearson');  ctype <- 'Pearson'}
+    if (corkind=='kendall')     {cormat <- cor(data, method='kendall');  ctype <- 'Kendall'}
+    if (corkind=='spearman')    {cormat <- cor(data, method='spearman'); ctype <- 'Spearman'} 
+    
+    # are the data whole numbers?
+    if (all((data - round(data)) == 0)) { wholenums = 1 } else { wholenums = 0 }
+    
+    if (corkind=='polychoric')  {
+      if (wholenums == 1)  {
+        cormat <- POLYCHORIC_R(data, verbose=FALSE)
+        ctype <- 'polychoric'
+      }
+      if (wholenums == 0)  {
+        cormat <- cor(data, method='pearson')
+        ctype <- 'Pearson'
+        message('\nPolychoric correlations were specified but there are values in the')
+        message('\nreal data matrix that are not whole numbers. Pearson correlations')
+        message('\nwill be used instead.') 
+      }
+    }
+    
+    if (corkind=='gamma') {
+      if (wholenums == 1)  {
+        cormat <- Rgamma(data, verbose=FALSE)
+        ctype <- 'Goodman-Kruskal gamma'
+      }
+      if (wholenums == 0)  {
+        cormat <- cor(data, method='pearson')
+        ctype <- 'Pearson'
+        message('\nGoodman-Kruskal gamma correlations were specified but there are')
+        message('\nvalues in the real data matrix that are not whole numbers.')
+        message('\nPearson correlations will be used instead.') 
+      }
+    }
+  }
+  
+  # smooth cormat if it is not positive definite
+  eigenvalues <- eigen(cormat)$values
+  if (min(eigenvalues) <= 0)  cormat <- psych::cor.smooth(cormat)
+  
+  Output <- list(cormat=cormat, ctype=ctype, Ncases=Ncases, datakind=datakind) 
+  
+  return(invisible(Output))
 }
 
 
@@ -178,141 +236,141 @@ CAF_boc <- function(cormat, cormat_reproduced=NULL) {
 
 FIT_COEFS <- function(cormat, cormat_reproduced, extraction='PCA', Ncases=NULL, 
                       chisqMODEL=NULL, dfMODEL=NULL, verbose=TRUE) {
-       
-     # RMSR
-     residuals <- cormat - cormat_reproduced 
-     residuals.upper <- as.matrix(residuals[upper.tri(residuals, diag = FALSE)])
-     mnsqdresid <- mean(residuals.upper^2) # mean of the off-diagonal squared residuals (as in Waller's MicroFact)
-     RMSR <- sqrt(mean(residuals.upper^2)) # rmr is perhaps the more common term for this stat
-     # no srmsr computation because it requires the SDs for the variables in the matrix
-
-     
-     # GFI (McDonald, 1999), & was also from Waller's MicroFact: 1 - mean-squared residual / mean-squared correlation
-	 mnsqdcorrel <- mean(cormat[upper.tri(cormat, diag = FALSE)]^2)
-     GFI <- 1 - (mnsqdresid / mnsqdcorrel)
-
-
-	# CAF from Lorenzo-Seva, Timmerman, & Kiers (2011)
-	 CAF <- CAF_boc(cormat, cormat_reproduced=cormat_reproduced)
-
-
-	# # fit Revelle -- not using because it includes the diagonal values
-    # r2 <-sum(cormat * cormat)
-    # rstar <- cormat - cormat_reproduced
-    # rstar2 <- sum(rstar * rstar)
-    # fitRevelle <- 1- rstar2 / r2
-	# factor.fit {psych}
-	# The basic factor or principal components model is that a correlation or covariance matrix 
-	# may be reproduced by the product of a factor loading matrix times its transpose: F'F or P'P. 
-	# One simple index of fit is the 1 - sum squared residuals/sum squared original correlations. 
-	# This fit index is used by VSS, ICLUST, etc.		
-	# There are probably as many fit indices as there are psychometricians. This fit is a plausible 
-	# estimate of the amount of reduction in a correlation matrix given a factor model. Note that 
-	# it is sensitive to the size of the original correlations. That is, if the residuals are small 
-	# but the original correlations are small, that is a bad fit.
-
-	# fit.off Revelle - "how well are the off diagonal elements reproduced?"   sounds identical to Waller's GFI
-	# PROBS with the commands below need fixing
-	# np.obs = 10
-	# #rstar.off <- sum(residual^2 * np.obs)  #weight the residuals by their sample size
-	# rstar.off <- sum(rstar^2 * np.obs)  #weight the residuals by their sample size
-	# r2.off <-(cormat * cormat * np.obs)   #weight the original by sample size
-	# r2.off <- sum(r2.off) - tr(r2.off) 
-	# fit.off <- 1-rstar.off/r2.off;  fit.off
   
-    fitcoefsOutput <- list(RMSR=RMSR, GFI=GFI, CAF=CAF)
-
-
-if (extraction != 'PCA' & extraction != 'pca' & extraction != 'IMAGE' | extraction != 'image') {
-
-		Nvars <- dim(cormat)[1]
+  # RMSR
+  residuals <- cormat - cormat_reproduced 
+  residuals.upper <- as.matrix(residuals[upper.tri(residuals, diag = FALSE)])
+  mnsqdresid <- mean(residuals.upper^2) # mean of the off-diagonal squared residuals (as in Waller's MicroFact)
+  RMSR <- sqrt(mean(residuals.upper^2)) # rmr is perhaps the more common term for this stat
+  # no srmsr computation because it requires the SDs for the variables in the matrix
   
-   		# the null model
-	   	Fnull <- sum(diag((cormat))) - log(det(cormat)) - Nvars  
-		chisqNULL <-  Fnull * ((Ncases - 1) - (2 * Nvars + 5) / 6 )
-		dfNULL <- Nvars * (Nvars - 1) / 2
-
-		RMSEA <- sqrt(max(((chisqMODEL - dfMODEL) / (Ncases - 1)),0) / dfMODEL)
-
-		# TLI - Tucker-Lewis index (Tucker & Lewis, 1973) = 
-        # NNFI - nonnormed fit index (Bentler & Bonett, 1980)
-        t1 <- chisqNULL / dfNULL - chisqMODEL / dfMODEL
-        t2 <- chisqNULL / dfNULL - 1 
-        TLI <- 1
-        if(t1 < 0 && t2 < 0) {TLI <- 1} else {TLI <- t1/t2} # lavaan   else {TLI <- 1}  
-		NNFI <- TLI
-		
-		CFI <- ((chisqNULL - dfNULL) - (chisqMODEL - dfMODEL)) / (chisqNULL - dfNULL)
-
-		# MacDonald & Marsh (1990) MFI = an absolute fit index that does not depend  
-		# on comparison with another model  (T&F, 2001, p 700)
-		MFI <- exp (-.5 * ( (chisqMODEL - dfMODEL) / Ncases))
-
-		BIC <- chisqMODEL - dfMODEL * log(Ncases)
-
-		# AIC Akaike Information Criteria (T&F, 2001, p 700)
-		# not on a 0-1 scale; & the value/formula varies across software
-		AIC <- chisqMODEL - 2 * dfMODEL
-
-		# CAIC Consistent Akaike Information Criteria (T&F, 2001, p 700)
-		# not on a 0-1 scale; & the value/formula varies across software
-		CAIC <- chisqMODEL - (log(Ncases) + 1) * dfMODEL
-
-		# SABIC -- Sample-Size Adjusted BIC (degree of parsimony fit index)		
-		# Kenny (2020): "Like the BIC, the sample-size adjusted BIC or SABIC places a penalty 
-		# for adding parameters based on sample size, but not as high a penalty as the BIC.  
-		# Several recent simulation studies (Enders & Tofighi, 2008; Tofighi, & Enders, 2007) 
-		SABIC <- chisqMODEL + log((Ncases+2) / 24) * (Nvars * (Nvars+1) / 2 - dfMODEL)
-
-		# mirt:   SABIC <- (-2) * logLik + tmp*log((N+2)/24)
-
-		fitcoefsOutput <- c(fitcoefsOutput, 
-		                    list(RMSEA=RMSEA, TLI=TLI, CFI=CFI, MFI=MFI, BIC=BIC, AIC=AIC, 
-		                         CAIC=CAIC, SABIC=SABIC))
-}
-
-
-     if(verbose == TRUE & (extraction == 'PCA' | extraction == 'pca' | 
-        extraction == 'IMAGE' | extraction == 'image')) {
-		
-     	message('\n\nFit Coefficients:')
-	
-		message('\nRMSR = ', round(RMSR,2))
-	
-		message('\nGFI (McDonald) = ', round(GFI,2))
-
-		message('\nCAF = ', round(CAF,2))
-	}
-
-     if(verbose == TRUE & (extraction != 'PCA' & extraction != 'pca' & 
-        extraction != 'IMAGE' | extraction != 'image')) {
-		
-     	message('\n\nFit Coefficients:')
-	
-		message('\nRMSR = ', round(RMSR,2))
-	
-		message('\nGFI (McDonald) = ', round(GFI,2))
-
-		message('\nCAF = ', round(CAF,2))
-	
-		message('\nRMSEA = ', round(RMSEA,3))
-	
-		message('\nTLI = ', round(TLI,2))
-	
-		message('\nCFI = ', round(CFI,2))
-	
-		message('\nMFI = ', round(MFI,2))
-	
-		message('\nAIC = ', round(AIC,2))
-	
-		message('\nCAIC = ', round(CAIC,2))
-
-		message('\nBIC = ', round(BIC,2))
-	
-		message('\nSABIC = ', round(SABIC,2))
-	}
-
-return(invisible(fitcoefsOutput))    
+  
+  # GFI (McDonald, 1999), & was also from Waller's MicroFact: 1 - mean-squared residual / mean-squared correlation
+  mnsqdcorrel <- mean(cormat[upper.tri(cormat, diag = FALSE)]^2)
+  GFI <- 1 - (mnsqdresid / mnsqdcorrel)
+  
+  
+  # CAF from Lorenzo-Seva, Timmerman, & Kiers (2011)
+  CAF <- CAF_boc(cormat, cormat_reproduced=cormat_reproduced)
+  
+  
+  # # fit Revelle -- not using because it includes the diagonal values
+  # r2 <-sum(cormat * cormat)
+  # rstar <- cormat - cormat_reproduced
+  # rstar2 <- sum(rstar * rstar)
+  # fitRevelle <- 1- rstar2 / r2
+  # factor.fit {psych}
+  # The basic factor or principal components model is that a correlation or covariance matrix 
+  # may be reproduced by the product of a factor loading matrix times its transpose: F'F or P'P. 
+  # One simple index of fit is the 1 - sum squared residuals/sum squared original correlations. 
+  # This fit index is used by VSS, ICLUST, etc.		
+  # There are probably as many fit indices as there are psychometricians. This fit is a plausible 
+  # estimate of the amount of reduction in a correlation matrix given a factor model. Note that 
+  # it is sensitive to the size of the original correlations. That is, if the residuals are small 
+  # but the original correlations are small, that is a bad fit.
+  
+  # fit.off Revelle - "how well are the off diagonal elements reproduced?"   sounds identical to Waller's GFI
+  # PROBS with the commands below need fixing
+  # np.obs = 10
+  # #rstar.off <- sum(residual^2 * np.obs)  #weight the residuals by their sample size
+  # rstar.off <- sum(rstar^2 * np.obs)  #weight the residuals by their sample size
+  # r2.off <-(cormat * cormat * np.obs)   #weight the original by sample size
+  # r2.off <- sum(r2.off) - tr(r2.off) 
+  # fit.off <- 1-rstar.off/r2.off;  fit.off
+  
+  fitcoefsOutput <- list(RMSR=RMSR, GFI=GFI, CAF=CAF)
+  
+  
+  if (extraction != 'PCA' & extraction != 'pca' & extraction != 'IMAGE' & extraction != 'image') {
+    
+    Nvars <- dim(cormat)[1]
+    
+    # the null model
+    Fnull <- sum(diag((cormat))) - log(det(cormat)) - Nvars  
+    chisqNULL <-  Fnull * ((Ncases - 1) - (2 * Nvars + 5) / 6 )
+    dfNULL <- Nvars * (Nvars - 1) / 2
+    
+    RMSEA <- sqrt(max(((chisqMODEL - dfMODEL) / (Ncases - 1)),0) / dfMODEL)
+    
+    # TLI - Tucker-Lewis index (Tucker & Lewis, 1973) = 
+    # NNFI - nonnormed fit index (Bentler & Bonett, 1980)
+    t1 <- chisqNULL / dfNULL - chisqMODEL / dfMODEL
+    t2 <- chisqNULL / dfNULL - 1 
+    TLI <- 1
+    if(t1 < 0 && t2 < 0) {TLI <- 1} else {TLI <- t1/t2} # lavaan   else {TLI <- 1}  
+    NNFI <- TLI
+    
+    CFI <- ((chisqNULL - dfNULL) - (chisqMODEL - dfMODEL)) / (chisqNULL - dfNULL)
+    
+    # MacDonald & Marsh (1990) MFI = an absolute fit index that does not depend  
+    # on comparison with another model  (T&F, 2001, p 700)
+    MFI <- exp (-.5 * ( (chisqMODEL - dfMODEL) / Ncases))
+    
+    BIC <- chisqMODEL - dfMODEL * log(Ncases)
+    
+    # AIC Akaike Information Criteria (T&F, 2001, p 700)
+    # not on a 0-1 scale; & the value/formula varies across software
+    AIC <- chisqMODEL - 2 * dfMODEL
+    
+    # CAIC Consistent Akaike Information Criteria (T&F, 2001, p 700)
+    # not on a 0-1 scale; & the value/formula varies across software
+    CAIC <- chisqMODEL - (log(Ncases) + 1) * dfMODEL
+    
+    # SABIC -- Sample-Size Adjusted BIC (degree of parsimony fit index)		
+    # Kenny (2020): "Like the BIC, the sample-size adjusted BIC or SABIC places a penalty 
+    # for adding parameters based on sample size, but not as high a penalty as the BIC.  
+    # Several recent simulation studies (Enders & Tofighi, 2008; Tofighi, & Enders, 2007) 
+    SABIC <- chisqMODEL + log((Ncases+2) / 24) * (Nvars * (Nvars+1) / 2 - dfMODEL)
+    
+    # mirt:   SABIC <- (-2) * logLik + tmp*log((N+2)/24)
+    
+    fitcoefsOutput <- c(fitcoefsOutput, 
+                        list(RMSEA=RMSEA, TLI=TLI, CFI=CFI, MFI=MFI, BIC=BIC, AIC=AIC, 
+                             CAIC=CAIC, SABIC=SABIC))
+  }
+  
+  
+  if(verbose == TRUE & (extraction == 'PCA' | extraction == 'pca' | 
+                        extraction == 'IMAGE' | extraction == 'image')) {
+    
+    message('\n\nFit Coefficients:')
+    
+    message('\nRMSR = ', round(RMSR,2))
+    
+    message('\nGFI (McDonald) = ', round(GFI,2))
+    
+    message('\nCAF = ', round(CAF,2))
+  }
+  
+  if(verbose == TRUE & (extraction != 'PCA' & extraction != 'pca' & 
+                        extraction != 'IMAGE' | extraction != 'image')) {
+    
+    message('\n\nFit Coefficients:')
+    
+    message('\nRMSR = ', round(RMSR,2))
+    
+    message('\nGFI (McDonald) = ', round(GFI,2))
+    
+    message('\nCAF = ', round(CAF,2))
+    
+    message('\nRMSEA = ', round(RMSEA,3))
+    
+    message('\nTLI = ', round(TLI,2))
+    
+    message('\nCFI = ', round(CFI,2))
+    
+    message('\nMFI = ', round(MFI,2))
+    
+    message('\nAIC = ', round(AIC,2))
+    
+    message('\nCAIC = ', round(CAIC,2))
+    
+    message('\nBIC = ', round(BIC,2))
+    
+    message('\nSABIC = ', round(SABIC,2))
+  }
+  
+  return(invisible(fitcoefsOutput))    
 }     
 
 

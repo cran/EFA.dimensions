@@ -6,7 +6,7 @@
 }
 \usage{
 RAWPAR(data, randtype, extraction, Ndatasets, percentile, 
-       corkind, corkindRAND, Ncases=NULL, verbose, factormodel)
+       corkind, corkindRAND, Ncases=NULL, eval_plot=TRUE, verbose, factormodel)
 }
 \arguments{
   \item{data}{
@@ -41,7 +41,11 @@ RAWPAR(data, randtype, extraction, Ndatasets, percentile,
 
   \item{Ncases}{
   \code{}The number of cases upon which a correlation matrix is based. Required only if data is a correlation matrix.}
-                  
+
+  \item{eval_plot}{
+  \code{}Should a plot of the real and parallel analysis eigenvalues be produced?
+         The options are TRUE (the default) or FALSE.}
+
   \item{verbose}{
   \code{}Should detailed results be displayed in console? TRUE (default) or FALSE}
   

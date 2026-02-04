@@ -26,7 +26,9 @@
 	Additional functions focus on the factorability of a correlation matrix (FACTORABILITY),  
 	the congruences between factors from different datasets (CONGRUENCE), the assessment 
 	of local independence (LOCALDEP), the assessment of factor solution 
-	complexity (COMPLEXITY), and internal consistency (INTERNAL.CONSISTENCY). 
+	complexity (COMPLEXITY), internal consistency (INTERNAL_CONSISTENCY), and for
+	correcting Pearson correlation coefficients for attenuation due to 
+  unreliability (CORRECTED_CORRELS). 
 }
 \references{
 {Auerswald, M., & Moshagen, M. (2019). How to determine the number of factors to 
