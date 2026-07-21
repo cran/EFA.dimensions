@@ -31,20 +31,20 @@ PARALLEL <- function (Nvars=20, Ncases=300, Ndatasets=100, extraction='PCA',
   rownames(results) <- matrix((''),nrow(results),1)
   colnames(results) <- c('Root', 'Mean', 'Percentile')
   
-  if (verbose == TRUE) {
-    message('\n\nPARALLEL ANALYSIS')
+  if (verbose ) {
+    cat('\n\nPARALLEL ANALYSIS')
     # specification notices
     if (corkind=='pearson')    ctype <- 'pearson' 
     if (corkind=='kendall')    ctype <- 'kendall' 
     if (corkind=='spearman')   ctype <- 'spearman' 
-    message('\nType of correlations specified for the random data eigenvalues: ', ctype)
-    if (extraction=='PCA')    message('\nExtraction Method: Principal Components') 
-    if (extraction=='PAF')    message('\nExtraction Method: Common Factor Analysis')
-    if (extraction=='image')  message('\nExtraction Method: Image Factor Extraction')
-    message('\nVariables = ', Nvars) 
-    message('\nCases = ', Ncases) 
-    message('\nNdatasets = ', Ndatasets) 
-    message('\nPercentile = ', percentile, '\n') 
+    cat('\n\nType of correlations specified for the random data eigenvalues: ', ctype)
+    if (extraction=='PCA')    cat('\n\nExtraction Method: Principal Components') 
+    if (extraction=='PAF')    cat('\n\nExtraction Method: Common Factor Analysis')
+    if (extraction=='image')  cat('\n\nExtraction Method: Image Factor Extraction')
+    cat('\n\nVariables = ', Nvars) 
+    cat('\n\nCases = ', Ncases) 
+    cat('\n\nNdatasets = ', Ndatasets) 
+    cat('\n\nPercentile = ', percentile, '\n\n') 
     print(round(results,3), print.gap=3)
   }
   parOutput <- list(eigenvalues=results)

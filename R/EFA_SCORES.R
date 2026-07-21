@@ -4,11 +4,8 @@ EFA_SCORES <- function(loadings=NULL, loadings_type='structure', data=NULL,
                        cormat=NULL, corkind='pearson', 
                        phi=NULL, method = 'Thurstone', verbose = TRUE) {
   
-  if (all(is.na(loadings)))
-    message('\nThere are no values for "loadings". Expect errors.')
-  
-  if (all(is.na(phi)))  message('\nThere are no values for "phi".')
-  
+  if (is.null(loadings) & method != 'PCA')
+    message('\nloadings are required when method = ', method, '. Expect errors.')
   
   # get the variable names
   noms <- NULL
@@ -182,39 +179,39 @@ EFA_SCORES <- function(loadings=NULL, loadings_type='structure', data=NULL,
                  structure = structure)
   
   
-  if (verbose == TRUE) {
+  if (verbose ) {
     
-    message('\n\nThe method for computing the factor score coefficients (W): ', method)
+    cat('\n\nThe method for computing the factor score coefficients (W): ', method)
     
-    message('\nFactor Score Coefficients (W):\n')
+    cat('\n\nFactor Score Coefficients (W):\n\n')
     print(round(FSCoef,3))
     
-    message('\n\nFactor Score Indeterminacy Indices:\n')
-    message("(MINCOR is Guttman's indeterminacy index)\n")
+    cat('\n\nFactor Score Indeterminacy Indices:\n\n')
     print(round(Indeterminacy_mat,3), print.gap=4)
+    cat("\n(MINCOR is Guttman's indeterminacy index)")
     
-    message('\n\nValidity Coefficients:\n')
-    message('(correlations between the factor scores & their respective factors)\n')
+    cat('\n\n\nValidity Coefficients:\n')
+    cat('\n(correlations between the factor scores & their respective factors)\n\n')
     print(round(VALIDITY_mat,6), print.gap=4)
     
-    message('\n\nFactor Correlations:\n')
+    cat('\n\nFactor Correlations:\n\n')
     print(round(phi,3))
     
     # # Univocality -- not providing because it is not sufficiently clear
     # diag(UNIVOCALITY) <- NA
     # diag(phi)  <- NA
-    # message('\n\nUnivocality (Rows = Factor Scores / Columns = Factors):\n')
+    # cat('\n\nUnivocality (Rows = Factor Scores / Columns = Factors):\n')
     # print(round(UNIVOCALITY,3), print.gap=4)
-    # message('\nDifferences between UNIVOCALITY & the Factor Correlations:\n')
-    # message('(small values indicate that the estimated factor scores are not heavily')
-    # message('contaminated by variance from other factors in the analysis)\n')
+    # cat('\nDifferences between UNIVOCALITY & the Factor Correlations:\n')
+    # cat('(small values indicate that the estimated factor scores are not heavily')
+    # cat('contaminated by variance from other factors in the analysis)\n')
     # print(round(abs(UNIVOCALITY - phi),3), print.gap=4)
     
-    message('\n\nCorrelational Accuracy:\n')
-    message('(the following correlations between the factor scores should')
-    message('be similar to the above Factor Correlations)\n')
+    cat('\n\nCorrelational Accuracy:\n')
+    cat('\n(the following correlations between the factor scores should')
+    cat('\nbe similar to the above Factor Correlations)\n\n')
     print(round(FactorScore_Correls,3), print.gap=4)
-    message('\nDifferences between the factor score correlations & the Factor Correlations:\n')
+    cat('\n\nDifferences between the factor score correlations & the factor correlations:\n\n')
     print(round(abs(FactorScore_Correls - phi),3), print.gap=4)
   }
   

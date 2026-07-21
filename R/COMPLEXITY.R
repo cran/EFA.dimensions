@@ -4,27 +4,28 @@
  
 COMPLEXITY <- function (loadings, percent=TRUE, degree.change=100, averaging.value=100, verbose=TRUE) {
 	
-	comp_rows <- apply(loadings,1,hofmann)
+	comp_rows <- as.matrix(apply(loadings, 1, hofmann))
+	colnames(comp_rows) <- ''
 	
-	compOutput <- list(comp_rows=comp_rows) 
+	output <- list(comp_rows=comp_rows) 
 
-	if(percent == TRUE) {comp_percent <- 
+	if(percent ) {comp_percent <- 
 		complexity_percent(loadings, degree.change = degree.change, averaging.value = averaging.value)
-		compOutput$percent <- comp_percent * 100
+		output$percent <- comp_percent * 100
 	}
 		
-	if(verbose == TRUE) {
+	if(verbose) {
 		
-		message('\n\nFactor Solution Complexity:')
+		cat('\n\nFactor Solution Complexity:')
 	
-		message('\n\nVariable Complexities:')
-		print(round(comp_rows,2))
-	
-		if(percent == TRUE)  message('\nPercent Complexity: ',round(comp_percent*100,2))
+	  cat('\n\nVariable Complexities:\n')
+		# print(round(comp_rows,2))
+		
+		writeLines(paste0("    ", capture.output(print(round(comp_rows,2), row.names = FALSE))))
+		if(percent)  cat('\nPercent Complexity: ',round(comp_percent*100,2), '\n')
 	}
 	
-	return(invisible(compOutput))
-
+	return(invisible(output))
 }
 
 

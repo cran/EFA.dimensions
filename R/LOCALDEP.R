@@ -97,30 +97,30 @@ LOCALDEP <- function (data, corkind='pearson', item_type='graded',
     }				
     
     
-    if (verbose == TRUE) { 
+    if (verbose ) { 
       
-      message('\n\nStatistics for assessing local dependence:\n')
+      cat('\n\nStatistics for assessing local dependence:\n')
       
-      message('\nNumber of cases = ', Ncases)
-      message('\nNumber of variables = ', Nvars)
+      cat('\nNumber of cases = ', Ncases)
+      cat('\n\nNumber of variables = ', Nvars)
       
-      # message('\nSummary statistics for the data file:\n')
+      # cat('\nSummary statistics for the data file:\n')
       # print(summary(data))
       
-      message('\nSpecified kind of correlations for this analysis: ', ctype)
+      cat('\n\nSpecified kind of correlations for this analysis: ', ctype)
       
-      message('\n\nTotal Variance Explained (Initial Eigenvalues):\n')
+      cat('\n\n\nEigenvalues and Proportions of Total Variance Explained:\n\n')
       print(round(totvarexplNOROT,2), print.gap=4)
       
-      message('\nRatio of the 1st to the 2nd eigenvalue = ', round((eigenvalues[1] / eigenvalues[2]),1))
+      cat('\nRatio of the 1st to the 2nd eigenvalue = ', round((eigenvalues[1] / eigenvalues[2]),1))
       
-      message('\n\nOriginal correlation matrix:\n')
+      cat('\n\n\nOriginal correlation matrix:\n\n')
       print(round(cormat,2))
       
-      message('\n\nResidual item correlations after partialling out the theta values:\n')
+      cat('\n\nResidual item correlations after partialling out the theta values:\n\n')
       print(round(partialcors,2))
       
-      message('\n\n The # of residual correlations >= .1 is  ', Np1, '   percentage = ', round((Np1/totalN),2) , 
+      cat('\n\n The # of residual correlations >= .1 is  ', Np1, '   percentage = ', round((Np1/totalN),2) , 
               '\n The # of residual correlations >= .2 is  ', Np2, '   percentage = ', round((Np2/totalN),2) ,
               '\n The # of residual correlations >= .3 is  ', Np3, '   percentage = ', round((Np3/totalN),2) ,
               '\n The # of residual correlations >= .4 is  ', Np4, '   percentage = ', round((Np4/totalN),2) ,
@@ -129,7 +129,7 @@ LOCALDEP <- function (data, corkind='pearson', item_type='graded',
               '\n The # of residual correlations >= .7 is  ', Np7, '   percentage = ', round((Np7/totalN),2) ,
               '\n The # of residual correlations >= .8 is  ', Np8, '   percentage = ', round((Np8/totalN),2)  )
       
-      message('\n\nLocal dependence statistics sorted by the partial (residual) item correlations:\n')
+      cat('\n\n\nLocal dependence statistics sorted by the partial (residual) item correlations:\n\n')
       localdep_stats <- data.frame(lapply(localdep_stats, function(y) if(is.numeric(y)) round(y, 3) else y)) 
       print(localdep_stats[order(abs(localdep_stats$partial_r)),], print.gap=4, row.names = FALSE)
       

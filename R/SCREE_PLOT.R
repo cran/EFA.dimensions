@@ -7,7 +7,7 @@ SCREE_PLOT <- function (data, corkind='pearson', Ncases=NULL, verbose=TRUE) {
   Nvars <- ncol(data)
   
   # set up cormat
-  cordat <- setupcormat(data, corkind=corkind, Ncases=Ncases)
+  cordat <- suppressMessages(setupcormat(data, corkind=corkind, Ncases=Ncases))
   cormat <- cordat$cormat
   ctype  <- cordat$ctype
   Ncases <- cordat$Ncases
@@ -24,15 +24,14 @@ SCREE_PLOT <- function (data, corkind='pearson', Ncases=NULL, verbose=TRUE) {
   totvarexplNOROT <- VarianceExplained(eigenvalues)
   
   
-  if (verbose == TRUE) {
+  if (verbose ) {
     
-    message('\nScree Plot:')
+    cat('\n\nScree Plot:')
     
-    message('\nSpecified kind of correlations for this analysis: ', ctype)
+    cat('\n\nSpecified kind of correlations for this analysis: ', ctype)
     
-    message('\n\nTotal Variance Explained (Initial Eigenvalues):\n')
+    cat('\n\nEigenvalues and Proportions of Total Variance Explained:\n\n')
     print(round(totvarexplNOROT,2), print.gap=4)
-    
   }
   
   return(invisible(totvarexplNOROT))

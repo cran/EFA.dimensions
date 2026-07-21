@@ -3,7 +3,7 @@ POLYCHORIC_R <- function (data, method='Revelle', verbose=TRUE) {
   
   data <- MISSING_DROP(data)
   
-  if (is.integer(data) == FALSE) {
+  if (!is.integer(data)) {
     if (!all((data - trunc(data)) == 0)) {
       message('\nThe data matrix does not appear to consist of whole numbers and')
       message('is therefore not appropriate for the computation of polychoric correlations.')
@@ -43,13 +43,13 @@ POLYCHORIC_R <- function (data, method='Revelle', verbose=TRUE) {
     
     rpolys <- tryRevelle(data)
     
-    if (verbose == TRUE) {
-      message('\n\nPolychoric correlations:\n')
+    if (verbose ) {
+      cat('\n\nPolychoric correlations:\n')
       print(rpolys)
     }
   }
   if (max(Nvalues) > 8) 
-  {message('\nUsing the Fox polycor package because the maximum number of item categories is > 8\n')}
+  {cat('\nUsing the Fox polycor package because the maximum number of item categories is > 8\n')}
   
   
   # use the hetcor function from the polycor package
@@ -57,12 +57,12 @@ POLYCHORIC_R <- function (data, method='Revelle', verbose=TRUE) {
     data <- as.data.frame(data) # the data for hetcor must be a dataframe
     rpolysF <- polycor::hetcor(data)
     rpolys <- rpolysF$correlations
-    if (verbose == TRUE) {
-      message('\nTypes of correlations computed by hetcor:\n')
+    if (verbose ) {
+      cat('\nTypes of correlations computed by hetcor:\n')
       rtypes <- rpolysF$type
       colnames(rtypes) <- rownames(rtypes) <- colnames(data)
       print(rtypes)
-      message('\nPolychoric correlations:')
+      cat('\nPolychoric correlations:')
       print(rpolys)
     }
   }

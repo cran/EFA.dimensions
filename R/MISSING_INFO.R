@@ -28,7 +28,7 @@ MISSING_INFO <- function(data, verbose = TRUE) {
 
 	if (verbose) {	
 		
-		message('\n\nMissing value statistics:')
+		cat('\n\nMissing value statistics:')
 
 		# total # of NAs
 		totNAs <- sum(is.na(data))
@@ -36,11 +36,11 @@ MISSING_INFO <- function(data, verbose = TRUE) {
 		# number of rows (cases) with an NA
 		nrowsNAs <- sum(apply(data, 1, anyNA))
 				
-		message('\nThere are ', nrow(data), ' cases (rows) and ', ncol(data), 
+		cat('\n\nThere are ', nrow(data), ' cases (rows) and ', ncol(data), 
 		        ' variables (columns) in the data file.')
 
-		message('\nThere are ', nrowsNAs, ' cases with missing values, and ', 
-		        totNAs, ' missing values in total.\n')		
+		cat('\n\nThere are ', nrowsNAs, ' cases with missing values, and ', 
+		        totNAs, ' missing values in total.\n\n')		
 
 	 	print(round(Output,2), print.gap=4, row.names = FALSE)			
 	}

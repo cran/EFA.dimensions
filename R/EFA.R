@@ -8,9 +8,34 @@ IMAGE_FA   <- function( ... ) { .Defunct("EFA", package="EFA.dimensions") }
 
 
 
-EFA <- function (data, extraction = 'paf', corkind='pearson', Nfactors=NULL, 
-                 Ncases=NULL, iterpaf=100, 
-                 rotation='promax', ppower = 3, verbose=TRUE) {
+EFA <- function (data, Nfactors=NULL, extraction = 'paf', rotation='promax', 
+                 corkind='pearson', Ncases=NULL, 
+                 iterpaf=100, ppower = 3, delta = .01, verbose=TRUE) {
+  
+  # is the extraction method valid?
+  if (!extraction %in% c('paf', 'ml', 'image', 'minres', 'uls', 'ols', 'wls', 
+                         'gls', 'alpha', 'fullinfo')) {
+    cat('\nThe entry for extraction,', extraction, ', is not one of the options for this function.')
+    cat('\n"paf" will be used instead.')
+    extraction <- 'paf'
+  }
+  
+  # is the rotation method valid?
+  if (!rotation %in% c('bentlerQ', 'bentlerT', 
+                       'entropy', 'equamax', 'geominQ', 'geominT', 
+                       'oblimax', 'oblimin', 'promax', 'quartimax', 'quartimin', 
+                       'simplimax', 'varimax', 'none')) {
+    cat('\nThe entry for rotation,', rotation, ', is not one of the options for this function.')
+    cat('\n"promax" will be used instead.')
+    rotation <- 'promax'
+  }
+  
+  # is the corkind method valid?
+  if (!corkind %in% c('pearson', 'kendall', 'spearman', 'gamma', 'polychoric')) {
+    cat('\nThe entry for corkind,', corkind, ', is not one of the options for this function.')
+    cat('\n"pearson" will be used instead.')
+    corkind <- 'pearson'
+  }
   
   data <- MISSING_DROP(data)
   
@@ -37,6 +62,7 @@ EFA <- function (data, extraction = 'paf', corkind='pearson', Nfactors=NULL,
   } else {NfactorsWasNull <- FALSE}
   
   
+  ####################################  extraction  ###################################
   
   # get the unrotated loadings for the specified extraction method
   
@@ -118,84 +144,49 @@ EFA <- function (data, extraction = 'paf', corkind='pearson', Nfactors=NULL,
   rownames(loadingsNOROT) <- cnoms
   colnames(loadingsNOROT) <- c(paste('Factor ', 1:Nfactors, sep=''))
   
-  varexplNOROT2 <- VarianceExplained(eigenvalues, loadings=loadingsNOROT)
+  varexplNOROT2 <- VarianceExplained(eigenvalues, loadingsNOROT = loadingsNOROT)
   
-  cormat_reprod <- loadingsNOROT %*% t(loadingsNOROT); diag(cormat_reprod) <- 1
+
+  ####################################  rotation  ###################################
   
-  
-  # communalities
-  if (!is.matrix(communalities))  communalities <- as.matrix(communalities)
-  rownames(communalities) <- cnoms
-  if (ncol(communalities) == 1)  colnames(communalities) <- c('Communalities')
-  if (ncol(communalities) == 2)  colnames(communalities) <- c('Initial', 'Extraction')
-  uniquenesses <- 1 - communalities
-  
-  
-  # model statistics, based on Revelle
-  
-  model <- cormat_reprod
-  #model <- cor.smooth(model)  #this replaces the next few lines with a slightly cleaner approach
-  #r <- cor.smooth(r)  #this makes sure that the correlation is positive semi-definite
-  m.inv.r <- try(solve(model,cormat),silent=TRUE)
-  dfMODEL <- Nvars * (Nvars - 1) / 2 - Nvars * Nfactors + (Nfactors * (Nfactors - 1) / 2)
-  objective <- sum(diag((m.inv.r))) - log(det(m.inv.r)) - Nvars 
-  chisqMODEL <- objective * ((Ncases - 1) - (2 * Nvars + 5) / 6 - (2 * Nfactors) / 3) # from Tucker & from factanal
-  if(!is.nan(chisqMODEL)) if (chisqMODEL < 0) {chisqMODEL <- 0}  
-  if (dfMODEL > 0) {pvalue <- pchisq(chisqMODEL, dfMODEL, lower.tail = FALSE)} else {pvalue <- NA}
-  
-  # the null model
-  Fnull <- sum(diag((cormat))) - log(det(cormat)) - Nvars  
-  chisqNULL <-  Fnull * ((Ncases - 1) - (2 * Nvars + 5) / 6 )
-  dfNULL <- Nvars * (Nvars - 1) / 2
-  
-  
-  fit_coefs <- FIT_COEFS(cormat, cormat_reprod, extraction=extraction, Ncases=Ncases, 
-                         chisqMODEL=chisqMODEL, dfMODEL=dfMODEL, verbose=FALSE) 
-  
-  
-  # rotation   library(GPArotation)
-  
-  varexplROT <- loadingsROT <- structure <- pattern <- phi <- NA
+  varexplROT <- loadingsROT <- structure <- pattern <- phi <- NULL
   
   if (Nfactors > 1) {
     
     # orthogonal rotations
     
-    if (rotation == 'varimax') 
-      loadingsROT <- VARIMAX(loadingsNOROT, verbose=FALSE)$loadingsV
-    
-    if (rotation == 'quartimax') 
-      loadingsROT <- GPArotation::quartimax(loadingsNOROT)$loadings
-    
     if (rotation == 'bentlerT') 
       loadingsROT <- GPArotation::bentlerT(loadingsNOROT)$loadings
+    
+    if (rotation == 'entropy') 
+      loadingsROT <- GPArotation::entropy(loadingsNOROT)$loadings
     
     if (rotation == 'equamax') 
       loadingsROT <- psych::equamax(loadingsNOROT)$loadings
     
     if (rotation == 'geominT') 
-      loadingsROT <- GPArotation::geominT(loadingsNOROT)$loadings
+      loadingsROT <- GPArotation::geominT(loadingsNOROT, delta=delta)$loadings
     
-    if (rotation == 'bifactorT') 
-      loadingsROT <- GPArotation::bifactorT(loadingsNOROT)$loadings
+    if (rotation == 'quartimax') 
+      loadingsROT <- GPArotation::quartimax(loadingsNOROT)$loadings
     
-    if (rotation == 'entropy') 
-      loadingsROT <- GPArotation::entropy(loadingsNOROT)$loadings
+    if (rotation == 'varimax') 
+      loadingsROT <- VARIMAX(loadingsNOROT, verbose=FALSE)$loadingsV
     
     # GPArotation::parsimax(loadings)   not an exported object from 'namespace:GPArotation'
     
     
     # oblique rotations
     
-    if (rotation == 'promax' | rotation == 'PROMAX') {
-      promaxOutput <- PROMAX(loadingsNOROT, ppower=ppower, verbose=FALSE)
-      pattern <- promaxOutput$pattern
-      structure <- promaxOutput$structure
-      phi <- promaxOutput$phi
+    if (rotation == 'bentlerQ') {
+      outp <- GPArotation::bentlerQ(loadingsNOROT)
+      pattern <- outp$loadings
+      phi <- outp$Phi
+      structure <- pattern %*% phi
     }
     
-    if (rotation == 'quartimin') {
-      outp <- GPArotation::quartimin(loadingsNOROT)
+    if (rotation == 'geominQ') {
+      outp <- GPArotation::geominQ(loadingsNOROT, delta=delta)
       pattern <- outp$loadings
       phi <- outp$Phi
       structure <- pattern %*% phi
@@ -215,47 +206,54 @@ EFA <- function (data, extraction = 'paf', corkind='pearson', Nfactors=NULL,
       structure <- pattern %*% phi
     }
     
+    if (rotation == 'promax' | rotation == 'PROMAX') {
+      promaxOutput <- PROMAX(loadingsNOROT, ppower=ppower, verbose=FALSE)
+      pattern <- promaxOutput$pattern
+      structure <- promaxOutput$structure
+      phi <- promaxOutput$phi
+    }
+    
+    if (rotation == 'quartimin') {
+      outp <- GPArotation::quartimin(loadingsNOROT)
+      pattern <- outp$loadings
+      phi <- outp$Phi
+      structure <- pattern %*% phi
+    }
+    
     if (rotation == 'simplimax') {
       outp <- GPArotation::simplimax(loadingsNOROT)
       pattern <- outp$loadings
       phi <- outp$Phi
       structure <- pattern %*% phi
     }
-    
-    if (rotation == 'bentlerQ') {
-      outp <- GPArotation::bentlerQ(loadingsNOROT)
-      pattern <- outp$loadings
-      phi <- outp$Phi
-      structure <- pattern %*% phi
-    }
-    
-    if (rotation == 'geominQ') {
-      outp <- GPArotation::geominQ(loadingsNOROT)
-      pattern <- outp$loadings
-      phi <- outp$Phi
-      structure <- pattern %*% phi
-    }
-    
-    if (rotation == 'bifactorQ') {
-      outp <- GPArotation::bifactorQ(loadingsNOROT)
-      pattern <- outp$loadings
-      phi <- outp$Phi
-      structure <- pattern %*% phi
-    }
-    
-    
-    if (!anyNA(loadingsROT)) varexplROT <- VarianceExplained(eigenvalues, loadings=loadingsROT)
-    
-    if (!anyNA(structure)) {			
-      colnames(structure) <- colnames(phi) <- c(paste('Factor ', 1:Nfactors, sep=''))
-      rownames(phi) <- c(paste('Factor ', 1:Nfactors, sep=''))		
-      varexplROT <- VarianceExplained(eigenvalues, loadings=structure)
-      # when factors are correlated, sums of squared loadings cannot be added to obtain a total variance, so remove them from the output
-      varexplROT <- varexplROT[,1]
-    }
   }
   
   
+  # variance explained by the factors
+  if (!is.null(loadingsROT)) 
+    varexplROT <- VarianceExplained(eigenvalues, loadingsNOROT = loadingsNOROT,
+                                         loadingsROT = loadingsROT)
+
+  if (!is.null(structure)) 			
+    varexplROT <- VarianceExplained(eigenvalues, loadingsNOROT = loadingsNOROT,
+                                         loadingsROT = pattern, phi = phi)
+
+  
+  # communalities & uniquenesses
+  if (!is.matrix(communalities))  communalities <- as.matrix(communalities)
+  rownames(communalities) <- cnoms
+  if (ncol(communalities) == 1)  colnames(communalities) <- c('Communalities')
+  if (ncol(communalities) == 2)  colnames(communalities) <- c('Initial', 'Extraction')
+  uniquenesses <- 1 - communalities
+  
+  
+  
+  #############################  factor model stats   ###############################
+  
+  fit_coefs <- FIT_COEFS(cormat=cormat, loadings=loadingsNOROT, 
+                         extraction=extraction, Ncases=Ncases, verbose=FALSE) 
+
+ 
   efaOutput <- list(loadingsNOROT = loadingsNOROT,
                     loadingsROT = loadingsROT,
                     pattern = pattern,
@@ -265,90 +263,99 @@ EFA <- function (data, extraction = 'paf', corkind='pearson', Nfactors=NULL,
                     varexplNOROT2 = varexplNOROT2,
                     varexplROT = varexplROT,
                     evals12ratio = evals12ratio,
-                    cormat_reprod = cormat_reprod,
-                    fit_coefs = fit_coefs,
-                    chisqMODEL = chisqMODEL, 
-                    dfMODEL = dfMODEL, 
-                    pvalue = pvalue,
-                    chisqNULL = chisqNULL,
-                    dfNULL = dfNULL,
                     communalities = communalities,
-                    uniquenesses = uniquenesses)
+                    uniquenesses = uniquenesses,
+                    fit_coefs = fit_coefs)
   
   
-  if (verbose == TRUE) {
+  if (verbose ) {
     
-    message('\n\n\nExploratory Factor Analysis')
+    cat('\n\n\nExploratory Factor Analysis')
     
-    message('\nThe specified kind of factor extraction method for this analysis: ', extraction)
+    cat('\n\nThe specified kind of factor extraction method for this analysis: ', extraction)
     
-    message('\nThe specified kind of correlations for this analysis: ', ctype)
-    if (NfactorsWasNull == TRUE) {
-      message('\nNfactors was not specified and so the EMPKC test was conducted to determine')
-      message('the number of factors to extract: Nfactors = ', Nfactors,'\n')		
-    } else if (NfactorsWasNull == FALSE) {
-      message('\nThe specified number of factors to extraction = ', Nfactors,'\n')
+    cat('\n\nThe specified kind of correlations for this analysis: ', ctype)
+    if (NfactorsWasNull ) {
+      cat('\n\nNfactors was not specified and so the EMPKC test was conducted to determine')
+      cat('\nthe number of factors to extract: Nfactors = ', Nfactors,'\n')		
+    } else if (!NfactorsWasNull) {
+      cat('\n\nThe specified number of factors to extraction = ', Nfactors,'\n')
     }
     
-    message('\nCommunalities:\n')
+    cat('\nCommunalities:\n\n')
     print(round(communalities,2))
     
-    message('\n\nTotal Variance Explained (Initial Eigenvalues):\n')
-    print(round(varexplNOROT1,2), print.gap=4)
+    cat('\n\nEigenvalues and Proportions of Total Variance Explained:\n\n')
+    cat('               Initial\n')  
+    print(varexplNOROT1, print.gap=2)
     
-    message('\nRatio of the 1st to the 2nd initial eigenvalues = ', round(evals12ratio,1))
+    cat('\nRatio of the 1st to the 2nd initial eigenvalues = ', round(evals12ratio,1))
     
-    message('\n\nChi square = ',round(chisqMODEL,2),'   df = ',dfMODEL,'    p = ',round(pvalue,5))
+    cat('\n\n\nModel Fit:\n')
     
-    message('\n\nModel Fit Coefficients:')
-    message('\nRMSR = ',  round(fit_coefs$RMSR,3))
-    message('\nGFI = ',   round(fit_coefs$GFI,3))
-    message('\nCAF = ',   round(fit_coefs$CAF,3))
-    message('\nRMSEA = ', round(fit_coefs$RMSEA,3))
-    message('\nTLI = ',   round(fit_coefs$TLI,3))
-    message('\nCFI = ',   round(fit_coefs$CFI,3))
-    message('\nMFI = ',   round(fit_coefs$MFI,3))
-    message('\nBIC = ',   round(fit_coefs$BIC,3))
-    message('\nAIC = ',   round(fit_coefs$AIC,3))
-    message('\nCAIC = ',  round(fit_coefs$CAIC,3))
-    message('\nSABIC = ', round(fit_coefs$SABIC,3))
+    cat('\n    Chi square = ', round(fit_coefs$chisqMODEL,2),
+            '   df = ', fit_coefs$dfMODEL,'    p = ', round(fit_coefs$pvalue,5), '\n')
     
-    message('\n\nUnrotated Loadings:\n')
+    if (extraction %in% c('IMAGE','image')) {  
+      cat('\n    RMSR = ',  round(fit_coefs$RMSR,3))
+      cat('\n    GFI = ',   round(fit_coefs$GFI,3))
+      cat('\n    CAF = ',   round(fit_coefs$CAF,3))
+    }
+    
+    if (!extraction %in% c('IMAGE','image')) {  
+      
+      cat('\n     RMSR =',  format(round(fit_coefs$RMSR,3), nsmall = 3), 
+          '     RMSEA =', format(round(fit_coefs$RMSEA,3), nsmall = 3),
+          '     BIC =', round(fit_coefs$BIC,3))
+      
+      cat('\n     GFI = ',  format(round(fit_coefs$GFI,3), nsmall = 3), 
+          '     TLI  = ', format(round(fit_coefs$TLI,3), nsmall = 3),
+          '     AIC =', round(fit_coefs$AIC,3))
+      
+      cat('\n     CAF = ',  format(round(fit_coefs$CAF,3), nsmall = 3), 
+          '     CFI  = ', format(round(fit_coefs$CFI,3), nsmall = 3),
+          '     CAIC =', round(fit_coefs$CAIC,3))
+      
+      cat('\n', 
+          '                      MFI  = ', round(fit_coefs$MFI,3),
+          '     SABIC =', round(fit_coefs$SABIC,3))
+    }    
+    
+    cat('\n\nUnrotated Loadings:\n\n')
     print(round(loadingsNOROT,2), print.gap=3)
     
-    message('\n\nTotal Variance Explained (Unrotated Sums of Squared Loadings):\n')
-    print(round(efaOutput$varexplNOROT2,2), print.gap=4)		
+    cat('\n\nEigenvalues and Proportions of Total Variance Explained:\n')
+    cat('\n               Initial           Unrotated\n')  
+    print(efaOutput$varexplNOROT2, print.gap=2)
+
+    if (Nfactors == 1)  cat('\nNo rotation because there is only one factor\n') 
     
-    if (Nfactors == 1)  message('\nNo rotation because there is only one factor\n') 
+    if (rotation == 'none')   cat('\nRotation procedure:  No rotation')
     
-    if (Nfactors > 1) {
+    if (rotation != 'none' & Nfactors > 1) {    
       
-      if (rotation == 'none')   message('\nRotation procedure:  No rotation')
+      cat('\n\nThe specified rotation procedure: ', rotation)	
       
-      if (rotation != 'none') {
-        
-        message('\n\nThe specified rotation procedure: ', rotation)	
-        
-        if (!anyNA(loadingsROT)) {
-          message('\n\nRotated Loadings:\n')	
-          print(round(efaOutput$loadingsROT,2), print.gap=3) 
-        }
-        
-        if (!anyNA(pattern)) { 
-          
-          message('\n\nPattern Matrix (standardized factor loadings):\n');      
-          print(round(efaOutput$pattern,2), print.gap=3)
-          
-          message('\n\nStructure Matrix:\n');    
-          print(round(efaOutput$structure,2), print.gap=3)
-          
-          message('\n\nFactor Correlations:\n'); 
-          print(round(efaOutput$phi,2), print.gap=3)
-        }
-        
-        message('\n\nTotal Variance Explained (Rotation Sums of Squared Loadings):\n')
-        print(round(efaOutput$varexplROT,2), print.gap=4)		
+      if (!is.null(loadingsROT)) {
+        cat('\n\n\nRotated Loadings:\n\n')	
+        print(round(efaOutput$loadingsROT,2), print.gap=3) 
       }
+      
+      if (!is.null(pattern)) { 
+        
+        cat('\n\n\nPattern Matrix (standardized factor loadings):\n\n');      
+        print(round(efaOutput$pattern,2), print.gap=3)
+        
+        cat('\n\nStructure Matrix:\n\n');    
+        print(round(efaOutput$structure,2), print.gap=3)
+        
+        cat('\n\nFactor Correlations:\n\n'); 
+        print(round(efaOutput$phi,2), print.gap=3)
+      }
+      
+      cat('\n\nEigenvalues and Proportions of Total Variance Explained:\n')
+      cat('\n               Initial           Unrotated            Rotated\n')  
+      print(efaOutput$varexplROT, print.gap=2)
     }
   }
   

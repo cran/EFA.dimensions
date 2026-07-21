@@ -86,34 +86,34 @@ RAWPAR <- function (data, randtype='generated', extraction='PCA',
   }
   
   
-  if (verbose == TRUE) {
+  if (verbose ) {
     
-    message('\n\nPARALLEL ANALYSIS')
-    if (datakind == 'correlations') message('\nThe entered data is a correlation matrix.') 
-    if (randtype == 'generated')    message('\nRandomization method: generated data') 
-    if (randtype == 'permuted')     message('\nRandomization method: permuted data') 
+    cat('\n\nPARALLEL ANALYSIS')
+    if (datakind == 'correlations') cat('\n\nThe entered data is a correlation matrix.') 
+    if (randtype == 'generated')    cat('\n\nRandomization method: generated data') 
+    if (randtype == 'permuted')     cat('\n\nRandomization method: permuted data') 
     
-    message('\nType of correlations specified for the real data eigenvalues: ', ctype)
+    cat('\n\nType of correlations specified for the real data eigenvalues: ', ctype)
     
-    message('\nType of correlations specified for the random data eigenvalues: ', corkindRAND)
+    cat('\n\nType of correlations specified for the random data eigenvalues: ', corkindRAND)
     
     if (randtype == 'permuted' & datakind == 'correlations') {
-      message('\nThe permuted data option does not work when the entered data are a correlation matrix.')
-      message('\nSwitching to generated random data instead of permuted random data.')
+      cat('\n\nThe permuted data option does not work when the entered data are a correlation matrix.')
+      cat('\nSwitching to generated random data instead of permuted random data.')
     }
     
-    if (extraction=='PCA')    message('\nExtraction Method: Principal Components') 
-    if (extraction=='PAF')    message('\nExtraction Method: Common Factor Analysis')
-    if (extraction=='image')  message('\nExtraction Method: Image Factor Extraction') 
+    if (extraction=='PCA')    cat('\n\nExtraction Method: Principal Components') 
+    if (extraction=='PAF')    cat('\n\nExtraction Method: Common Factor Analysis')
+    if (extraction=='image')  cat('\n\nExtraction Method: Image Factor Extraction') 
     
-    message('\nVariables = ', Nvars) 
-    message('\nCases = ', Ncases) 
-    message('\nNdatasets = ', Ndatasets) 
-    message('\nPercentile = ', percentile) 
-    message('\nCompare the Real Data eigenvalues below to the corresponding')
-    message('random data Mean and Percentile eigenvalues\n\n')
+    cat('\n\nVariables = ', Nvars) 
+    cat('\n\nCases = ', Ncases) 
+    cat('\n\nNdatasets = ', Ndatasets) 
+    cat('\n\nPercentile = ', percentile) 
+    cat('\n\nCompare the Real Data eigenvalues below to the corresponding')
+    cat('\nrandom data Mean and Percentile eigenvalues\n\n')
     print(round(results,3), print.gap=3, row.names = FALSE)
-    message('\nThe number of factors according to the parallel analysis = ', NfactorsPA, '\n')
+    cat('\nThe number of factors according to the parallel analysis = ', NfactorsPA, '\n')
   }
   
   rawparOutput <- list(eigenvalues=results, NfactorsPA=NfactorsPA)

@@ -21,8 +21,8 @@ ROOTFIT <- function (data, corkind='pearson', Ncases=NULL, extraction='PAF',
   Ncases <- cordat$Ncases
   
   
-  if (extraction == 'PCA' | extraction == 'pca' | extraction == 'IMAGE' | extraction == 'image') {
-    
+  if (extraction %in% c('PCA', 'pca','IMAGE','image')) {
+      
     fits <- matrix(-9999,Nroots,5)
     
     fits[,1] <- 1:Nroots
@@ -53,8 +53,8 @@ ROOTFIT <- function (data, corkind='pearson', Ncases=NULL, extraction='PAF',
   }
   
   
-  if (extraction != 'PCA' & extraction != 'pca' & extraction != 'IMAGE' & extraction != 'image') {
-    
+  if (!extraction %in% c('PCA', 'pca','IMAGE','image')) {
+      
     fits <- matrix(-9999,Nroots,13)
     
     fits[,1] <- 1:Nroots
@@ -74,7 +74,7 @@ ROOTFIT <- function (data, corkind='pearson', Ncases=NULL, extraction='PAF',
       if (dof < 1) {
         fits <- fits[1:(root-1),]
         if (verbose == 'TRUE') {
-          message('\nThe degrees of freedom for the model with ',
+          cat('\nThe degrees of freedom for the model with ',
                   root,' factors is < 1 and so the procedure was stopped.')}
         break
       }
@@ -98,15 +98,15 @@ ROOTFIT <- function (data, corkind='pearson', Ncases=NULL, extraction='PAF',
   
   if (verbose == 'TRUE') {
     
-    message('\n\nFit coefficients for N-factor solutions')
+    cat('\n\nFit coefficients for N-factor solutions')
     
-    message('\nType of correlations used in the analyses: ', ctype)
+    cat('\n\nType of correlations used in the analyses: ', ctype)
     
-    message('\nExtraction Method: ', extraction)
+    cat('\n\nExtraction Method: ', extraction)
     
-    message('\nThe number of cases = ', Ncases)
+    cat('\n\nThe number of cases = ', Ncases)
     
-    message('\nThe number of variables = ', Nvars,'\n') 
+    cat('\n\nThe number of variables = ', Nvars,'\n\n') 
     
     print(round(fits,3))
   }

@@ -59,18 +59,18 @@ print(RECODE(data, old = c(1,2,3,4), new = c(1,1,2,2)) )
 print(RECODE(data, type = 'reverse'))	
 \donttest{
 # reversing coding the third item (Q3) of the Rosenberg Self-Esteem scale data
-data_RSE_rev <- RECODE(data_RSE[,'Q3'], type = 'reverse')
-table(data_RSE_rev); table(data_RSE[,'Q3'])
+data_RSE_rev <- RECODE(data_RSE_not_recoded[,'Q3'], type = 'reverse')
+table(data_RSE_rev); table(data_RSE_not_recoded[,'Q3'])
 
 # changing the third item (Q3) responses for the Rosenberg Self-Esteem scale data
 # from 0-to-4 to 1-to-5
-data_RSE_rev <- RECODE(data_RSE[,'Q3'], old = c(0,1,2,3,4), new = c(1,2,3,4,5))
-table(data_RSE_rev); table(data_RSE[,'Q3'])
+data_RSE_rev <- RECODE(data_RSE_not_recoded[,'Q3'], old = c(0,1,2,3,4), new = c(1,2,3,4,5))
+table(data_RSE_rev); table(data_RSE_not_recoded[,'Q3'])
 
 # changing the metric/range of the third item (Q3) responses for the 
 # Rosenberg Self-Esteem scale data
-data_RSE_rev <- RECODE(data_RSE[,'Q3'], type = 'new_range', 
+data_RSE_rev <- RECODE(data_RSE_not_recoded[,'Q3'], type = 'new_range', 
                  real_min = 1, real_max = 4, new_min = 1, new_max = 5 ) 
-table(data_RSE_rev); table(data_RSE[,'Q3'])
+table(data_RSE_rev); table(data_RSE_not_recoded[,'Q3'])
 }
 }

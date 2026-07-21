@@ -38,13 +38,12 @@ SESCREE <- function (data, Ncases=NULL, corkind='pearson', verbose=TRUE) {
   dimnames(results2) <-list(rep('', dim(results2)[1]))
   colnames(results2) <- c('Root', 'Eigenvalue', 'Slope', 'SE Estimate')
   
-  if (verbose == TRUE) {
-    message('\n\nSTANDARD ERROR SCREE TEST:')
-    message('\nSpecified kind of correlations for this analysis: ', ctype)
-    message('\nThe SE Estimate must be > the following value')
-    message('for a component to be nontrivial: ', arbiter, '\n')
+  if (verbose ) {
+    cat('\n\n\nSTANDARD ERROR SCREE TEST:')
+    cat('\n\nSpecified kind of correlations for this analysis: ', ctype)
+    cat('\n\nThe SE Estimate must be > than ', arbiter, ' for a component to be nontrivial\n\n')
     print(round(results2,2), print.gap=3)
-    message('\nThe number of factors according to the standard error scree test = ', 
+    cat('\nThe number of factors according to the standard error scree test = ', 
             NfactorsSESCREE, '\n')
   }
   

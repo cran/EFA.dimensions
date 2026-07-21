@@ -78,32 +78,32 @@ MAP <- function (data, corkind='pearson', Ncases=NULL, verbose=TRUE) {
   colnames(m_values) <- c('root','m_pr_squared','m_pr_4rth_power')
   
   
-  if (verbose == TRUE) { 
+  if (verbose ) { 
     
-    message("\n\nMINIMUM AVERAGE PARTIAL (MAP) TEST")
+    cat("\n\nMINIMUM AVERAGE PARTIAL (MAP) TEST")
     
-    if (datakind == 'correlations') message('\nThe entered data is a correlation matrix.') 
+    if (datakind == 'correlations') cat('\n\nThe entered data is a correlation matrix.') 
     
-    message('\nNumber of cases = ', Ncases)
+    cat('\n\nNumber of cases = ', Ncases)
     
-    message('\nNumber of variables = ', Nvars)
+    cat('\n\nNumber of variables = ', Nvars)
     
-    message('\nSpecified kind of correlations for this analysis: ', ctype)
+    cat('\n\nSpecified kind of correlations for this analysis: ', ctype)
     
-    message('\n\nTotal Variance Explained (Initial Eigenvalues):\n')
+    cat('\n\n\nEigenvalues and Proportions of Total Variance Explained:\n\n')
     print(round(totvarexplNOROT,2), print.gap=4)
     
-    message("\nVelicer's m values\n")
+    cat("\n\nVelicer's m values\n\n")
     print(round(m_values,5), print.gap=3)
     
-    message('\nThe smallest partial_r_squared m value is ', 
+    cat('\nThe smallest partial_r_squared m value is ', 
             round(min(na.omit(m_values[,2])),5))
-    message('\nThe smallest partial_r_4rth_power m value is ', 
+    cat('\n\nThe smallest partial_r_4rth_power m value is ', 
             round(min(na.omit(m_values[,3])),5))
     
-    message('\nThe number of components according to the original (1976) MAP Test is = ', 
+    cat('\n\nThe number of components according to the original (1976) MAP Test is = ', 
             NfactorsMAP,  labels = NULL)
-    message('\nThe number of components according to the revised (2000) MAP Test is = ', 
+    cat('\n\nThe number of components according to the revised (2000) MAP Test is = ', 
             NfactorsMAP4, labels = NULL, '\n')
   }
   
@@ -112,7 +112,7 @@ MAP <- function (data, corkind='pearson', Ncases=NULL, verbose=TRUE) {
   
   return(invisible(mapOutput))
   
-  message('\n')
+  cat('\n')
 }
 
 

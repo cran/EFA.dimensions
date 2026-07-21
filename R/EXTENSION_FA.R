@@ -102,10 +102,7 @@ EXTENSION_FA <- function(data,
                                  display=0)$NfactorsDIMTESTS }
   
   warnnf1 <- 0
-  if (Nfactors1==0) {
-    Nfactors1 <- 1
-    warnnf1 <- 1 
-  }
+  if (Nfactors1 == 0) { Nfactors1 <- 1; warnnf1 <- 1 }
   
   
   # factor extraction
@@ -303,36 +300,37 @@ EXTENSION_FA <- function(data,
     }
   }
   
-  if (verbose == TRUE) { 
-    message('\nEXTENSION FACTOR ANALYSIS\n')
-    message('\nNumber of Cases = ', Ncases)
-    message('\nTotal Number of Variables = ', Nvars)
-    message('\nNumber of Core Variables = ', Ncore)
-    message('\nNumber of Extension Variables = ', Next)
-    message('\nCorrelations to be Analyzed: ', ctype)
-    message('\nTest for Number of Factors: ', ntype)
-    message('\nFactor Extraction Procedure: ', etype)
-    message('\nRotation Procedure: ', rtype, '\n');
+  if (verbose) { 
+    
+    cat('\n\n\nEXTENSION FACTOR ANALYSIS')
+    cat('\n\nNumber of Cases = ', Ncases)
+    cat('\n\nTotal Number of Variables = ', Nvars)
+    cat('\n\nNumber of Core Variables = ', Ncore)
+    cat('\n\nNumber of Extension Variables = ', Next)
+    cat('\n\nCorrelations to be Analyzed: ', ctype)
+    cat('\n\nTest for Number of Factors: ', ntype)
+    cat('\n\nFactor Extraction Procedure: ', etype)
+    cat('\n\nRotation Procedure: ', rtype, '\n')
     
     if (higherorder==FALSE | (higherorder==TRUE & Nfactors1 == 1) | (higherorder==TRUE & rotation != 'promax')) {
-      message('\nEigenvalues & Fit Coefficients for the Core Variables:\n')
+      cat('\nEigenvalues & Fit Coefficients for the Core Variables:\n\n')
       print(round(fits1,2))
       
       if (warnnf1 == 1) {
-        message('\n\nWARNING: Zero factors were found in the data.
+        cat('\n\nWARNING: Zero factors were found in the data.
          The number of factors was therefore set at 1.') 
       }
       
-      message('\nNumber of factors in the core variables = ', Nfactors1, '\n')
+      cat('\nNumber of factors in the core variables = ', Nfactors1, '\n')
       
-      if (Nfactors1 == 1)  message('\n\nWARNING: There was only one factor, rotation not performed\n') 
+      if (Nfactors1 == 1)  cat('\n\nWARNING: There was only one factor, rotation not performed\n') 
       
       if (rotation == 'promax' & Nfactors1 > 1) {
-        message('\nFactor Intercorrelations:\n')
+        cat('\nFactor Intercorrelations:\n\n')
         print(round(rff,2))
       }
       
-      message('\nCore Variable Loadings on the Factors:\n')
+      cat('\nCore Variable Loadings on the Factors:\n\n')
       corelding <- cbind((1:nrow(lding1)), lding1)
       colnames(corelding) <- cbind(matrix(('Variable'),1,1), (matrix(('Factor'),1,ncol(lding1))))
       #rownames(corelding) <- matrix((''),nrow(lding1),1)
@@ -341,7 +339,7 @@ EXTENSION_FA <- function(data,
       print(round(corelding,2))
       
       if (Next > 0) {
-        message('\nExtension Variable Correlations with the Factors\n') 
+        cat('\nExtension Variable Correlations with the Factors\n\n') 
         #extcorrel <- cbind((1:nrow(sef1)), sef1)
         extcorrel <- cbind((nrow(lding1)+1):ncol(data), sef1)
         #rownames(extcorrel) <- matrix((''),nrow(extcorrel),1)
@@ -352,33 +350,33 @@ EXTENSION_FA <- function(data,
     }
     
     if (higherorder==TRUE & Nfactors1 > 1 & rotation == 'promax') {
-      message('\nEigenvalues & Fit Coefficients for the First Set of Core Variables:\n')
+      cat('\nEigenvalues & Fit Coefficients for the First Set of Core Variables:\n')
       print(round(fits1,2))
       
-      message('\nNumber of Factors in the First Set of Core Variables = ', Nfactors1)
-      message('\nEigenvalues & Fit Coefficients for the Higher Order Factor Analysis:\n')
+      cat('\nNumber of Factors in the First Set of Core Variables = ', Nfactors1)
+      cat('\nEigenvalues & Fit Coefficients for the Higher Order Factor Analysis:\n')
       print(round(fits2,2))
       
       if (warnnf2 == 1) {
-        message('\n\nWARNING: Zero factors were found in the higher order data.
+        cat('\n\nWARNING: Zero factors were found in the higher order data.
          The number of factors was therefore set at 1.')
       }
       
-      message('\nNumber of Factors for the Higher Order Factor Analysis = ', Nfactors2) 
+      cat('\nNumber of Factors for the Higher Order Factor Analysis = ', Nfactors2) 
       if (Nfactors2 == 1) {
-        message('\n\nWARNING: There was only one higher order factor, rotation not performed\n') 
+        cat('\n\nWARNING: There was only one higher order factor, rotation not performed\n') 
       }
       
-      message('\nFactor Intercorrelations from the First Factor Analysis and, in the
+      cat('\nFactor Intercorrelations from the First Factor Analysis and, in the
        far-right collumn(s), the Loadings on the Higher Order Factor(s):\n')
       print(round(rfflding,2))
       
-      message('\nCore Variable Loadings on the Lower Order Factors and, in the
+      cat('\nCore Variable Loadings on the Lower Order Factors and, in the
 far-right collumn(s), their Correlations with the Higher Order Factor(s):\n')
       print(round(ldingsef,2))
       
       if (Next > 0) {
-        message('\nExtension Variable Correlations with the Lower Order Factor(s) and, in the
+        cat('\nExtension Variable Correlations with the Lower Order Factor(s) and, in the
 far-right collumn(s), their Correlations with the Higher Order Factor(s):\n')
         print(round(extsef,2)) 
       }

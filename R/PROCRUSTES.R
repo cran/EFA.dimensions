@@ -47,16 +47,16 @@ PROCRUSTES <- function (loadings, target, type='orthogonal', verbose=TRUE) {
   #root mean square residual.
   rmsr = sqrt (sum(resid*resid) / (nvars * ncol(target)))
   
-  if (verbose == TRUE) {
-    if (type=='orthogonal') {message('\n\nOrthogonal Procrustes Rotation') }
-    if (type=='oblique')    {message('\n\nOblique Procrustes Rotation:') }
-    message('\nOriginal Loadings:\n'); print(round(loadings,3), print.gap=3)
-    message('\nTarget:\n'); print(round(target,3), print.gap=3)
-    message('\nProcrustes-Rotated Loadings:\n'); print(round(procrust,3), print.gap=3)
-    message('\nCongruence Between the Target & Procrustes-Rotated Loadings = ', round(rtproc,3))
-    message('\nProportion of Variance in Target = ', round(pertarget,3))
-    message('\nProportion of Variance in Residual = ', round(perresid,3))
-    message('\nRoot Mean Square Residual = ', round(rmsr,3),'\n')
+  if (verbose ) {
+    if (type=='orthogonal') {cat('\n\nOrthogonal Procrustes Rotation') }
+    if (type=='oblique')    {cat('\n\nOblique Procrustes Rotation:') }
+    cat('\n\nOriginal Loadings:\n\n'); print(round(loadings,3), print.gap=3)
+    cat('\n\nTarget:\n\n'); print(round(target,3), print.gap=3)
+    cat('\n\nProcrustes-Rotated Loadings:\n\n'); print(round(procrust,3), print.gap=3)
+    cat('\n\nCongruence Between the Target & Procrustes-Rotated Loadings = ', round(rtproc,3))
+    cat('\n\nProportion of Variance in Target = ', round(pertarget,3))
+    cat('\n\nProportion of Variance in Residual = ', round(perresid,3))
+    cat('\n\nRoot Mean Square Residual = ', round(rmsr,3),'\n')
   }
   
   procrustesOutput <- list(loadingsPROC=procrust, congruence=rtproc, rmsr=rmsr, residmat=resid)

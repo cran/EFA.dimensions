@@ -4,9 +4,10 @@
 \description{Salient loadings criterion for determining the number of factors,
 	as recommended by Gorsuch. Factors are retained when they consist of a specified minimum 
 	number (or more) variables that have a specified minimum (or higher) loading value.}
-\usage{SALIENT(data, salvalue=.4, numsals=3, max_cross=NULL, min_eigval=.7, corkind='pearson', 
-        extraction = 'paf', rotation='promax', loading_mat = 'structure',  
-         ppower = 3, iterpaf=100, Ncases=NULL, verbose=TRUE, factormodel, rotate)}
+\usage{SALIENT(data, salvalue = .4, numsals = 3, max_cross = NULL, min_eigval = .7,
+               corkind = 'pearson', extraction = 'paf', rotation = 'promax',
+               loading_mat = 'structure', ppower = 3, iterpaf = 100, 
+               Ncases = NULL, verbose = TRUE, factormodel, rotate)}
 \arguments{
  \item{data}{
  \code{}An all-numeric dataframe where the rows are cases & the columns are the variables,

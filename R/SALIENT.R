@@ -28,16 +28,17 @@ SALIENT <- function (data, salvalue=.4, numsals=3, max_cross=NULL, min_eigval=.7
   
   # totvarexplNOROT <- nevalsgt1Output$totvarexplNOROT
   
-  if (verbose == TRUE) {
-    message('\n\nNUMBER OF SALIENT LOADINGS:')
-    message('\nThe specified kind of correlations for this analysis: ', appendLF=FALSE); cat(ctype)
-    message('\n\nThe salient loading value = ', appendLF=FALSE); cat(salvalue)
-    message('\n\nThe required number salient loadings = ', appendLF=FALSE); cat(numsals)
-    if (!is.null(max_cross)) message('\n\nThe specified maximum value for cross-loadings = ', appendLF=FALSE); cat(max_cross)
-    message('\n\nThe minimum eigenvalue for including a factor in the analyses = ', appendLF=FALSE); cat(min_eigval)	
-    message('\n\nThe factor extraction method = ', appendLF=FALSE); cat(extraction)
-    message('\n\nThe factor rotation method = ', appendLF=FALSE); cat(rotation)	
-    message('\n\nStep-wise results for the number of loadings, per factor, that meet the criteria:\n')	
+  
+  if (verbose) {
+    cat('\n\n\nNUMBER OF SALIENT LOADINGS:')
+    cat('\n\nThe specified kind of correlations for this analysis: ', ctype)
+    cat('\n\nThe salient loading value = ', salvalue)
+    cat('\n\nThe required number salient loadings = ', numsals)
+    if (!is.null(max_cross)) cat('\n\nThe specified maximum value for cross-loadings = ', max_cross)
+    cat('\n\nThe minimum eigenvalue for including a factor in the analyses = ', min_eigval)	
+    cat('\n\nThe factor extraction method = ', extraction)
+    cat('\n\nThe factor rotation method = ', rotation)	
+    cat('\n\nStep-wise results for the number of loadings, per factor, that meet the criteria:\n\n')	
   }
   
   
@@ -62,7 +63,7 @@ SALIENT <- function (data, salvalue=.4, numsals=3, max_cross=NULL, min_eigval=.7
     if (rotation == 'none') loadings <- outpEFA$loadingsNOROT
     
     if (rotation == 'varimax' | rotation == 'quartimax' | rotation == 'bentlerT' | rotation == 'equamax' |
-        rotation == 'geominT' | rotation == 'bifactorT' | rotation == 'entropy')  
+        rotation == 'geominT' | rotation == 'entropy')  
       loadings <- outpEFA$loadingsROT
     
     if (rotation == 'promax'    | rotation == 'quartimin'| rotation == 'oblimin' | rotation == 'oblimax' |
@@ -143,26 +144,36 @@ SALIENT <- function (data, salvalue=.4, numsals=3, max_cross=NULL, min_eigval=.7
     
     if (verbose & lupeNF <= 10) { 
       Nsals_cols <- Nsals_cols[1:length(salvalue), ,drop=FALSE]
-      print(Nsals_cols); message('\n')
+      print(Nsals_cols); cat('\n')
     }
     
-    if (NfactorsSALIENT == 0 & all(meetsF == TRUE))  {
+    if (NfactorsSALIENT == 0 & all(meetsF))  {
       NfactorsSALIENT <- ncol(loadings)
       loadings_final <- loadings
       #break
     }		
   }
   
-  if (verbose == TRUE) {
-    message('The number of factors according to the salient loadings criterion = ', NfactorsSALIENT, '\n')
-    message('\nThe loading matrix:\n')
+  if (verbose) {
+    cat('\nThe number of factors according to the salient loadings criterion = ', NfactorsSALIENT, '\n')
+    cat('\n\nThe loading matrix:\n\n')
     print(round(loadings_final,2), print.gap=3)
   }
   
   salientOutput <- list(NfactorsSALIENT=NfactorsSALIENT, loadings_final=loadings_final)
   
   return(invisible(salientOutput))
-  
 }
 
 
+# message('\nThe specified kind of correlations for this analysis: ', appendLF=FALSE); cat(ctype)
+# 
+# message('\nThe specified kind of correlations for this analysis: ', appendLF=FALSE); cat(ctype)
+# 
+# message('\n\nThe salient loading value = ', appendLF=FALSE, salvalue)
+# 
+# message('\n\nThe required number salient loadings = ', appendLF=FALSE); cat(numsals)
+# if (!is.null(max_cross)) message('\n\nThe specified maximum value for cross-loadings = ', appendLF=FALSE); cat(max_cross)
+# message('\n\nThe minimum eigenvalue for including a factor in the analyses = ', appendLF=FALSE); cat(min_eigval)	
+# message('\n\nThe factor extraction method = ', appendLF=FALSE); cat(extraction)
+# message('\n\nThe factor rotation method = ', appendLF=FALSE); cat(rotation)	

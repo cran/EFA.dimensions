@@ -73,17 +73,19 @@ CORRECTED_CORRELS <- function(cormat, Ncases = 100, alphas,
       
       systematic <- TRUE
       
-      message('\nThe number of possible permutations for ', Nvars, ' variables ')
+      message('\nNotice:')
+      message('The number of possible permutations for ', Nvars, ' variables ')
       message('is less than Nperms (', Nperms, '). Systematic matrix permutations')   
       message('will therefore be conducted instead of random data permutations.')
     }
     
     if (systematic) {
       
-      message('\n The number of permutations for ', Nvars, ' variables = ', num_permutations, '\n')
+      cat('\nThe number of permutations for ', Nvars, ' variables = ', num_permutations, '\n')
       
       if (num_permutations > 1000000) {
-        message('\nThe number of systematic matrix permutations is over one million.')
+        message('\nNotice:')
+        message('The number of systematic matrix permutations is over one million.')
         message('Either wait for the analyses to run, or Stop and switch to')
         message('systematic = FALSE, for random data permutations.')
       }
@@ -151,53 +153,53 @@ CORRECTED_CORRELS <- function(cormat, Ncases = 100, alphas,
   
   if (verbose) {
     
-    message('\nThe number of cases for the input correlations = ', Ncases)
+    cat('\nThe number of cases for the input correlations = ', Ncases)
     
-    message('\nThe input correlations:')
+    cat('\n\nThe input correlations:\n\n')
     print(round(cormat,2),2)
     
-    message('\nThe input alphas:')
+    cat('\nThe input alphas:\n\n')
     names(alphas) <- rownames(cormat)
     print(alphas)
     
-    message('\nThe corrected-for-attenuation correlations:')
+    cat('\nThe corrected-for-attenuation correlations:\n\n')
     print(round(corxd,2))
     
-    message('\nCorrected-for-attenuation correlations above the diagonal,')
-    message('uncorrected correlations below the diagonal:')
+    cat('\nCorrected-for-attenuation correlations above the diagonal,')
+    cat('\nuncorrected correlations below the diagonal:\n\n')
     print(round(cor_both,2))
     
-    message('\nThe residuals correlation matrix:')
+    cat('\nThe residuals correlation matrix:\n\n')
     print(round(resids,2), print.gap=4)
     
-    message('\nInput data and results in row format:')
+    cat('\nInput data and results in row format:\n\n')
     colnames(data_in_rows)[c(1,3)] <- c('','')
     colnames(data_in_rows)[c(2,4)] <- c('alpha','alpha')
     print(data_in_rows, print.gap=3)
     
     if (Nvars > 2) {
       
-      message('\nRank correlations between the original & corrected correlations,')
-      message('with permutation tests of significance:') 
-      message("\n   Spearman's rho = ", round(cor_spearman,2), '    p = ', round(perm_p_rho,6))
-      message("\n   Kendall's tau  = ", round(cor_kendall,2),  '    p = ', round(perm_p_tau,6))
+      cat('\nRank correlations between the original & corrected correlations,')
+      cat('\nwith permutation tests of significance:\n') 
+      cat("\n   Spearman's rho = ", round(cor_spearman,2), '    p = ', round(perm_p_rho,6))
+      cat("\n   Kendall's tau  = ", round(cor_kendall,2),  '    p = ', round(perm_p_tau,6))
       
       if (systematic)
-        message('\nThe permutation tests were based on systematic matrix permutations.')
+        cat('\n\nThe permutation tests were based on systematic matrix permutations.')
       
       if (!systematic) {
-        message('\nThe permutation tests were based on random matrix permutations.')
-        message('The number of random matrix permutations (Nperms) = ', Nperms)
+        cat('\n\nThe permutation tests were based on random matrix permutations.')
+        cat('The number of random matrix permutations (Nperms) = ', Nperms)
       }
     }
     
-    message('\n\nTests of whether the corrected and uncorrected correlation matrices are equal:')
+    cat('\n\nTests of whether the corrected and uncorrected correlation matrices are equal:\n')
     
-    message('\n   Steiger test:   Chisq = ', round(p1$chi,2), '   df = ', 
+    cat('\n   Steiger test:   Chisq = ', round(p1$chi,2), '   df = ', 
             round(p1$df,2), '   p = ', round(p1$prob,6), 
             '   RMSEA = ', round(p1$RMSEA,2), '   SRMR = ', round(p1$SRMR,2))
     
-    message('\n   Jennrich test:  Chisq = ', round(p3$chi2,2), '   p = ', round(p3$prob,6))
+    cat('\n   Jennrich test:  Chisq = ', round(p3$chi2,2), '   p = ', round(p3$prob,6), '\n')
   }
   
   return(invisible(output))

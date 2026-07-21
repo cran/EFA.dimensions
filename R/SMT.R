@@ -68,6 +68,8 @@ SMT <- function (data, corkind='pearson', Ncases=NULL, verbose=TRUE) {
   
   if (pvalue > .05) NfactorsSMT <- 0
   
+  if (verbose ) cat('\n\n\nSEQUENTIAL CHI-SQUARE MODEL TEST')
+    
   pvalues <- c(0, NA, chisqNULL, dfNULL, pvalue)
   if (pvalue < .05) {
     
@@ -76,7 +78,7 @@ SMT <- function (data, corkind='pearson', Ncases=NULL, verbose=TRUE) {
       dof <- 0.5 * ((Nvars - root)^2 - Nvars - root) # The degrees of freedom for the model
       if (dof < 1) {
         if (verbose == 'TRUE') {
-          message('\nThe degrees of freedom for the model with ',
+          cat('\n\nThe degrees of freedom for the model with ',
                   root,' factors is < 1 and so the procedure was stopped.')}
         break
       }
@@ -84,9 +86,10 @@ SMT <- function (data, corkind='pearson', Ncases=NULL, verbose=TRUE) {
       mlOutput <- EFA(cormat, extraction = 'ml', rotation='none', Nfactors=root, Ncases=Ncases, verbose=FALSE)
       
       pvalues <- rbind(pvalues, 
-                       cbind(root, eigenvalues[root], mlOutput$chisqMODEL, mlOutput$dfMODEL, 
-                             mlOutput$pvalue), deparse.level=0)
-      if (mlOutput$pvalue > .05) {
+                       cbind(root, eigenvalues[root], mlOutput$fit_coefs$chisqMODEL, 
+                             mlOutput$fit_coefs$dfMODEL, 
+                             mlOutput$fit_coefs$pvalue), deparse.level=0)
+      if (mlOutput$fit_coefs$pvalue > .05) {
         NfactorsSMT <- root
         break
       }	
@@ -98,10 +101,9 @@ SMT <- function (data, corkind='pearson', Ncases=NULL, verbose=TRUE) {
   smtOutput <- list(NfactorsSMT=NfactorsSMT, pvalues=pvalues)
   
   
-  if (verbose == TRUE) {
-    message('\n\nSEQUENTIAL CHI-SQUARE MODEL TEST')
-    message('\nSpecified kind of correlations for this analysis: ', ctype)
-    message('\nThe number of factors according to the sequential chi-square model test= ', NfactorsSMT,'\n')
+  if (verbose ) {
+    cat('\n\nSpecified kind of correlations for this analysis: ', ctype)
+    cat('\n\nThe number of factors according to the sequential chi-square model test= ', NfactorsSMT,'\n\n')
     print(round(pvalues,6), print.gap=4, row.names=FALSE)
   }
   

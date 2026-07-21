@@ -93,14 +93,14 @@ CONGRUENCE <- function (target, loadings, verbose=TRUE) {
   # root mean square residual
   rmsr <- sqrt (sum(resid*resid) / (nrows * ncols))
   
-  if (verbose == TRUE) {
-    message('\n\nFactor solution congruences before & after factor alignment:')
-    message('\nFactor soution congruence before alignment = ', round(rcBefore,2))
-    message('\nFactor soution congruence after alignment = ', round(rcAfter,2))
-    message('\nFactor congruences after alignment: \n'); print(round(rcFactors,2))
-    message('\nProportion of variance in target matrix = ', round(pertarget,2))
-    message('\nProportion of variance in residual matrix = ', round(perresid,2))
-    message('\nRoot mean square residual = ', round(rmsr,2), '\n')
+  if (verbose ) {
+    cat('\n\nFactor solution congruences before & after factor alignment:')
+    cat('\n\nFactor soution congruence before alignment = ', round(rcBefore,2))
+    cat('\n\nFactor soution congruence after alignment = ', round(rcAfter,2))
+    cat('\n\nFactor congruences after alignment: \n\n'); print(round(rcFactors,2))
+    cat('\n\nProportion of variance in target matrix = ', round(pertarget,2))
+    cat('\n\nProportion of variance in residual matrix = ', round(perresid,2))
+    cat('\n\nRoot mean square residual = ', round(rmsr,2), '\n')
   }
   
   congruenceOutput <- list(rcBefore=rcBefore, rcAfter=rcAfter, rcFactors=rcFactors, rmsr=rmsr, 

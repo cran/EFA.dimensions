@@ -83,14 +83,14 @@ EMPKC <- function (data, corkind='pearson', Ncases=NULL, verbose=TRUE) {
   NfactorsEMPKC <- which(eigenvalues <= refs)[1]-1
   
   
-  if (verbose == TRUE) {
-    message('\n\nEMPIRICAL KAISER CRITERION')
-    message('\nKind of correlations analyzed: ', ctype,'\n')
+  if (verbose ) {
+    cat('\n\n\nEMPIRICAL KAISER CRITERION')
+    cat('\n\nKind of correlations analyzed: ', ctype,'\n\n')
     evals <- cbind(1:Nvars, eigenvalues, refs)
     rownames(evals) <- rep('',dim(evals)[1])
     colnames(evals) <- c('Nfactors', 'Eigenvalue','Reference Values')
     print(round(evals,3), print.gap=4, row.names=FALSE)
-    message('\nThe number of factors according to the Empirical Kaiser Criterion = ', NfactorsEMPKC,'\n')
+    cat('\nThe number of factors according to the Empirical Kaiser Criterion = ', NfactorsEMPKC,'\n')
   }
   
   empkcOutput <- list(NfactorsEMPKC=NfactorsEMPKC, eigenvalues=eigenvalues, refvalues=refs)

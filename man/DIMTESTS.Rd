@@ -4,7 +4,7 @@
 \description{Conducts multiple tests for the number of factors
 }
 \usage{DIMTESTS(data, tests, corkind, Ncases, HULL_method, HULL_gof, HULL_cor_method,
-          CD_cor_method, display)}
+          CD_cor_method, display=2)}
 \arguments{
   \item{data}{
   \code{}An all-numeric dataframe where the rows are cases & the columns are the variables, 
@@ -46,56 +46,17 @@
   \code{}The results to be displayed in the console: 0 = nothing; 1 = only the # of 
          factors for each test; 2 (default) = detailed output for each test}
 }
-\details{This is a convenience function for tests for the number of factors.
+\details{This is a convenience function for running possibly multiple tests 
+for the number of factors.
 	
-	The HULL method option uses the HULL function (and its defaults) in the EFAtools package.
+Run one the following commands for descriptions of the various tests:
 
-	From Auerswald & Moshagen (2019):
+\itemize{
 
-	"The Hull method (Lorenzo-Seva et al., 2011) is an approach based on the Hull 
-	heuristic used in other areas of model selection (e.g., Ceulemans & Kiers, 2006). 
-	Similar to nongraphical variants of Cattell's scree plot, the Hull method attempts 
-	to find an elbow as justification for the number of common factors. However, instead 
-	of using the eigenvalues relative to the number of factors, the Hull method relies 
-	on goodness-of-fit indices relative to the model degrees of freedom of the proposed 
-	model."
-	
+\item{RShowDoc("Number_of_factors_tests_vignettes", package = "EFA.dimensions")}
 
-	The CD (comparison data) method option uses the CD function (and its defaults) in the 
-	EFAtools package. The CD method can only be conducted on raw data and not on 
-	correlation matrices.
-
-	From Auerswald & Moshagen (2019):
-
-	"Ruscio and Roche (2012) suggested an approach that finds the number of factors 
-	by determining the solution that reproduces the pattern of eigenvalues best 
-	(comparison data, CD). CD takes previous factors into account by generating 
-	comparison data of a known factorial structure in an iterative procedure. 
-	Initially, CD compares whether the simulated comparison data with one underlying 
-	factor (j = 1) reproduce the pattern of empirical eigenvalues significantly 
-	worse compared with a two-factor solution (j + 1). If this is the case, CD 
-	increases j until further improvements are nonsignificant or a preset maximum 
-	of factors is reached."
-	
-	"No single extraction criterion performed best for every factor model. In 
-	unidimensional and orthogonal models, traditional PA, EKC, and Hull 
-	consistently displayed high hit rates even in small samples. Models with 
-	correlated factors were more challenging, where CD and SMT outperformed 
-	other methods, especially for shorter scales. Whereas the presence of 
-	cross-loadings generally increased accuracy, non-normality had virtually 
-	no effect on most criteria. We suggest researchers use a combination of 
-	SMT and either Hull, the EKC, or traditional PA, because the number of 
-	factors was almost always correctly retrieved if those methods converged. 
-	When the results of this combination rule are inconclusive, traditional 
-	PA, CD, and the EKC performed comparatively well. However, disagreement 
-	also suggests that factors will be harder to detect, increasing sample 
-	size requirements to N >= 500."
-		
-
-	The recommended tests for the number of factors are: EMPKC, HULL, and RAWPAR.
-	The MAP test is also recommended for principal components analyses.
-	Other possible methods (e.g., NEVALSGT1, SALIENT, SESCREE) are less 
-	well-validated and are included for research purposes.
+\item{vignette("Number_of_factors_tests_vignettes")}
+}
 }
 \value{A list with the following elements:
  \item{dimtests}{A matrix with the DIMTESTS results}

@@ -54,7 +54,7 @@ RAWPAR(data, randtype, extraction, Ndatasets, percentile,
 }
 \details{
 	The parallel analysis procedure for deciding on the number of 
-	components or factors involves extractioning eigenvalues from random data 
+	components or factors involves extracting eigenvalues from random data 
 	sets that parallel the actual data set with regard to the number of cases 
 	and variables. For example, if the original data set consists of 305 
 	observations for each of 8 variables, then a series of random data matrices 
@@ -77,10 +77,10 @@ RAWPAR(data, randtype, extraction, Ndatasets, percentile,
 	determine  the number of common factors. Principal components eigenvalues are based on all of 
 	the variance   in correlation matrices, including both the variance that is shared among 
 	variables and the   variances that are unique to the variables. In contrast, principal axis 
-	eigenvalues are based   solely on the shared variance among the variables. The procedures are 
+	eigenvalues are based  solely on the shared variance among the variables. The procedures are 
 	qualitatively different. Some therefore claim that the eigenvalues from one extraction method 
 	should not be used to determine the  number of factors for another extraction method. 
-	The PAF option in the extraction argument for the PARALLEL function was included solely for 
+	The PAF option in the extraction argument for the  RAWPAR and PARALLEL function was included solely for 
 	research purposes. It is best to use PCA as the extraction  method for regular data analyses. 
 	
 	Polychoric correlations are time-consuming to compute. While polychoric correlations should 
