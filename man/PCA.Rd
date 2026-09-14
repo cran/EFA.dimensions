@@ -2,9 +2,14 @@
 \alias{PCA}
 \title{Principal components analysis}
 \description{Principal components analysis}
-\usage{PCA(data, Nfactors=NULL, rotation='promax', corkind='pearson', 
-                 Ncases=NULL, ppower = 3, delta = .01, 
-                 verbose=TRUE, rotate)}
+\usage{PCA(data, Nfactors=NULL, rotation='promax', corkind='pearson',
+           Ncases=NULL, ppower = 3,
+           GPA_options = list(delta = .01,
+                              epsilon = .00001,
+                              normalize = FALSE,
+                              maxit = 1000,
+                              randomStarts = 50),
+           verbose=TRUE, rotate)}
 \arguments{
   \item{data}{
   \code{}An all-numeric dataframe where the rows are cases & the columns are 
@@ -33,13 +38,10 @@
   \code{}The power value to be used in a promax rotation (required only if
          rotation = 'promax'). Suggested value: 3}
 
-  \item{delta}{ 
-  \code{} When rotation = 'geominQ' or 'geominT', or when bifactor_kind = 
-  'bigeominT' or 'bigeominQ', delta is a tuning parameter 
-  for the Geomin criterion. It acts as a small constant that is added to prevent 
-  mathematical problems when a factor loading is exactly zero. 
-  Delta is sometimes referred to as 'epsilon'.}
-                  
+  \item{GPA_options}{ 
+  \code{}(optional) A list with options for when a GPArotation is used.
+  See the Details section below.}
+  
   \item{verbose}{
   \code{}Should detailed results be displayed in console? TRUE (default) or FALSE}
   
@@ -120,8 +122,44 @@
     each individual factor column. \cr
   	}
 
-Run one of the following commands for more detailed descriptions of the 
-above rotation methods:
+
+  For \strong{GPA_options:}
+  
+  A list with options for when a GPArotation is used. The list 
+  elements are 'delta', 'epsilon', 'normalize', 'maxit', and 'randomStarts'.
+  
+  \itemize{
+		
+    \item\strong{delta} is a small positive number that is added to the squared  
+    factor loadings in the (geomin) optimization denominator to prevent division by 
+    zero and control the sharpness of the penalty near zero. 
+    (Note: In MPLus, delta is called "epsilon".)
+  
+    \item\strong{epsilon} is the numeric rotational convergence tolerance threshold. 
+    It controls how precise or strict the stopping rule is for the rotation algorithm.
+    The gradient projection algorithm stops optimizing and assumes the 
+    rotation has converged when the norm of the gradient falls below this value.
+
+    \item\strong{normalize} specifies whether and how the loadings
+    matrix is normalized prior to rotation and denormalized after rotation.
+    The possibilities are FALSE (the default) for no normalization, or
+    TRUE, for the Kaiser/Horst normalization.
+
+    \item\strong{maxit} is the maximum number of iterations.
+
+    \item\strong{randomStarts} is an integer that specifies the number of 
+    random starting configurations used to optimize the factor rotation.
+    It helps avoid getting trapped in local minima during factor rotation 
+    optimization. It runs the gradient projection algorithm multiple timeseach 
+    using a different random orthogonal or oblique starting rotation 
+    matrix (Tmat) generated via QR decomposition.
+    It returns the rotated factor loadings matrix and results corresponding 
+    to the run with the lowest objective criterion value among all attempts. \cr
+  }
+  
+  
+  Run one of the following commands for more detailed descriptions of the 
+  above rotation methods:
 
 \itemize{
 

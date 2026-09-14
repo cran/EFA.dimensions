@@ -1,13 +1,30 @@
 
 
 
-bifactor_engine <- function(loadings, cormat = NULL,  # phi = NULL, 
-                            corkind = 'pearson', Ncases = NULL, 
+bifactor_engine <- function(loadings = NULL, 
+                            cormat = NULL, corkind = 'pearson', Ncases = NULL, 
+                            rawdata = NULL,
+                            Nfactors = 4,
                             bifactor_kind, 
                             schmid_options = list(extraction = 'minres', 
-                                                  rotation = 'oblimin', 
-                                                  N_group_factors = 3),
-                            delta = .01, min_loading = .2) { 
+                                                  rotation = 'oblimin'),
+                            LV_options = list(group_keys = NULL, 
+                                              estimator = 'MLR', 
+                                              rotation = 'bigeomin',
+                                              resid_correls=NULL, 
+                                              LV_names=NULL,
+                                              ordered = FALSE),
+                            GPA_options = list(delta = .01, 
+                                               epsilon = .00001, 
+                                               normalize = FALSE, 
+                                               maxit = 1000, 
+                                               randomStarts = 50), 
+                            min_loading = .2) { 
+  
+  # Nfactors should be the # of group factors + 1
+  
+  
+  #############################  argument checks   ##################################
   
   # just one bifactorkind
   if (length(bifactor_kind) > 1) {
@@ -15,38 +32,117 @@ bifactor_engine <- function(loadings, cormat = NULL,  # phi = NULL,
     bifactor_kind <- bifactor_kind[1]
   }
   
-  structureBIF <- phiBIF <- varexplBIF <-
-    omega_total <- omega_hierl <- 
-    Calpha.z <-
-    ECV <- ARPB <- FD <- PUC <- coef_H <- rmsr <- rmsr_gen <- 
-    rmsr_psych <- var_partit_mat <- NULL
   
-  
-  # when loadings are already bifactor loadings
-  if (bifactor_kind == 'none')  loadingsBIF <- loadings 
-  
-  if (bifactor_kind == 'bifactorT')   # orthogonal
-    
-    loadingsBIF <- GPArotation::bifactorT(loadings)$loadings
-  
-  if (bifactor_kind == 'bifactorQ') {  # oblique
-    
-    outp <- GPArotation::bifactorQ(loadings)
-    loadingsBIF <- outp$loadings
-    phiBIF <- outp$Phi
-    structureBIF <- loadingsBIF %*% phiBIF
+  #############################  set up data & cormat   #############################
+
+  # cormat & Ncases, if not provided & rawdata is provided
+  if (is.null(cormat) & !is.null(rawdata)) {
+    cormat <- cor(rawdata)
+    Ncases = nrow(rawdata)
   }
   
-  if (bifactor_kind == 'bigeominT')    # orthogonal
-    
-    loadingsBIF <- GPArotation::bigeominT(loadings, delta=delta)$loadings
+  N_group_factors <- Nfactors - 1
   
-  if (bifactor_kind == 'bigeominQ') {  # oblique
+  ###########################  bifactor analyses  ###################################
+  
+  loadings_for_BIF <- loadings
+  
+  structure_BIF <- phi_BIF <- varexplBIF <- lav_model <- lavaan_output <- NULL
+  
+  # when loadings are already bifactor loadings
+  if (bifactor_kind == 'none')  loadings_BIF <- loadings 
+  
+  if (bifactor_kind == 'CFA' | bifactor_kind == 'ESEM') {
     
-    outp <- GPArotation::bigeominQ(loadings, delta=delta)
-    loadingsBIF <- outp$loadings
-    phiBIF <- outp$Phi
-    structureBIF <- loadingsBIF %*% phiBIF
+    varnames <- colnames(rawdata)
+    
+    # check on ordered
+    # ordered can be TRUE, FALSE, or it can have the names of ordered variables
+    # if ordered != FALSE, check the number of values for each variable & 
+    # change to ordered = FALSE if all have > 10 levels 
+    # change to ordered = the names of the variables with <= 10 values, if only some have > 10 values
+    LV_options$ordered <- ordered_data_check(ordered = LV_options$ordered, rawdata = rawdata)
+    
+    # check if ordered is compatible with estimator & change to WLSMV if not
+    LV_options$estimator <- ordered_estimator_check(ordered = LV_options$ordered, 
+                                                    estimator = LV_options$estimator)
+    
+    if (bifactor_kind == 'CFA') {
+      
+      # generate lavaan CFA model syntax
+      lav_model <- lavaan_model(varnames = varnames, 
+                                model=NULL, 
+                                keys = LV_options$group_keys,  
+                                Nfactors = N_group_factors,
+                                LV_names=NULL, 
+                                resid_correls=NULL,
+                                bifactor = TRUE,
+                                esem = FALSE)
+      
+      # lavaan CFA
+      lavaan_output <- cfa(model = lav_model, 
+                           data = rawdata,
+                           # sample_cov = cormat,
+                           # sample.nobs = Ncases,
+                           ordered = LV_options$ordered, 
+                           estimator = LV_options$estimator, 
+                           orthogonal = TRUE)
+    }
+    
+    if (bifactor_kind == 'ESEM') {
+      
+      # generate lavaan B-ESEM model syntax
+      lav_model <- lavaan_model(varnames = colnames(rawdata), 
+                                model = NULL, 
+                                keys = LV_options$group_keys, 
+                                Nfactors = N_group_factors,
+                                LV_names = NULL, 
+                                resid_correls = NULL,
+                                bifactor = TRUE,
+                                esem = TRUE)
+      
+      if (!is.null(LV_options$group_keys)) {
+        target <- target_matrix(keys = LV_options$group_keys, varnames=varnames, bifactor=TRUE)
+        
+        lavaan_output <- lavaan::cfa(lav_model, data=rawdata, 
+                                     estimator = LV_options$estimator,
+                                     ordered = LV_options$ordered,
+                                     std.lv=TRUE,  
+                                     rotation = "target", 
+                                     rotation.args = list(target     = target, 
+                                                          orthogonal = TRUE,
+                                                          rstarts    = as.integer(5L)),
+                                     verbose=FALSE)
+      }
+      
+      if (is.null(LV_options$group_keys)) {
+        lavaan_output <- lavaan::cfa(lav_model, 
+                                     data=rawdata, 
+                                     ordered = LV_options$ordered,
+                                     estimator = LV_options$estimator,
+                                     rotation = LV_options$rotation,
+                                     # orthogonal = TRUE,
+                                     std.lv=TRUE,  
+                                     verbose=FALSE)
+      }
+    }
+    
+    loadings_BIF <- lavInspect(lavaan_output, what = "std")$lambda
+    phi_BIF      <- lavInspect(lavaan_output, what = "std")$psi
+    class(loadings_BIF) <- class(phi_BIF) <- "matrix"
+  }
+
+  if (bifactor_kind %in% c('bifactorT', 'bifactorQ', 'bigeominT', 'bigeominQ')) {
+    
+    outp_rotation <- rotation_func(rotation=bifactor_kind, 
+                                   loadingsNOROT = loadings_for_BIF, 
+                                   GPA_options,
+                                   ppower = 3)
+    
+    if (!is.null(outp_rotation$loadingsROT)) loadings_BIF  <- outp_rotation$loadingsROT
+    if (!is.null(outp_rotation$pattern))     loadings_BIF  <- outp_rotation$pattern
+    if (!is.null(outp_rotation$structure))   structure_BIF <- outp_rotation$structure
+    if (!is.null(outp_rotation$phi))         phi_BIF       <- outp_rotation$phi
   }
   
   if (bifactor_kind == 'SL') {
@@ -57,156 +153,210 @@ bifactor_engine <- function(loadings, cormat = NULL,  # phi = NULL,
     
     schmid_outp <- suppressMessages(
       psych::schmid(model = cormat, 
-                    nfactors = schmid_options$N_group_factors, 
+                    nfactors = N_group_factors, 
                     fm = schmid_options$extraction, 
                     rotate = schmid_options$rotation, 
                     digits=2, n.obs=Ncases, option="equal",
                     Phi=NULL, covar=FALSE, two.ok=FALSE))  #, plot=FALSE)
-      
-      loadings_SL <- schmid_outp$sl
-      
-      loadingsBIF <- loadings_SL[, -which(colnames(loadings_SL) %in% c('h2','u2','p2','com'))]
+    
+    loadings_SL <- schmid_outp$sl
+    
+    loadings_BIF <- loadings_SL[, -which(colnames(loadings_SL) %in% c('h2','u2','p2','com'))]
+    
+    loadings_for_BIF <- schmid_outp$oblique
   }
-  
   
   if (bifactor_kind == 'SLiD') {
     
     # SLiD_rotation - 2021 Garcia-Garzon - On Omega Hierarchical Estimation - 
     # A Comparison of Exploratory Bi-Factor Analysis Algorithms
     
-    loadings_SLiD <- suppressMessages(
+    SLiD_output <- suppressMessages(
       slid_rotation(data = cormat, 
-                    n_factors = schmid_options$N_group_factors, 
+                    n_factors = N_group_factors, 
                     fm = schmid_options$extraction, 
                     rotate = schmid_options$rotation, 
-                    max_iter = 100, tol = 1e-5)$bifactor_loadings)
+                    max_iter = 100, tol = 1e-5))
     
-    loadingsBIF <- loadings_SLiD
+    loadings_BIF <- SLiD_output$bifactor_loadings
+    
+    loadings_for_BIF <- SLiD_output$loadings_for_BIF
   }
-  
   
   if (bifactor_kind == 'DSL') {  
     
     # Direct Schmid Leiman -- psych
     directSl_outp <- suppressMessages(
       psych::directSl(cormat, 
-                      nfactors = schmid_options$N_group_factors, 
+                      nfactors = N_group_factors, 
                       fm = schmid_options$extraction, 
                       rotate = schmid_options$rotation, cut=.3))  #$direct  # $f$loadings
     
     loadings_DSL <- unclass(directSl_outp$direct)
     
-    loadingsBIF <- loadings_DSL
+    loadings_BIF <- loadings_DSL
+    
+    loadings_for_BIF <- directSl_outp$f$loadings[,1:N_group_factors]
   }
   
-  colnames(loadingsBIF) <- 
-    c('General', c(paste('Group', 1:(ncol(loadingsBIF) - 1), sep=' ')))
   
+  if (anyNA(loadings_BIF))
+    cat('\n\nSome loadings could not be estimated and are NA. Expect problems.\n\n')
   
-  # item_stats for orthogonal loadings
-  if (!bifactor_kind %in% c('bifactorQ', 'bigeominQ')) {
+  colnames(loadings_BIF) <- 
+    c('General', c(paste('Group', 1:(ncol(loadings_BIF) - 1), sep=' ')))
+  
+  if (is.null(rownames(loadings_BIF))) 
+    rownames(loadings_BIF) <- paste('v', 1:nrow(loadings_BIF), sep='')
+  
+  if (!is.null(structure_BIF))  {
     
-    loadingsBIF_sqd <- loadingsBIF^2
+    colnames(structure_BIF) <- 
+      c('General', c(paste('Group', 1:(ncol(structure_BIF) - 1), sep=' ')))
     
-    h2 <- rowSums(loadingsBIF_sqd)
-    
-    u2 <- 1 - h2
-    
-    IECV <- loadingsBIF_sqd[,1] / h2
+    if (is.null(rownames(structure_BIF))) 
+      rownames(structure_BIF) <- paste('v', 1:nrow(structure_BIF), sep='')
   }
   
-  # item_stats for oblique (pattern) loadings
-  if (bifactor_kind %in% c('bifactorQ', 'bigeominQ')) {
-    
-    # structureBIF <- loadingsBIF %*% phiBIF
-    
-    pattern_structure <- loadingsBIF * structureBIF
-    
-    h2 <- rowSums(pattern_structure)
-    
-    u2 <- 1 - h2
-    
-    IECV <- pattern_structure[,1] / h2
+  if (!is.null(phi_BIF))  {
+    colnames(phi_BIF) <- rownames(phi_BIF) <- 
+    c('General', c(paste('Group', 1:(ncol(phi_BIF) - 1), sep=' ')))
   }
   
-  item_stats <- cbind(h2, u2, IECV)
-  colnames(item_stats)[1:2] <- c('Communalities', 'Uniquenesses')
+  # check if loadings are consistent with a bifactor structure, based on min_loadings
+  # i.e., if any item has > 2 loadings that are >= min_loading 
+  # re: an item should load on the general factor & on just one group factor
   
+  bifactor_flag <- FALSE
+  if (any(rowSums(abs(loadings_BIF) >= min_loading) > 2)) { bifactor_flag <- TRUE }    
+  
+  
+  ###########################  omega & bifactor stats  ##############################
+  
+  omega_total <- omega_hierl <- Calpha.z <-ECV <- ARPB <- FD <- PUC <- coef_H <- 
+    rmsr <- rmsr_gen <- rmsr_psych <- var_partit_mat <- NULL
   
   # omega
-  omega_total <- omega_t(loadingsBIF, min_loading = min_loading) 
-  omega_hierl <- omega_h(loadingsBIF, min_loading = min_loading)
-  # omega_total <- omega_t(loadingsBIF, cormat) 
-  # omega_hierl <- omega_h(loadingsBIF, cormat)
+  omega_total <- omega_t(loadings_BIF, min_loading = min_loading) 
+  omega_hierl <- omega_h(loadings_BIF, min_loading = min_loading)
+  # omega_total <- omega_t(loadings_BIF, cormat) 
+  # omega_hierl <- omega_h(loadings_BIF, cormat)
   
   # standardized alpha
   if (!is.null(cormat))  Calpha.z <- Cronbach.alpha.z(cormat)
+  
+  
+  # ECV - Explained Common Variance of the general & specific factors (3 versions, SS, SG, GS) 
 
   # # ECV - Explained Common Variance of the (first) general factor
-  # eigenvalues <- colSums(loadingsBIF^2) 
+  # eigenvalues <- colSums(loadings_BIF^2) 
   # ECV <- eigenvalues[1] / sum(eigenvalues)
-  
-  # ECV - Explained Common Variance of the general & specific factors
-  # ECV - general factor
+
+  # putting the general factor ECV as the first value in all 3
   # 2023 Dueber, Toland - A Bifactor Approach to Subscore Assessment  p 224 formula 3
-  ECV <- ( sum(loadingsBIF[,1]^2) / ( sum(loadingsBIF[,1]^2) + 
-                                        sum( colSums(loadingsBIF[,2:ncol(loadingsBIF)]^2) ) ) )
-  # ECV - Explained Common Variance for the specific factors
-  # 2023 Dueber, Toland - A Bifactor Approach to Subscore Assessment  p 224 formula 6
-  for (lupe in 2:ncol(loadingsBIF)) {
-    group_TF <- abs(loadingsBIF[,lupe]) >= min_loading
-    dum <- cbind( loadingsBIF[group_TF,1], loadingsBIF[group_TF,lupe])
-    # 2023 Dueber, Toland - A Bifactor Approach to Subscore Assessment  p 224 formula 4
-    ECV <- c(ECV, ( sum(dum[,2]^2) / ( sum(dum[,1]^2) + sum(dum[,2]^2)) ) )
+  # ECV_SS <- ECV_SG <- ECV_GS <- 
+  #   (sum(loadings_BIF[,1]^2) / (sum(loadings_BIF[,1]^2) + 
+  #                                 sum(colSums(loadings_BIF[,2:ncol(loadings_BIF), drop=FALSE]^2))))
+  
+  ECV_SS <- ECV_SG <- ECV_GS <- NULL
+  
+  for (lupe in 1:ncol(loadings_BIF)) {
+    
+    # extract loadings based on min_loading
+    group_TF <- abs(loadings_BIF[,lupe]) >= min_loading
+    # dum <- cbind( loadings_BIF[group_TF,1], loadings_BIF[group_TF,lupe])
+    dum <-loadings_BIF[group_TF,]
+    
+    # ECV_SG (Specific-dimension Explained Common Variance, also called ECV S&E) is 
+    # the proportion of the total common variance across all items that is explained 
+    # by a specific (group) factor rather than the general factor.     # ECV_SG <- c(ECV_SG, (sum(dum[,2]^2) / ( sum(loadings_BIF^2))))
+    ECV_SG <- c(ECV_SG, (sum(dum[,lupe]^2) / ( sum(loadings_BIF^2))))
+    
+    # ECV_SS (Explained Common Variance of a Specific Factor with respect to itself) 
+    # is the proportion of common variance for the items in a specific subscale/group 
+    # factor that is explained by that specific factor relative to the total common 
+    # variance (from both general and specific factors) captured by those same items. 
+    # 2023 Dueber, Toland - A Bifactor Approach to Subscore Assessment  p 224 formula 6
+    # ECV_SS <- c(ECV_SS, ( sum(dum[,2]^2) / ( sum(dum[,1]^2) + sum(dum[,2]^2)) ) )
+    ECV_SS <- c(ECV_SS, ( sum(dum[,lupe]^2) / ( sum(dum^2) ) ) )
+    
+    # ECV_GS (General-Specific Explained Common Variance, or the within-domain ECV 
+    # for a specific factor) is the proportion of common variance in the 
+    # indicators of a specific subscale/group factor that is driven by the general 
+    # factor.
+    # ECV_GS <- c(ECV_GS, (sum(dum[,1]^2) / ( sum(dum[,1]^2) + sum(dum[,2]^2))))
+    # ECV_GS <- c(ECV_GS, (sum(dum[,1]^2) / ( sum(dum[,1]^2) + sum(dum[,lupe]^2))))
+    ECV_GS <- c(ECV_GS, (sum(dum[,1]^2) / ( sum(dum^2) )))
   }
-  # print( ECV )
-  # bifactorIndices(Lambda)
+
+  # bifactorIndices also computes the above 3 ECV coefficients, but not for ECV-GS
+  # or ECV_SG when there are no zero loadings in a column (i.e., when all items
+  # have non-zero loadings on all factors)
   
-  
-  # # IECV - Explained Common Variance of the (first) general factor for each item
-  # loadingsBIF_sqd <- loadingsBIF^2
-  # IECV <- loadingsBIF_sqd[,1] / rowSums(loadingsBIF_sqd)
-  
-  
+    
   # PUC    not using, it is based on counts of 0-value loadings, as in CFA
-  min_loading <- .1
   # the number of items on each factor that are >= min_loading
-  N_items_ge_min <- colSums( abs(loadingsBIF) >= min_loading)
-  Nitems <- nrow(loadingsBIF)
-  N_correls_tot <- (Nitems*(Nitems-1) / 2)
-  N_correls_contaminated <- sum(N_items_ge_min * (N_items_ge_min - 1) / 2) -
-    N_correls_tot
-  PUC <- 1 - N_correls_contaminated / N_correls_tot
-  
-  
-  # ARPB -- Average Relative Parameter Bias
-  if (!is.null(cormat)) {
-    loadingsBIF_gen <- loadingsBIF[,1]
-    loadingsBIF_unid <- EFA.dimensions::EFA(data=cormat, 
-                                            extraction = schmid_options$extraction,  
-                                            corkind=corkind, Ncases=Ncases, Nfactors = 1, 
-                                            rotation='none', verbose=FALSE)$loadingsNOROT
-    ARPB <- mean(abs((loadingsBIF_unid - loadingsBIF_gen) / loadingsBIF_gen))
+  # if any item has > 2 loadings that are >= min_loading, then do not compute PUC 
+  if (bifactor_flag) { PUC <- NA
+  } else {
+    N_items_ge_min <- colSums( abs(loadings_BIF) >= min_loading)
+    Nitems <- nrow(loadings_BIF)
+    N_correls_tot <- (Nitems*(Nitems-1) / 2)
+    N_correls_contaminated <- sum(N_items_ge_min * (N_items_ge_min - 1) / 2) -
+      N_correls_tot
+    PUC <- 1 - N_correls_contaminated / N_correls_tot
   }
   
+  # ARPB -- Average Relative Parameter Bias (& and Relative Parameter Bias, for items)
+  if (!is.null(cormat)) {
+    
+    # needs unidimensional model loadings 
+    if (!bifactor_kind %in% c('CFA','ESEM'))
+      loadings_BIF_unid <- EFA.dimensions::EFA(data=cormat, 
+                                               extraction = schmid_options$extraction,  
+                                               corkind=corkind, Ncases=Ncases, Nfactors = 1, 
+                                               rotation='none', verbose=FALSE)$loadingsNOROT
+    if (bifactor_kind %in% c('CFA','ESEM')) {
+      varnames <- colnames(rawdata)
+      # generate lavaan CFA model syntax
+      lav_mod_unid  <- vector()
+      dum <- paste(paste0('Gen', " =~ "), paste(varnames, collapse = ' + '))
+      lav_mod_unid <- paste(lav_mod_unid, '\n', dum, collapse = '\n', sep='')
+      CFA_bif_mod_unid <- cfa(model = lav_mod_unid, 
+                              data = rawdata,
+                              ordered = LV_options$ordered,
+                              estimator = LV_options$estimator, # MLR
+                              orthogonal = TRUE)
+      loadings_BIF_unid <-  lavInspect(CFA_bif_mod_unid, what = "std")$lambda
+      class(loadings_BIF_unid) <-  "matrix"
+    }
+    
+    loadings_BIF_gen <- loadings_BIF[,1]
+    
+    ARPB_items <- abs((loadings_BIF_unid - loadings_BIF_gen) / loadings_BIF_gen)
+    
+    ARPB_total <- mean(ARPB_items)
+    
+    ARPB <- list(ARPB_items = ARPB_items, ARPB_total = ARPB_total)
+  }
   
   # FD -- factor determinacy index
   # phi is a matrix of factor intercorrelations. For the bifactor model,
   # this matrix always will have ones on the diagonal and zeros elsewhere
-  phiBIF <- diag(1, nrow = ncol(loadingsBIF))
-  cormat_reprod <- reproduced_R(loadingsBIF)
-  FD <- sqrt(diag(phiBIF %*% t(loadingsBIF) %*% solve(cormat_reprod) %*% loadingsBIF %*% phiBIF))
+  phi_BIF_FD <- diag(1, nrow = ncol(loadings_BIF))
+  cormat_reprod <- reproduced_R(loadings_BIF)
+  FD <- sqrt(diag(phi_BIF_FD %*% t(loadings_BIF) %*% solve(cormat_reprod) %*% loadings_BIF %*% phi_BIF_FD))
   
   
   # coefficient H -- using the general factor loadings
-  coef_H <- coefficient_H(loadings=loadingsBIF)
-  # H <-  1/(1+1/(colSums(loadingsBIF^2/(1-loadingsBIF^2))))
+  coef_H <- coefficient_H(loadings=loadings_BIF)
+  # H <-  1/(1+1/(colSums(loadings_BIF^2/(1-loadings_BIF^2))))
   
   
   # rmsr
   if (!is.null(cormat)) {
     
-    cormat_reproduced <- reproduced_R(loadingsBIF)
+    cormat_reproduced <- reproduced_R(loadings_BIF)
     
     # rmsr for the factor model (general + group factors)
     rmsr <- RMSR_boc(cormat, cormat_reproduced)
@@ -215,25 +365,59 @@ bifactor_engine <- function(loadings, cormat = NULL,  # phi = NULL,
     # rmsr <- sqrt(mean(residuals.upper^2)) # rmr is perhaps the more common term for this stat
     
     # rmsr for the general factor-only model
-    rmsr_gen <- RMSR_boc(cormat, reproduced_R(loadingsBIF[,1, drop=FALSE]))
+    rmsr_gen <- RMSR_boc(cormat, reproduced_R(loadings_BIF[,1, drop=FALSE]))
     
     # rmsr - psych
     residuals <- cormat - cormat_reproduced
     rstar.off <- sum(residuals^2)/2
-    n <- nrow(loadingsBIF)  #number of variables
+    n <- nrow(loadings_BIF)  #number of variables
     rmsr_psych <- sqrt(rstar.off/(n*(n-1)))  #this is the empirical rmsea
   }
   
   
-  # variance partitioning -- from "GPA3bifactor - Bernaards.pdf"
-  loadingsBIF_gen    <- loadingsBIF[, 1]
-  loadingsBIF_group  <- loadingsBIF[, -1]
-  theta <- 1 - rowSums(loadingsBIF^2)
-  denom <- sum(loadingsBIF_gen)^2 + sum(loadingsBIF_group^2) + sum(theta)
+  # item_stats for orthogonal loadings
+  if (!bifactor_kind %in% c('bifactorQ', 'bigeominQ')) {
+    
+    loadings_BIF_sqd <- loadings_BIF^2
+    
+    h2 <- rowSums(loadings_BIF_sqd)
+    
+    u2 <- 1 - h2
+    
+    IECV <- loadings_BIF_sqd[,1] / h2
+  }
   
-  var_partit_mat <- sum(loadingsBIF_gen)^2 / denom
-  for (j in 1:ncol(loadingsBIF_group)) 
-    var_partit_mat <- rbind(var_partit_mat, (sum(loadingsBIF_group[, j]^2) / denom) )
+  # item_stats for oblique (pattern) loadings
+  if (bifactor_kind %in% c('bifactorQ', 'bigeominQ')) {
+    
+    # structure_BIF <- loadings_BIF %*% phi_BIF
+    
+    pattern_structure <- loadings_BIF * structure_BIF
+    
+    h2 <- rowSums(pattern_structure)
+    
+    u2 <- 1 - h2
+    
+    IECV <- pattern_structure[,1]^2 / h2
+  }
+  
+  if (!is.null(cormat)) {
+    item_stats <- cbind(h2, u2, IECV, ARPB_items)
+    colnames(item_stats) <- c('Communalities', 'Uniquenesses', 'IECV', 'Rel. Param. Bias')
+  } else {
+    item_stats <- cbind(h2, u2, IECV)
+    colnames(item_stats) <- c('Communalities', 'Uniquenesses', 'IECV')
+  }
+  
+  # variance partitioning -- from "GPA3bifactor - Bernaards.pdf"
+  loadings_BIF_gen    <- loadings_BIF[, 1]
+  loadings_BIF_group  <- loadings_BIF[, -1, drop=FALSE]
+  theta <- 1 - rowSums(loadings_BIF^2)
+  denom <- sum(loadings_BIF_gen)^2 + sum(loadings_BIF_group^2) + sum(theta)
+  
+  var_partit_mat <- sum(loadings_BIF_gen)^2 / denom
+  for (j in 1:ncol(loadings_BIF_group)) 
+    var_partit_mat <- rbind(var_partit_mat, (sum(loadings_BIF_group[, j]^2) / denom) )
   var_partit_mat <- rbind(var_partit_mat, (sum(theta) / denom) )
   
   for (lupe in 1:nrow(var_partit_mat)) {
@@ -248,19 +432,27 @@ bifactor_engine <- function(loadings, cormat = NULL,  # phi = NULL,
   }
   
   if (!is.null(cormat))
-  varexplBIF <- VarianceExplained(eigenvalues = eigen(cormat)$values, 
-                                       loadingsROT = loadingsBIF, phi = phiBIF)
+    varexplBIF <- VarianceExplained(eigenvalues = eigen(cormat)$values, 
+                                    loadingsROT = loadings_BIF, phi = phi_BIF)
   
+  
+  ###############################  output  ##########################################
   
   output <- list(omega_total = omega_total, omega_hierl = omega_hierl,
                  Calpha.z = Calpha.z,
-                 ECV = ECV, ARPB = ARPB, FD = FD, coef_H = coef_H, PUC = PUC,
+                 ECV_SS = ECV_SS, ECV_GS = ECV_GS, ECV_SG = ECV_SG,
+                 ARPB = ARPB, FD = FD, coef_H = coef_H, PUC = PUC,
                  rmsr = rmsr, rmsr_gen = rmsr_gen, rmsr_psych = rmsr_psych, 
                  var_partit_mat = var_partit_mat, 
-                 loadingsBIF = loadingsBIF, structureBIF = structureBIF, 
-                 phiBIF = phiBIF, varexplBIF = varexplBIF, 
+                 loadings_BIF = loadings_BIF, loadings_for_BIF = loadings_for_BIF,
+                 structure_BIF = structure_BIF, 
+                 phi_BIF = phi_BIF, varexplBIF = varexplBIF, 
                  item_stats = item_stats, bifactor_kind = bifactor_kind,
-                 min_loading = min_loading)
+                 min_loading = min_loading, lav_model=lav_model,
+                 lavaan_output = lavaan_output, LV_options = LV_options,
+                 GPA_options = GPA_options,
+                 bifactor_flag = bifactor_flag    
+  )
   
   return(invisible(output))
 }
@@ -270,9 +462,79 @@ bifactor_engine <- function(loadings, cormat = NULL,  # phi = NULL,
 
 show_bifactor_stats <- function(bifactor_output) {
   
-  # cat('\n\nbifactor_kind = ', bifactor_output$bifactor_kind, '\n')
+  cat('\nbifactor_kind = ', bifactor_output$bifactor_kind)
   
-  cat('\n\nBifactor Model Statistics:')	
+  if (bifactor_output$bifactor_kind %in% 
+      c('bifactorT', 'bifactorQ', 'bigeominT', 'bigeominQ')) {
+    cat('\n\nGPA_options:')
+    cat('\n   delta = ', bifactor_output$GPA_options$delta)
+    cat('\n   epsilon = ', bifactor_output$GPA_options$epsilon)
+    cat('\n   normalize = ', bifactor_output$GPA_options$normalize)
+    cat('\n   maxit = ', bifactor_output$GPA_options$maxit)
+    cat('\n   randomStarts = ', bifactor_output$GPA_options$randomStarts)
+  }
+  
+  # cat('\n\nBifactor results:')
+  
+  if (bifactor_output$bifactor_kind %in% c('CFA','ESEM')) {
+    
+    if (!is.null(bifactor_output$LV_options$group_keys)) {
+      if (is.null(names(bifactor_output$LV_options$group_keys)))
+        names(bifactor_output$LV_options$group_keys) <- rownames(bifactor_output$item_stats)
+      
+      cat('\n\nLV_options group_keys:\n\n'); print(bifactor_output$LV_options$group_keys)
+    }
+    
+    if (is.null(bifactor_output$LV_options$group_keys))
+      cat('\n\nLV_options group_keys = none provided') 
+      
+    cat('\n\nLV_options estimator = ', bifactor_output$LV_options$estimator)
+    
+    if (is.null(bifactor_output$LV_options$group_keys))
+      cat('\n\nLV_options rotation = ', bifactor_output$LV_options$rotation)
+    
+    cat('\n\nLV_options ordered = ', bifactor_output$LV_options$ordered)
+    
+    if (!is.null(bifactor_output$LV_options$resid_correls)) {
+      cat('\n\nLV_options resid_correls = ', bifactor_output$LV_options$resid_correls)
+    } # else { cat('\n\nLV_options resid_correls = none provided') }
+    
+    cat('\n\nlavaan model syntax:\n\n')
+    writeLines(bifactor_output$lav_model)
+    
+    show_lavaan_stats(bifactor_output$lavaan_output, these = 'fits')
+  }
+  
+  if (bifactor_output$bifactor_flag) {
+    cat('\n\n\nWARNING: The bifactor loadings do not seem consistent with a bifactor structure:')
+    cat('\n         There are items that have more than two loadings that are >= the')
+    cat('\n         min_loading value of', bifactor_output$min_loading)
+  }  
+  
+  if (is.null(bifactor_output$structure_BIF)) {
+    cat('\n\n\nBifactor Loadings\n\n')	
+    print(round(bifactor_output$loadings_BIF,2), print.gap=3) 
+    
+    if (bifactor_output$bifactor_kind %in% c('CFA','ESEM')) {
+      cat('\nFactor correlations\n\n')
+      print(round(bifactor_output$phi_BIF,2), print.gap=4)
+    }
+  }
+  
+  if (!is.null(bifactor_output$structure_BIF)) { 
+    
+    cat('\n\n\n', paste(bifactor_output$bifactor_kind, 
+                        'Pattern Matrix (standardized factor loadings)'), '\n\n')	
+    print(round(bifactor_output$loadings_BIF,2), print.gap=3)
+    
+    cat('\n\n\n', paste(bifactor_output$bifactor_kind, 'Structure Matrix'), '\n\n')	
+    print(round(bifactor_output$structure_BIF,2), print.gap=3)
+    
+    cat('\n\n\n', paste(bifactor_output$bifactor_kind, 'Factor Correlations'), '\n\n')	
+    print(round(bifactor_output$phi_BIF,2), print.gap=3)
+  }
+  
+  cat('\n\nBifactor Model Statistics')	
   
   cat('\n\n   Omega total =', round(bifactor_output$omega_total[1],2),
       '\n\n   Omega hierarchical =', round(bifactor_output$omega_hierl[1],2) )
@@ -280,8 +542,8 @@ show_bifactor_stats <- function(bifactor_output) {
   if (!is.null(bifactor_output$Calpha.z))
     cat('\n\n   Cronbach alpha =', round(bifactor_output$Calpha.z,2))
   
-  if (!is.null(bifactor_output$ARPB))
-    cat('\n\n   Average relative parameter bias (ARPB) =', round(bifactor_output$ARPB,2))
+  if (!is.null(bifactor_output$ARPB$ARPB_total))
+    cat('\n\n   Average relative parameter bias (ARPB) =', round(bifactor_output$ARPB$ARPB_total,2))
   
   if (!is.null(bifactor_output$PUC))
     cat('\n\n   Percent of uncontaminated correlations (PUC) =', round(bifactor_output$PUC,2))
@@ -291,27 +553,28 @@ show_bifactor_stats <- function(bifactor_output) {
   
   if (!is.null(bifactor_output$rmsr_gen))
     cat('\n\n   Root mean square of the residuals using only the general factor =', round(bifactor_output$rmsr_gen,2))
-
-    
-  cat('\n\nmin_loading =', bifactor_output$min_loading, 
-      ' (which is important for PUC and for omega and ECV group factor statistics)\n')
-
-    
-  cat('\n\n\nBifactor Factor Statistics:\n')	
+  
+  
+  cat('\n\n\n(min_loading = ', round(bifactor_output$min_loading,4), 
+      ', which is important for PUC and for omega and ECV group factor statistics)\n', sep='')
+  
+  
+  cat('\n\nBifactor Factor Statistics\n')	
   factor_stats <- rbind(bifactor_output$omega_total, bifactor_output$omega_hierl, 
-                        bifactor_output$ECV, bifactor_output$FD, bifactor_output$coef_H)
+                        bifactor_output$ECV_SS, bifactor_output$ECV_SG, bifactor_output$ECV_GS, 
+                        bifactor_output$FD, bifactor_output$coef_H)
   rownames(factor_stats) <- c('Omega total', 'Omega hierarchical',
-                              'Explained Common Variance', 'Factor Determinacy', 'coefficient H')
-  colnames(factor_stats) <- c('General', c(paste('Group', 1:(ncol(bifactor_output$loadings) - 1), sep=' ')))
-  # print(round(factor_stats, 2), print.gap=3)
+                              'ECV - SS', 'ECV - SG', 'ECV - GS', 
+                              'Factor Determinacy', 'coefficient H')
+  colnames(factor_stats) <- c('General', c(paste('Group', 1:(ncol(bifactor_output$loadings_BIF) - 1), sep=' ')))
   writeLines(paste0("   ", capture.output(print(round(factor_stats,2), print.gap=3))))
   
   
-  cat('\n\nBifactor Item Statistics:\n\n')	
+  cat('\n\nBifactor Item Statistics\n\n')	
   print(round(bifactor_output$item_stats,3), print.gap=4)
   
   
-  # cat('\n\nBifactor Partitions of the Total Score Variance:\n')	
+  # cat('\n\nBifactor Partitions of the Total Score Variance\n')	
   # var_partit_mat <- round(bifactor_output$var_partit_mat, 3)
   # for (lupe in 1:nrow(var_partit_mat)) 
   #   cat("\n   ", rownames(var_partit_mat)[lupe], '  ', var_partit_mat[lupe,])
@@ -328,7 +591,7 @@ show_bifactor_stats <- function(bifactor_output) {
   # respectively, for a total of 70.7%. 
   
   if (!is.null(bifactor_output$varexplBIF)) {
-    cat('\n\n\nEigenvalues and Proportions of Total Variance Explained:\n')
+    cat('\n\n\nEigenvalues and Proportions of Total Variance Explained\n')
     cat('\n               Initial            Bifactor\n')  
     print(bifactor_output$varexplBIF, print.gap=2)
   }
@@ -378,7 +641,7 @@ coefficient_H <- function(loadings=NULL, cormat=NULL, corkind='pearson',
 
 omega_t <- function(loadings, min_loading = .2) {
   
-  loadings_group <- loadings[, -1]
+  loadings_group <- loadings[, -1, drop=FALSE]
   
   theta <- 1 - rowSums(loadings^2)  # model-implied unique variances
   
@@ -403,9 +666,9 @@ omega_t <- function(loadings, min_loading = .2) {
 
 
 omega_h <- function(loadings, min_loading = .2) {
-
-  loadings_group <- loadings[, -1]
-
+  
+  loadings_group <- loadings[, -1, drop=FALSE]
+  
   theta <- 1 - rowSums(loadings^2)  # model-implied unique variances
   
   # for the general factor
@@ -417,11 +680,11 @@ omega_h <- function(loadings, min_loading = .2) {
     group_TF <- abs(loadings_group[,lupe]) >= min_loading
     
     dum <- cbind( loadings[group_TF,1], loadings_group[group_TF,lupe])
-
+    
     # 2023 Dueber, Toland - A Bifactor Approach to Subscore Assessment  p 224 formula 5
     outp <- c(outp, 
               ( sum(dum[,2])^2 / 
-                ( sum(dum[,1])^2 + sum(dum[,2])^2 + sum(theta*group_TF)) ) )
+                  ( sum(dum[,1])^2 + sum(dum[,2])^2 + sum(theta*group_TF)) ) )
   }
   return(invisible(outp))
 }
@@ -491,6 +754,10 @@ slid_rotation <- function(data, n_factors = 3, max_iter = 100, tol = 1e-5,
   sl_init <- psych::schmid(R, nfactors = n_factors, 
                            fm = fm, rotate=rotate, plot=FALSE)
   
+  
+  loadings_for_BIF <- sl_init$oblique[,1:n_factors]
+  
+  
   # Extract initial group factor loadings (exclude general factor column)
   # psych::schmid returns general factor in column 1, group factors in subsequent columns
   group_loadings <- sl_init$sl[, 2:(n_factors + 1)]
@@ -555,7 +822,8 @@ slid_rotation <- function(data, n_factors = 3, max_iter = 100, tol = 1e-5,
   return(list(
     bifactor_loadings = final_bifactor_matrix,
     final_target = target_matrix,
-    iterations = iter
+    iterations = iter,
+    loadings_for_BIF = loadings_for_BIF
   ))
 }
 

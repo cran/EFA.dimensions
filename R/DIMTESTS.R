@@ -13,12 +13,8 @@ DIMTESTS <- function(data, tests=c('EMPKC', 'HULL', 'RAWPAR'),
     tests <- c('EMPKC', 'HULL', 'RAWPAR')
   }
   
-  # check corkind 
-  if (!corkind %in% c('pearson', 'kendall', 'spearman', 'gamma', 'polychoric')) {
-    cat('\nThe entry for corkind (', corkind, ') is not one of the options for this function.', sep='')
-    cat('\n"pearson" will be used instead.')
-    corkind <- 'pearson'
-  }
+  # is the corkind method valid?
+  corkind <- corkind_check(corkind)
   
   # check HULL_method
   if (!HULL_method %in% c('PAF', 'ML', 'ULS')) {

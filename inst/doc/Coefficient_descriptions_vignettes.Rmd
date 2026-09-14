@@ -373,11 +373,28 @@ orthogonal to the general factor."
 
 ## Explained Common Variance (ECV & IECV)
 
-The OMEGA function in this package produces an ECV coefficient, which is
-the Explained Common Variance. It is the ratio of the general factor 
+The BIFACTOR and OMEGA functions in this package produce Explained Common Variance
+(ECV) coefficients (Dueber & Toland, 2023; Stucky & Edelen, 2015). 
+
+The overall ECV is the ratio of the general factor 
 eigenvalue to the sum of all of the eigenvalues. It is considered
 (e.g., by Reise, and Revelle) a better indicator of unidimensionality than
 of the amount of test variance accounted for by a general factor. 
+
+ECV_SG (Specific-dimension Explained Common Variance, also called ECV S&E) 
+is the proportion of the total common variance across all items that is 
+explained by a specific (group) factor rather than the general factor. 
+
+ECV_GS (General-Specific Explained Common Variance, or the within-domain 
+ECV for a specific factor) is the proportion of common variance in the 
+indicators of a specific subscale/group factor that is driven by the general 
+factor. 
+
+ECV_SS (Explained Common Variance of a Specific Factor with respect to 
+itself) is the proportion of common variance for the items in a specific 
+subscale/group factor that is explained by that specific factor relative 
+to the total common variance (from both general and specific factors) 
+captured by those same items. 
 
 "To aid in the selection of items we have recently used another
 variation of the ECV that is defined for each item (I-ECV). The I-ECV
@@ -750,6 +767,9 @@ have suggested that the SABIC is a useful tool in comparing models.
 Bernaards, C. A., & Jennrich, R. I. (2026). GPArotation: Gradient 
 Projection Factor Rotation. R package version 2026.4-1, 
 https://CRAN.R-project.org/package=GPArotation
+
+Dueber, D. M., & Toland, M. D. (2023). A bifactor approach to subscore 
+assessment. Psychological Methods, 28(1), 222–241. 
 
 Educational Content Team. (2026). McDonald's Omega. Cogn-IQ Encyclopedia. 
 https://pubscience.org/cqep.2025.0048

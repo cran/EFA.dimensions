@@ -12,6 +12,9 @@ RAWPAR <- function (data, randtype='generated', extraction='PCA',
   
   Nvars  <- ncol(data)
   
+  # is the corkind method valid?
+  corkind <- corkind_check(corkind)
+  
   # set up cormat
   cordat <- setupcormat(data, corkind=corkind, Ncases=Ncases)
   R_real <- cordat$cormat

@@ -8,6 +8,9 @@ SESCREE <- function (data, Ncases=NULL, corkind='pearson', verbose=TRUE) {
   
   data <- MISSING_DROP(data)
   
+  # is the corkind method valid?
+  corkind <- corkind_check(corkind)
+  
   # set up cormat
   cordat <- setupcormat(data, corkind=corkind, Ncases=Ncases)
   cormat <- cordat$cormat

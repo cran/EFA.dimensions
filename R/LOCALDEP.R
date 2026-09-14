@@ -12,6 +12,9 @@ LOCALDEP <- function (data, corkind='pearson', item_type='graded',
   
   noms <- colnames(data) 
   
+  # is the corkind method valid?
+  corkind <- corkind_check(corkind)
+  
   # set up cormat
   cordat <- setupcormat(data, corkind=corkind, Ncases=Ncases)
   cormat <- cordat$cormat

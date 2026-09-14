@@ -10,12 +10,21 @@ IMAGE_FA   <- function( ... ) { .Defunct("EFA", package="EFA.dimensions") }
 
 EFA <- function (data, Nfactors=NULL, extraction = 'paf', rotation='promax', 
                  corkind='pearson', Ncases=NULL, 
-                 iterpaf=100, ppower = 3, delta = .01, verbose=TRUE) {
+                 iterpaf=100, ppower = 3, 
+                 GPA_options = list(delta = .01, 
+                                    epsilon = .00001, 
+                                    normalize = FALSE, 
+                                    maxit = 1000, 
+                                    randomStarts = 50), 
+                 verbose=TRUE) {
+  
+  #############################  argument checks   ##################################
   
   # is the extraction method valid?
   if (!extraction %in% c('paf', 'ml', 'image', 'minres', 'uls', 'ols', 'wls', 
                          'gls', 'alpha', 'fullinfo')) {
-    cat('\nThe entry for extraction,', extraction, ', is not one of the options for this function.')
+    cat('\nThe entry for extraction, ', extraction, 
+        ', is not one of the options for this function.', sep='')
     cat('\n"paf" will be used instead.')
     extraction <- 'paf'
   }
@@ -25,23 +34,22 @@ EFA <- function (data, Nfactors=NULL, extraction = 'paf', rotation='promax',
                        'entropy', 'equamax', 'geominQ', 'geominT', 
                        'oblimax', 'oblimin', 'promax', 'quartimax', 'quartimin', 
                        'simplimax', 'varimax', 'none')) {
-    cat('\nThe entry for rotation,', rotation, ', is not one of the options for this function.')
+    cat('\nThe entry for rotation, ', rotation, 
+        ', is not one of the options for this function.', sep='')
     cat('\n"promax" will be used instead.')
     rotation <- 'promax'
   }
   
   # is the corkind method valid?
-  if (!corkind %in% c('pearson', 'kendall', 'spearman', 'gamma', 'polychoric')) {
-    cat('\nThe entry for corkind,', corkind, ', is not one of the options for this function.')
-    cat('\n"pearson" will be used instead.')
-    corkind <- 'pearson'
-  }
+  corkind <- corkind_check(corkind)
+  
+  
+  #############################  set up data & cormat   #############################
   
   data <- MISSING_DROP(data)
   
   cnoms <- colnames(data)
   
-  # set up cormat
   cordat <- setupcormat(data, corkind=corkind, Ncases=Ncases)
   cormat <- cordat$cormat
   ctype  <- cordat$ctype
@@ -49,6 +57,9 @@ EFA <- function (data, Nfactors=NULL, extraction = 'paf', rotation='promax',
   
   Nvars <- dim(cormat)[1]
   
+
+  #############################  eigenvalues, varexpl, & Nfactors   ###########################
+
   eigenvalues <- eigen(cormat)$values
   
   varexplNOROT1 <- VarianceExplained(eigenvalues)
@@ -62,7 +73,7 @@ EFA <- function (data, Nfactors=NULL, extraction = 'paf', rotation='promax',
   } else {NfactorsWasNull <- FALSE}
   
   
-  ####################################  extraction  ###################################
+  ##################################  extraction  ###################################
   
   # get the unrotated loadings for the specified extraction method
   
@@ -149,87 +160,23 @@ EFA <- function (data, Nfactors=NULL, extraction = 'paf', rotation='promax',
 
   ####################################  rotation  ###################################
   
-  varexplROT <- loadingsROT <- structure <- pattern <- phi <- NULL
+  loadingsROT <- structure <- pattern <- phi <- NULL
   
-  if (Nfactors > 1) {
+  if (Nfactors > 1 & rotation != 'none') {
     
-    # orthogonal rotations
+    outp_rotation <- rotation_func(rotation, loadingsNOROT, GPA_options, ppower = ppower)
     
-    if (rotation == 'bentlerT') 
-      loadingsROT <- GPArotation::bentlerT(loadingsNOROT)$loadings
-    
-    if (rotation == 'entropy') 
-      loadingsROT <- GPArotation::entropy(loadingsNOROT)$loadings
-    
-    if (rotation == 'equamax') 
-      loadingsROT <- psych::equamax(loadingsNOROT)$loadings
-    
-    if (rotation == 'geominT') 
-      loadingsROT <- GPArotation::geominT(loadingsNOROT, delta=delta)$loadings
-    
-    if (rotation == 'quartimax') 
-      loadingsROT <- GPArotation::quartimax(loadingsNOROT)$loadings
-    
-    if (rotation == 'varimax') 
-      loadingsROT <- VARIMAX(loadingsNOROT, verbose=FALSE)$loadingsV
-    
-    # GPArotation::parsimax(loadings)   not an exported object from 'namespace:GPArotation'
-    
-    
-    # oblique rotations
-    
-    if (rotation == 'bentlerQ') {
-      outp <- GPArotation::bentlerQ(loadingsNOROT)
-      pattern <- outp$loadings
-      phi <- outp$Phi
-      structure <- pattern %*% phi
-    }
-    
-    if (rotation == 'geominQ') {
-      outp <- GPArotation::geominQ(loadingsNOROT, delta=delta)
-      pattern <- outp$loadings
-      phi <- outp$Phi
-      structure <- pattern %*% phi
-    }
-    
-    if (rotation == 'oblimin') {
-      outp <- GPArotation::oblimin(loadingsNOROT)
-      pattern <- outp$loadings
-      phi <- outp$Phi
-      structure <- pattern %*% phi
-    }
-    
-    if (rotation == 'oblimax') {
-      outp <- GPArotation::oblimax(loadingsNOROT)
-      pattern <- outp$loadings
-      phi <- outp$Phi
-      structure <- pattern %*% phi
-    }
-    
-    if (rotation == 'promax' | rotation == 'PROMAX') {
-      promaxOutput <- PROMAX(loadingsNOROT, ppower=ppower, verbose=FALSE)
-      pattern <- promaxOutput$pattern
-      structure <- promaxOutput$structure
-      phi <- promaxOutput$phi
-    }
-    
-    if (rotation == 'quartimin') {
-      outp <- GPArotation::quartimin(loadingsNOROT)
-      pattern <- outp$loadings
-      phi <- outp$Phi
-      structure <- pattern %*% phi
-    }
-    
-    if (rotation == 'simplimax') {
-      outp <- GPArotation::simplimax(loadingsNOROT)
-      pattern <- outp$loadings
-      phi <- outp$Phi
-      structure <- pattern %*% phi
-    }
+    if (!is.null(outp_rotation$loadingsROT)) loadingsROT <- outp_rotation$loadingsROT
+    if (!is.null(outp_rotation$structure))   structure   <- outp_rotation$structure
+    if (!is.null(outp_rotation$pattern))     pattern     <- outp_rotation$pattern
+    if (!is.null(outp_rotation$phi))         phi         <- outp_rotation$phi
   }
   
   
-  # variance explained by the factors
+  ########################  variance explained by the factors  #######################
+  
+  varexplROT <- NULL
+  
   if (!is.null(loadingsROT)) 
     varexplROT <- VarianceExplained(eigenvalues, loadingsNOROT = loadingsNOROT,
                                          loadingsROT = loadingsROT)
@@ -239,7 +186,8 @@ EFA <- function (data, Nfactors=NULL, extraction = 'paf', rotation='promax',
                                          loadingsROT = pattern, phi = phi)
 
   
-  # communalities & uniquenesses
+  #####################  communalities & uniquenesses  ##############################
+  
   if (!is.matrix(communalities))  communalities <- as.matrix(communalities)
   rownames(communalities) <- cnoms
   if (ncol(communalities) == 1)  colnames(communalities) <- c('Communalities')
@@ -247,13 +195,14 @@ EFA <- function (data, Nfactors=NULL, extraction = 'paf', rotation='promax',
   uniquenesses <- 1 - communalities
   
   
-  
   #############################  factor model stats   ###############################
   
   fit_coefs <- FIT_COEFS(cormat=cormat, loadings=loadingsNOROT, 
                          extraction=extraction, Ncases=Ncases, verbose=FALSE) 
 
- 
+  
+  #############################  output   ###########################################
+  
   efaOutput <- list(loadingsNOROT = loadingsNOROT,
                     loadingsROT = loadingsROT,
                     pattern = pattern,

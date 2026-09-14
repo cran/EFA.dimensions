@@ -12,7 +12,7 @@
 
 <meta name="author" content="Brian O’Connor" />
 
-<meta name="date" content="2026-07-21" />
+<meta name="date" content="2026-09-13" />
 
 <title>Coefficient descriptions</title>
 
@@ -239,7 +239,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">Coefficient descriptions</h1>
 <h4 class="author">Brian O’Connor</h4>
-<h4 class="date">2026-07-21</h4>
+<h4 class="date">2026-09-13</h4>
 
 
 <div id="TOC">
@@ -578,11 +578,26 @@ orthogonal to the general factor.”</p>
 </div>
 <div id="explained-common-variance-ecv-iecv" class="section level2">
 <h2>Explained Common Variance (ECV &amp; IECV)</h2>
-<p>The OMEGA function in this package produces an ECV coefficient, which
-is the Explained Common Variance. It is the ratio of the general factor
-eigenvalue to the sum of all of the eigenvalues. It is considered (e.g.,
-by Reise, and Revelle) a better indicator of unidimensionality than of
-the amount of test variance accounted for by a general factor.</p>
+<p>The BIFACTOR and OMEGA functions in this package produce Explained
+Common Variance (ECV) coefficients (Dueber &amp; Toland, 2023; Stucky
+&amp; Edelen, 2015).</p>
+<p>The overall ECV is the ratio of the general factor eigenvalue to the
+sum of all of the eigenvalues. It is considered (e.g., by Reise, and
+Revelle) a better indicator of unidimensionality than of the amount of
+test variance accounted for by a general factor.</p>
+<p>ECV_SG (Specific-dimension Explained Common Variance, also called ECV
+S&amp;E) is the proportion of the total common variance across all items
+that is explained by a specific (group) factor rather than the general
+factor.</p>
+<p>ECV_GS (General-Specific Explained Common Variance, or the
+within-domain ECV for a specific factor) is the proportion of common
+variance in the indicators of a specific subscale/group factor that is
+driven by the general factor.</p>
+<p>ECV_SS (Explained Common Variance of a Specific Factor with respect
+to itself) is the proportion of common variance for the items in a
+specific subscale/group factor that is explained by that specific factor
+relative to the total common variance (from both general and specific
+factors) captured by those same items.</p>
 <p>“To aid in the selection of items we have recently used another
 variation of the ECV that is defined for each item (I-ECV). The I-ECV is
 calculated as the ratio of the item-level variance accounted for by the
@@ -919,6 +934,8 @@ comparing models.</p>
 <h1>References / Sources</h1>
 <p>Bernaards, C. A., &amp; Jennrich, R. I. (2026). GPArotation: Gradient
 Projection Factor Rotation. R package version 2026.4-1, <a href="https://CRAN.R-project.org/package=GPArotation" class="uri">https://CRAN.R-project.org/package=GPArotation</a></p>
+<p>Dueber, D. M., &amp; Toland, M. D. (2023). A bifactor approach to
+subscore assessment. Psychological Methods, 28(1), 222–241.</p>
 <p>Educational Content Team. (2026). McDonald’s Omega. Cogn-IQ
 Encyclopedia. <a href="https://pubscience.org/cqep.2025.0048" class="uri">https://pubscience.org/cqep.2025.0048</a></p>
 <p>Flora, David. (2020). Your Coefficient Alpha Is Probably Wrong, but

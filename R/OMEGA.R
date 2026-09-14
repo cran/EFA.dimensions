@@ -1,90 +1,90 @@
 
 
 OMEGA <- function(data, corkind = 'pearson', 
-                  bifactor_kind = c('McD', 'SL', 'SLiD', 'DSL', 
-                                    'bifactorT', 
-                                    'bigeominT' ),
-                  EFA_options    = list(extraction = 'minres', rotation = 'oblimin', Nfactors = 3),
-                  schmid_options = list(extraction = 'minres', rotation = 'oblimin', N_group_factors = 3),
-                  delta = .01, min_loading = .2, display = 2) {
+                  Nfactors = 4,
+                  bifactor_kind = c('SL', 'SLiD', 'DSL', 'bifactorT', 'bigeominT'),
+                  EFA_options = list(extraction = 'minres', rotation = 'oblimin'),
+                  LV_options = list(group_keys = NULL, 
+                                    estimator = 'MLR', 
+                                    rotation = 'bigeomin',
+                                    resid_correls = NULL, 
+                                    LV_names = NULL,
+                                    ordered = FALSE),
+                  schmid_options = list(extraction = 'minres', rotation = 'oblimin'),
+                  GPA_options = list(delta = .01, 
+                                     epsilon = .00001, 
+                                     normalize = FALSE, 
+                                     maxit = 1000, 
+                                     randomStarts = 50),
+                  min_loading = .2, display = 2) {
   
   # auto_reverse?
   
   if (display > 0)  cat('\n\nOMEGA:') 
     
+  #############################  argument checks   ##################################
+  
   # is the corkind method valid?
-  if (!corkind %in% c('pearson', 'kendall', 'spearman', 'gamma', 'polychoric')) {
-    cat('\nThe entry for corkind,', corkind, ', is not one of the options for this function.')
-    cat('\n"pearson" will be used instead.')
-    corkind <- 'pearson'
-  }
+  corkind <- corkind_check(corkind)
   
   # are the bifactor_kind valid?
-  if (!all(bifactor_kind %in% c('McD', 'SL', 'SLiD', 'DSL', 
-                                'bifactorQ', 'bifactorT', 'bigeominQ', 'bigeominT'))) {
-    cat('\nThe entries for bifactor_kind', bifactor_kind,
-        'contain values other than SL, SLiD, DSL, bifactorQ, bifactorT, bigeominQ, bigeominT.')
-    cat('\n"bifactor_kind" will be set to the default (all methods).')
-    bifactor_kind <- c('SL', 'SLiD', 'GPA', 'DSL', 
-                       'bifactorT', 'bifactorQ', 'bigeominT', 'bigeominQ')
+  if (!all(bifactor_kind %in% c('SL', 'SLiD', 'DSL', 
+                                'bifactorQ', 'bifactorT', 'bigeominQ', 'bigeominT',
+                                'CFA', 'ESEM', 'none'))) {
+    cat('\nThe entries for bifactor_kind contain values other than')
+    cat('\nSL, SLiD, DSL, bifactorQ, bifactorT, bigeominQ, bigeominT, CFA, ESEM, none.')
+    cat('\n"bifactor_kind" will be set to the default.')
+    bifactor_kind <- c('SL', 'SLiD', 'DSL', 'bifactorT', 'bigeominT')
   }
   
-  # is the EFA_options extraction method valid?
-  if (!EFA_options$extraction %in% c('paf', 'ml', 'image', 'minres', 'uls', 'ols', 'wls', 
-                                     'gls', 'alpha', 'fullinfo')) {
-    cat('\nThe EFA_options entry for extraction,', EFA_options$extraction, ', is not one of the options for this argument.')
-    cat('\n"paf" will be used instead.')
-    EFA_options$extraction <- 'paf'
+  # check EFA_options
+  EFA_options <- EFA_options_check(EFA_options)
+  
+  # if GPArotation will be used, EFA_options$rotation must be 'none'
+  # none of the other bifactor methods use EFA
+  if (any(bifactor_kind %in% c('bifactorQ', 'bifactorT', 'bigeominT', 'bigeominQ'))) {
+    if (EFA_options$rotation != 'none') {
+      cat('\n\nA GPArotation (one of bifactorQ, bifactorT, bigeominT, or bigeominQ) was')
+      cat('\nwas specified in bifactor_kind, which means that')
+      cat('\n the EFA rotation must be changed to, "none"\n') 
+      EFA_options$rotation <- 'none'
+    }
   }
   
+  # check schmid_options if schmid will be used
+  if (any(bifactor_kind %in% c('SL', 'SLiD', 'DSL'))) 
+    schmid_options <- schmid_options_check(schmid_options)
   
-  # check the schmid_options if schmid will be used
+  # if schmid will be used, is the EFA_options rotation method valid?
   if (any(bifactor_kind %in% c('SL', 'SLiD', 'DSL'))) {
-    
-    # is the schmid_options extraction method valid?
-    # all 3 of these bifactor methods use psych::schmid, which has restricted options
-    # fm: the default is  minres. fm="pa" for principal axes, fm="pc" for principal 
-    # components, fm = "minres" for minimum residual (OLS), pc="ml" for maximum likelihood
-    
-    if (!schmid_options$extraction %in% c('paf', 'minres', 'ml')) {
-      cat('\nThe schmid_options entry for extraction,', schmid_options$sextraction, ', is not one of the options for this argument.')
-      cat('\n"minres" will be used instead.')
-      schmid_options$extraction <- 'minres'
-    }
-    
-    # is the schmid_options rotation method valid?
-    # rotate: the default, oblimin, produces somewhat more correlated factors than the 
-    # alternative, simplimax. Other options include Promax (not Kaiser normalized) 
-    # or promax (Promax with Kaiser normalization). See fa for possible oblique rotations.
-    
-    if (!schmid_options$rotation %in% c('oblimin','simplimax','Promax','promax', 'none')) {   
-      cat('\nThe schmid_options entry for rotation,', schmid_options$rotation, ', is not one of the options for this function.')
-      cat('\n"oblimin" will be used instead.')
-      schmid_options$rotation <- 'oblimin'
+    if (!EFA_options$rotation %in% c('bentlerQ', 'bentlerT', 
+                                     'entropy', 'equamax', 'geominQ', 'geominT', 
+                                     'oblimax', 'oblimin', 'promax', 'quartimax', 'quartimin', 
+                                     'simplimax', 'varimax', 'none')) {
+      cat('\nThe EFA_options entry for rotation, ', EFA_options$rotation, 
+          ', is not one of the options when bifactor_kind = ', bifactor_kind, sep='')
+      cat('\n"promax" will be used instead.')
+      EFA_options$rotation <- 'promax'
     }
   }
   
-  # is EFA_options$Nfactors compatible with schmid_options$N_group_factors?
-  # EFA_options$Nfactors should be = schmid_options$N_group_factors + 1
-  # if not change EFA_options$Nfactors -- but it only matters if psych::schmid will be used
+  # check LV_options if bifactor_kind = CFA or ESEM
+  if (any(bifactor_kind %in% c('CFA','ESEM')))  LV_options <- LV_options_check(LV_options)
   
-  if (any(bifactor_kind %in% c('SL', 'SLiD', 'DSL'))) {
-    
-    if (EFA_options$Nfactors != (schmid_options$N_group_factors + 1)) {
-      
-      EFA_options$Nfactors <- schmid_options$N_group_factors + 1
-      
-      cat('\n\nEFA_options$Nfactors was changed to',  EFA_options$Nfactors, 'to make it compatible\n') 
-      cat('with schmid_options$N_group_factors')
-    }
+  # LV_options$group_keys is required when bifactor_kind = CFA
+  if (any(bifactor_kind == 'CFA' & is.null(LV_options$group_keys))) {
+    cat('\n\nCFA was specified in bifactor_kind but group_keys in LV_options = NULL')
+    cat('\nEither provide LV_options$group_keys or do not request CFA.')
+    cat('\nbifactor_kind was changed to bifactorT, to prevent errors')
+    bifactor_kind <- 'bifactorT'
   }
   
-  # EFA_options$Nfactors should be least 2, but 3 is better
-  if (EFA_options$Nfactors == 1) {
-    cat('\nThe analyses cannot be conducted when EFA_options$Nfactors = 1. It will be set to 3 instead.')
-    EFA_options$Nfactors <- 3
-  }
+  # check GPA_options if GPA functions will be used
+  if (any(bifactor_kind %in% c('bifactorQ', 'bifactorT', 'bigeominT', 'bigeominQ')))
+    GPA_options <- GPA_options_check(GPA_options)
   
+  
+  ############################  rawdata, cormat setup   ##########################
   
   data <- MISSING_DROP(data)
   
@@ -120,6 +120,21 @@ OMEGA <- function(data, corkind = 'pearson',
   Ncases <- cordat$Ncases
   
   
+  ##################################  Nfactors   ####################################
+  
+  # Nfactors should be the # of group factors + 1 (for the general factor)
+  
+  # N_group_factors is computed & used inside bifactor_engine, not here
+  
+  # Nfactors should be least 2, but 3 is better
+  if (Nfactors == 1) {
+    cat('\nThe analyses cannot be conducted when Nfactors = 1. It will be set to 3 instead.')
+    Nfactors <- 3
+  }
+  
+  
+  ###################################################################################
+  
   omega_total_McD <- 
     omega_total_SL <-           omega_hierl_SL <- 
     omega_total_SLiD <-         omega_hierl_SLiD <- 
@@ -128,84 +143,94 @@ OMEGA <- function(data, corkind = 'pearson',
     omega_total_bifactorQ <-    omega_hierl_bifactorQ <-      
     omega_total_bigeominT <-    omega_hierl_bigeominT <-      
     omega_total_bigeominQ <-    omega_hierl_bigeominQ <- 
+    omega_total_ESEM <-         omega_hierl_ESEM <- 
     loadings_SL <-     
     loadings_SLiD <- 
     loadings_DSL <-    
     loadings_bifactorT <-  
     loadings_bifactorQ <-  
     loadings_bigeominT <-  
-    loadings_bigeominQ <-  NULL
+    loadings_bigeominQ <-  
+    loadings_ESEM <-  
+    loadingsNOROT <- NULL
   
   outpmat <- c()
   
   
-  if ('McD' %in% bifactor_kind) {
-    
-    # McDonald's omega - McNeish p 417 formula 2  -- using 1-factor EFA & no bifactor/S-L
-    efa_output <- EFA.dimensions::EFA(data=cormat, 
-                                      extraction = EFA_options$extraction, 
-                                      rotation='none', 
-                                      corkind=corkind, Ncases=Ncases, Nfactors = 1, 
-                                      verbose=FALSE)
-    
-    loadings_McD <- efa_output$loadingsNOROT
-    
-    errors <- 1 - efa_output$communalities
-    
-    omega_total_McD <- sum(loadings_McD)**2 / (sum(loadings_McD)**2 + sum(errors))
-    
-    rmsr <- RMSR_boc(cormat, cormat_reproduced = reproduced_R(loadings_McD))
-    
-    outpmat <- rbind(outpmat, cbind(omega_total_McD, NA, NA, NA, NA, NA, rmsr, NA))
-  }  
+  # always provide McDonald's omega
+  # McDonald's omega - McNeish p 417 formula 2  -- using 1-factor EFA & no bifactor/S-L
+  efa_output <- EFA.dimensions::EFA(data=cormat, 
+                                    extraction = EFA_options$extraction, 
+                                    rotation='none', 
+                                    corkind=corkind, Ncases=Ncases, Nfactors = 1, 
+                                    verbose=FALSE)
+  loadings_McD <- efa_output$loadingsNOROT
+  errors <- 1 - efa_output$communalities
+  omega_total_McD <- sum(loadings_McD)**2 / (sum(loadings_McD)**2 + sum(errors))
+  rmsr <- RMSR_boc(cormat, cormat_reproduced = reproduced_R(loadings_McD))
+  outpmat <- rbind(outpmat, cbind(omega_total_McD, NA, NA, NA, NA, NA, rmsr, NA))
   
   
   bif_outp_SL <- bif_outp_SLiD <- bif_outp_DSL <- bif_outp_bifactorQ <-
-    bif_outp_bifactorT <- bif_outp_bigeominQ <- bif_outp_bigeominT <- NULL
+    bif_outp_bifactorT <- bif_outp_bigeominQ <- bif_outp_bigeominT <- bif_outp_ESEM <- NULL
   
-  for (lupe in 1:length(bifactor_kind)) {
+  if (!'none' %in% bifactor_kind) {
     
-    if (bifactor_kind[lupe] != 'McD') {
+    for (lupe in 1:length(bifactor_kind)) {
       
       # need unrotated loadings for 'bifactorT', 'bifactorQ', 'bigeominT', 'bigeominQ'
       if (bifactor_kind[lupe] %in% c('bifactorT', 'bifactorQ', 'bigeominT', 'bigeominQ')) {
         
         loadingsNOROT <- EFA(data=cormat, 
-                             Nfactors = EFA_options$Nfactors, 
+                             Nfactors = Nfactors, 
                              extraction = EFA_options$extraction, 
                              rotation = 'none', 
                              corkind = corkind, Ncases = Ncases, 
-                             iterpaf=100, ppower = 3, delta = .01, 
+                             iterpaf=100, ppower = 3, 
                              verbose=FALSE)$loadingsNOROT 
       }
       
-      bif_outp <- bifactor_engine(loadings = loadingsNOROT, cormat = cormat, 
+      bif_outp <- bifactor_engine(loadings = loadingsNOROT, 
+                                  cormat = cormat, 
+                                  rawdata = data,
                                   corkind = corkind, Ncases = Ncases, 
+                                  Nfactors = Nfactors,
                                   bifactor_kind = bifactor_kind[lupe],
+                                  LV_options = LV_options,
                                   schmid_options = schmid_options,
-                                  min_loading = min_loading )  
-      
+                                  min_loading = min_loading)  
+
       assign(paste("bif_outp_", bifactor_kind[lupe], sep=""),    bif_outp)
       
-      assign(paste("loadings_", bifactor_kind[lupe], sep=""),    bif_outp$loadingsBIF)
+      assign(paste("loadings_", bifactor_kind[lupe], sep=""),    bif_outp$loadings_BIF)
       
       assign(paste("omega_total_", bifactor_kind[lupe], sep=""), bif_outp$omega_total)
       
       assign(paste("omega_hierl_", bifactor_kind[lupe], sep=""), bif_outp$omega_hierl)
       
-      fitcoefs <- c(bif_outp$ECV[1], bif_outp$coef_H[1], bif_outp$FD[1], 
-                    bif_outp$ARPB, bif_outp$rmsr, bif_outp$rmsr_gen)
+      fitcoefs <- c(bif_outp$ECV_SS[1], bif_outp$coef_H[1], bif_outp$FD[1], 
+                    bif_outp$ARPB$ARPB_total, bif_outp$rmsr, bif_outp$rmsr_gen)
       
       outpmat <- rbind(outpmat, cbind(bif_outp$omega_total[1], bif_outp$omega_hierl[1], t(fitcoefs)))
     }
   }
   
-  rownames(outpmat) <- bifactor_kind
+  
+  outpmat <- as.data.frame(outpmat)
+  
+  if ( 'none' %in% bifactor_kind)  rownames(outpmat) <- 'McDonald'
+  if (!'none' %in% bifactor_kind)  rownames(outpmat) <- c('McDonald', bifactor_kind)
+  
+    
+  # rownames(outpmat) <- c('McD', bifactor_kind)
   colnames(outpmat) <- c('omega-T', 'omega-H', 'ECV', 'H', 'FD', 'ARPB', 'rmsr', 'rmsr-g')
   
-  if (display > 0) {
+  
+  #############################  output   ###########################################
+
+    if (display > 0) {
     
-    cat('\n\nNfactors = ', EFA_options$Nfactors)
+    cat('\n\nNfactors = ', Nfactors)
     cat('\nNcases = ', Ncases) 
     cat('\nextraction = ', EFA_options$extraction)
     cat('\nrotation = ', EFA_options$rotation)
@@ -258,6 +283,12 @@ OMEGA <- function(data, corkind = 'pearson',
       print(round(loadings_bigeominQ,3), print.gap=4)
       show_bifactor_stats(bif_outp_bigeominQ)
     }
+
+    if ('ESEM' %in% bifactor_kind) {
+      cat('\n\n\nESEM loadings:\n\n')
+      print(round(loadings_ESEM,3), print.gap=4)
+      show_bifactor_stats(bif_outp_ESEM)
+    }
   }
   
   output <- list(omega_total_McD       = omega_total_McD,
@@ -267,7 +298,8 @@ OMEGA <- function(data, corkind = 'pearson',
                  omega_total_bifactorT = omega_total_bifactorT,   omega_hierl_bifactorT  = omega_hierl_bifactorT,     
                  omega_total_bifactorQ = omega_total_bifactorQ,   omega_hierl_bifactorQ  = omega_hierl_bifactorQ,     
                  omega_total_bigeominT = omega_total_bigeominT,   omega_hierl_bigeominT  = omega_hierl_bigeominT,     
-                 omega_total_bigeominQ = omega_total_bigeominQ,   omega_hierl_bigeominQ  = omega_hierl_bigeominQ,     
+                 omega_total_bigeominQ = omega_total_bigeominQ,   omega_hierl_bigeominQ  = omega_hierl_bigeominQ,
+                 omega_total_ESEM      = omega_total_ESEM,        omega_hierl_ESEM       = omega_hierl_ESEM,
                  loadings_SL           = loadings_SL,    
                  loadings_SLiD         = loadings_SLiD,
                  loadings_DSL          = loadings_DSL,   
@@ -275,6 +307,7 @@ OMEGA <- function(data, corkind = 'pearson',
                  loadings_bifactorQ    = loadings_bifactorQ, 
                  loadings_bigeominT    = loadings_bigeominT, 
                  loadings_bigeominQ    = loadings_bigeominQ, 
+                 loadings_ESEM         = loadings_ESEM,
                  cormat = cormat,
                  Ncases = Ncases,
                  outpmat = outpmat) 

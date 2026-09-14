@@ -17,6 +17,9 @@ SALIENT <- function (data, salvalue=.4, numsals=3, max_cross=NULL, min_eigval=.7
   if (is.null(max_cross))  max_cross = 10
   
   
+  # is the corkind method valid?
+  corkind <- corkind_check(corkind)
+  
   # set up cormat
   cordat <- setupcormat(data, corkind=corkind, Ncases=Ncases)
   cormat <- cordat$cormat

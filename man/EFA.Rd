@@ -4,7 +4,12 @@
 \description{Exploratory factor analysis with multiple options for factor extraction and rotation}
 \usage{EFA(data, Nfactors=NULL, extraction = 'paf', rotation='promax', corkind='pearson', 
     Ncases=NULL, iterpaf=100, ppower = 3, 
-    delta = .01, verbose=TRUE)}
+    GPA_options = list(delta = .01, 
+                       epsilon = .00001, 
+                       normalize = FALSE, 
+                       maxit = 1000, 
+                       randomStarts = 50),
+    verbose=TRUE)}
 \arguments{
   \item{data}{
   \code{}An all-numeric dataframe where the rows are cases & the columns are 
@@ -44,12 +49,10 @@
   \code{}The power value to be used in a promax rotation (required only if
          rotation = 'promax'). Suggested value: 3}
                   
-  \item{delta}{ 
-  \code{} When rotation = 'geominQ' or 'geominT', delta is a tuning parameter 
-  for the Geomin criterion. It acts as a small constant that is added to prevent 
-  mathematical problems when a factor loading is exactly zero. 
-  Delta is sometimes referred to as 'epsilon'.}
-                  
+  \item{GPA_options}{ 
+  \code{}(optional) A list with options for when a GPArotation is used.
+  See the Details section below.}
+  
   \item{verbose}{
   \code{}Should detailed results be displayed in console? TRUE (default) or FALSE}
 }
@@ -138,15 +141,51 @@
     each individual factor column. \cr
   	}
 
-Run one of the following commands for more detailed descriptions of the 
-above extraction and rotation methods:
 
-\itemize{
+  For \strong{GPA_options:}
+  
+  A list with options for when a GPArotation is used. The list 
+  elements are 'delta', 'epsilon', 'normalize', 'maxit', and 'randomStarts'.
+  
+  \itemize{
+		
+    \item\strong{delta} is a small positive number that is added to the squared  
+    factor loadings in the (geomin) optimization denominator to prevent division by 
+    zero and control the sharpness of the penalty near zero. 
+    (Note: In MPLus, delta is called "epsilon".)
+  
+    \item\strong{epsilon} is the numeric rotational convergence tolerance threshold. 
+    It controls how precise or strict the stopping rule is for the rotation algorithm.
+    The gradient projection algorithm stops optimizing and assumes the 
+    rotation has converged when the norm of the gradient falls below this value.
 
-\item{RShowDoc("EFA_BIFACTOR_vignettes", package = "EFA.dimensions")}
+    \item\strong{normalize} specifies whether and how the loadings
+    matrix is normalized prior to rotation and denormalized after rotation.
+    The possibilities are FALSE (the default) for no normalization, or
+    TRUE, for the Kaiser/Horst normalization.
 
-\item{vignette("EFA_BIFACTOR_vignettes")}
-}
+    \item\strong{maxit} is the maximum number of iterations.
+
+    \item\strong{randomStarts} is an integer that specifies the number of 
+    random starting configurations used to optimize the factor rotation.
+    It helps avoid getting trapped in local minima during factor rotation 
+    optimization. It runs the gradient projection algorithm multiple timeseach 
+    using a different random orthogonal or oblique starting rotation 
+    matrix (Tmat) generated via QR decomposition.
+    It returns the rotated factor loadings matrix and results corresponding 
+    to the run with the lowest objective criterion value among all attempts.
+  }
+
+
+  Run one of the following commands for more detailed descriptions of the 
+  above extraction and rotation methods:
+
+  \itemize{
+
+    \item{RShowDoc("EFA_BIFACTOR_vignettes", package = "EFA.dimensions")}
+
+    \item{vignette("EFA_BIFACTOR_vignettes")}
+  }
 }
 \value{A list with the following elements:
  \item{loadingsNOROT}{The unrotated factor loadings}
@@ -198,7 +237,6 @@ above extraction and rotation methods:
 \examples{
 # the Harman (1967) correlation matrix
 EFA(data=data_Harman, extraction = 'paf', Nfactors=2, Ncases=305, rotation='oblimin')
-
 \donttest{
 # Rosenberg Self-Esteem scale items, using ml extraction & polychoric correlations
 EFA(data=data_RSE, Nfactors=2, extraction = 'ml', corkind='polychoric')

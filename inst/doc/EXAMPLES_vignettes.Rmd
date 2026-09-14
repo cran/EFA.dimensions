@@ -1,0 +1,286 @@
+---
+title: "EXAMPLES"
+author: "Brian O'Connor"
+date: "`r Sys.Date()`"
+output:
+  rmarkdown::html_vignette:
+    toc: true
+    toc_depth: 3
+    number_sections: false
+vignette: >
+  %\VignetteIndexEntry{EXAMPLES}
+  %\VignetteEngine{knitr::rmarkdown}
+  \usepackage[utf8]{inputenc}
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = FALSE,
+  comment = "",
+  fig.width = 7,
+  fig.align = "center",
+  background='#FFFFFF'
+)
+```
+
+<!-- ```{css echo=FALSE} -->
+
+<!-- .custom-inline { -->
+
+<!--   color: red; -->
+
+<!--   font-weight: 700 -->
+
+<!-- } -->
+
+<!-- ``` -->
+
+```{css, echo=FALSE}
+h1 {
+  font-size: 30px;
+  color: black !important;
+}
+h2 {
+  font-size: 20px;
+  color: blue !important;
+}
+
+#TOC {
+  position: fixed;
+  left: 10px;
+  top: 10px;
+  width: 200px;
+  height: 100%;
+  overflow:auto;
+}
+
+#TOC::before {
+  content: "";
+}
+
+#TOC li {
+  list-style-type: none;
+}
+
+#TOC li {
+  margin-bottom: 10px;
+}
+
+/* Change color of all links inside the TOC */
+#TOC a {
+    color: blue; /* Change to your preferred hex color */
+}
+
+/* Target Level 1 Headings (H1) in the TOC */
+#TOC > ul > li > a {
+  color: black; /* Vibrant Red */
+  font-weight: bold;
+}
+
+/* Target Level 2 Headings (H2) in the TOC */
+#TOC > ul > li > ul > li > a {
+  color: blue; /* Slate Blue */
+}
+
+/* Change color of the hovered/active TOC link */
+#TOC a:hover, #TOC .active {
+    color: #D0021B !important; 
+    background-color: #F5F5F5; /* Background color of active item */
+}
+
+body {
+  max-width: 800px;
+  margin: auto;
+  margin-left:230px;
+  line-height: 20px;
+}
+```
+
+
+This R markdown document provides R code and output for multiple functions and datasets. 
+
+## Load the EFA.dimensions package
+
+```{r }
+library(EFA.dimensions)
+```
+
+# ESEM examples:
+
+## ESEM, 'efa_blocks', no target, Holzinger & Swineford 1939 data
+```{r collapse=FALSE}
+ESEM(data = data_HS_1939[,-10], method = 'efa_blocks', Nfactors = 3)
+```
+
+## ESEM, 'startvalues', no target, Holzinger & Swineford 1939 data
+```{r collapse=FALSE}
+ESEM(data = data_HS_1939[,-10], method = 'startvalues', Nfactors = 3)
+```
+
+## ESEM, 'efa_blocks', with a target, Holzinger & Swineford 1939 data
+```{r collapse=FALSE}
+ESEM(data = data_HS_1939[,-10], method = 'efa_blocks', target_keys = c(1,1,1,2,2,2,3,3,3))
+```
+
+## ESEM, 'startvalues', with a target, Holzinger & Swineford 1939 data
+```{r collapse=FALSE}
+ESEM(data = data_HS_1939[,-10], method = 'startvalues', target_keys = c(1,1,1,2,2,2,3,3,3))
+```
+ 
+## ESEM, 'efa_blocks', with a target, Sanchez-Oliva et al. (2017) data
+```{r collapse=FALSE}
+ESEM(data = data_SDT, method = 'efa_blocks', target_keys = c(1,1,1,1,2,2,2,2,3,3,3,3))
+```
+
+## ESEM, 'efa_blocks', MPlus 4.1b data
+```{r collapse=FALSE}
+MPlus_4.1b_data <- read.table("https://www.statmodel.com/usersguide/chap4/ex4.1b.dat", header=FALSE)
+colnames(MPlus_4.1b_data) <- paste0("y", 1:ncol(MPlus_4.1b_data))
+
+ESEM(data = MPlus_4.1b_data, method = 'efa_blocks', Nfactors = 4, estimator = 'ML')
+
+# compare with the MPlus output at  
+# https://www.statmodel.com/usersguide/chap4/ex4.1part2.html
+```
+
+
+
+# BIFACTOR examples:
+
+## BIFACTOR using ESEM, Holzinger & Swineford 1939 data
+```{r collapse=FALSE}
+BIFACTOR(rawdata = data_HS_1939[,-10],
+         bifactor_kind = 'ESEM',
+         Nfactors = 4,
+         LV_options = list(group_keys = NULL,
+                           estimator = 'MLR',
+                           rotation = 'bigeomin',
+                           resid_correls = NULL,
+                           LV_names = NULL,
+                           ordered = FALSE))
+
+```
+
+## BIFACTOR using CFA, Sanchez-Oliva et al. (2017) data
+```{r collapse=FALSE}
+BIFACTOR(rawdata = data_SDT,   
+         bifactor_kind = 'CFA', 
+         LV_options = list(group_keys = c(1,1,1,1,2,2,2,2,3,3,3,3), 
+                           estimator='MLR', 
+                           resid_correls=NULL, 
+                           LV_names=NULL,
+                           ordered = FALSE))
+```         
+
+## BIFACTOR using ESEM, Sanchez-Oliva et al. (2017) data
+```{r collapse=FALSE}
+BIFACTOR(rawdata = data_SDT,   
+         bifactor_kind = 'ESEM', 
+         EFA_options   = list(extraction = 'minres', rotation = 'oblimin', Nfactors = 3), 
+         LV_options = list(group_keys = c(1,1,1,1,2,2,2,2,3,3,3,3), 
+                           estimator='MLR', 
+                           resid_correls=NULL, 
+                           LV_names=NULL,
+                           ordered = FALSE))
+```
+
+## BIFACTOR using ESEM, MPlus 4.7 data
+```{r collapse=FALSE}
+MPlus_4.7_data <- read.table("https://www.statmodel.com/usersguide/chap4/ex4.7.dat", header=FALSE)
+colnames(MPlus_4.7_data) <- paste0("y", 1:ncol(MPlus_4.7_data))
+
+BIFACTOR(rawdata = MPlus_4.7_data,   
+         Nfactors = 3,
+         bifactor_kind = 'ESEM', 
+         LV_options = list(group_keys = NULL,
+                           estimator='ML',
+                           rotation = 'bigeomin',
+                           resid_correls=NULL,
+                           LV_names=NULL,
+                           ordered = FALSE))
+
+# compare with the MPlus output at  
+# hhttps://www.statmodel.com/usersguide/chap4/ex4.7.html
+```         
+
+# Factorial_Invariance examples:
+
+## using LV_model, Holzinger & Swineford 1939 data
+```{r collapse=FALSE}
+HS_1939_model <- 'visual  =~ test1 + test2 + test3
+                  textual =~ test4 + test5 + test6
+                  speed   =~ test7 + test8 + test9'
+
+HS_1939_output <-
+  Factorial_Invariance(data = data_HS_1939, group = 'school', LV_model = HS_1939_model)
+
+PLOT_Invariance(model_object = HS_1939_output,
+                invar_model = 'Scalar',
+                plot_types = c('loadings', 'LV_distribs')) 
+
+
+# for more detailed statistical comparisons of the latent variable means, try
+# the GROUP.DIFFS function from the DFA.CANCOR package, as follows:
+# install.packages(DFA.CANCOR); library(DFA.CANCOR)
+# 
+# LV_scores <- HS_1939_output$LV_scores
+# 
+# GROUP.DIFFS(data = LV_scores, GROUPS = 'school', DV = 'visual')
+# 
+# GROUP.DIFFS(data = LV_scores, GROUPS = 'school', DV = 'speed')
+```
+
+## using LV_keys, Holzinger & Swineford 1939 data
+```{r collapse=FALSE}
+HS_1939_output <-
+Factorial_Invariance(data = data_HS_1939, group = 'school',
+                     LV_keys = c(1,1,1, 2,2,2, 3,3,3),
+                     LV_names = c('visual', 'textual', 'speed'))
+
+PLOT_Invariance(model_object = HS_1939_output, 
+                invar_model = 'Configural',
+                plot_types = c('loadings', 'ints_slopes')) 
+```
+
+## another way of using LV_keys, Holzinger & Swineford 1939 data
+```{r collapse=FALSE}
+Factorial_Invariance(data = data_HS_1939, group = 'school',
+                     LV_keys = c(test1 = 1, test2 = 1, test3 = 1,
+                                 test4 = 2, test5 = 2, test6 = 2,
+                                 test7 = 3, test8 = 3, test9 = 3) )
+```
+
+
+## with a correlated residuals term, Brown 2015 data
+```{r collapse=FALSE}
+# 2015 Brown - Confirmatory Factor Analysis for Applied Research  p 247, Table 7.11
+
+# Tests of measurement invariance and population heterogeneity of DSM-IV
+# major depressive disorder in men and women
+data_Brown_2015 <- read.table("http://people.bu.edu/tabrown/Ch7/MDDALL.dat")
+names(data_Brown_2015) <- c("sex", paste("mdd", 1:9, sep = ""))
+data_Brown_2015$sex <- factor(data_Brown_2015$sex, levels = c(0, 1), labels = c("female", "male"))
+
+# using LV_model
+model.mdd <- '
+MDD =~ mdd1 + mdd2 + mdd3 + mdd4 + mdd5 + mdd6 + mdd7 + mdd8 + mdd9
+mdd1 ~~ mdd2
+'
+Factorial_Invariance(data = data_Brown_2015, group = 'sex', LV_model = model.mdd)
+
+# using LV_keys
+Brown_2015_output <-
+  Factorial_Invariance(data = data_Brown_2015, group = 'sex', 
+                     LV_keys = c(1,1,1,1,1,1,1,1,1),
+                     LV_resid_correls = c('mdd1 ~~ mdd2'))
+
+PLOT_Invariance(model_object = Brown_2015_output,
+                invar_model = 'Scalar',
+                plot_types = c('loadings', 'LV_distribs')) 
+```
+

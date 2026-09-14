@@ -12,7 +12,7 @@
 
 <meta name="author" content="Brian O’Connor" />
 
-<meta name="date" content="2026-07-21" />
+<meta name="date" content="2026-09-13" />
 
 <title>Descriptions of the EFA and BIFACTOR methods</title>
 
@@ -240,7 +240,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <h1 class="title toc-ignore">Descriptions of the EFA and BIFACTOR
 methods</h1>
 <h4 class="author">Brian O’Connor</h4>
-<h4 class="date">2026-07-21</h4>
+<h4 class="date">2026-09-13</h4>
 
 
 <div id="TOC">
@@ -687,15 +687,15 @@ loading of exactly 0 on Factor 2 and Factor 3, the product of that row
 is 0 (X 0 0 = 0). The algorithm’s goal is to minimize this total product
 sum across the whole matrix. Because a loading of exactly absolute zero
 creates a flat mathematical surface where computer algorithms can get
-stuck or fail to calculate derivatives, a tiny constant called delta
-(typically ranging from 0.01 to 0.5) is added to the calculation. This
-acts as a stabilizer to keep the optimization running smoothly. By
-focusing on making at least one loading per row near-zero, geominQ is
-very flexible. It doesn’t care if an item has moderate cross-loadings
-elsewhere, as long as it achieves a near-zero loading on at least one
-factor in the row. It is widely considered superior to oblimin when
-dealing with complex traits where items rarely load perfectly onto just
-one factor.</p>
+stuck or fail to calculate derivatives, a tiny constant (typically
+ranging from 0.01 to 0.5) is added to the calculation. This acts as a
+stabilizer to keep the optimization running smoothly. By focusing on
+making at least one loading per row near-zero, geominQ is very flexible.
+It doesn’t care if an item has moderate cross-loadings elsewhere, as
+long as it achieves a near-zero loading on at least one factor in the
+row. It is widely considered superior to oblimin when dealing with
+complex traits where items rarely load perfectly onto just one
+factor.</p>
 </div>
 <div id="geomint" class="section level2">
 <h2>geominT</h2>
@@ -710,19 +710,18 @@ the product for that row becomes zero (X 0 = 0). The algorithm actively
 tries to minimize the sum of these products across the entire matrix.
 Because hitting a loading of absolute zero creates a flat mathematical
 surface where computer optimization algorithms can get stuck, a tiny
-constant called delta (defaulting to 0.01) is added under the radical.
-This serves as a mathematical stabilizer to ensure smooth convergence.
-While varimax is the default orthogonal rotation in most software,
-geominT handles a specific type of data structure much more effectively.
-varimax simplifies columns and focuses on spreading variance evenly
-across the factors. It can struggle or distort the matrix if the data
-naturally contains a few “complex items” that genuinely belong to
-multiple factors. geominT simplifies rows, and because it uses
-multiplication rather than addition, it only cares that each item drops
-to near-zero on at least one factor. It is highly tolerant of complex
-cross-loadings on other factors, allowing it to find a cleaner, more
-realistic orthogonal structure when dealing with messy or cross-loading
-variables.</p>
+constant (defaulting to 0.01) is added under the radical. This serves as
+a mathematical stabilizer to ensure smooth convergence. While varimax is
+the default orthogonal rotation in most software, geominT handles a
+specific type of data structure much more effectively. varimax
+simplifies columns and focuses on spreading variance evenly across the
+factors. It can struggle or distort the matrix if the data naturally
+contains a few “complex items” that genuinely belong to multiple
+factors. geominT simplifies rows, and because it uses multiplication
+rather than addition, it only cares that each item drops to near-zero on
+at least one factor. It is highly tolerant of complex cross-loadings on
+other factors, allowing it to find a cleaner, more realistic orthogonal
+structure when dealing with messy or cross-loading variables.</p>
 </div>
 <div id="oblimax" class="section level2">
 <h2>oblimax</h2>

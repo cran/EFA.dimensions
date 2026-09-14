@@ -1,5 +1,618 @@
 
 
+# lavaan->lav_options_checkvalues()
+
+
+
+
+corkind_check <- function(corkind) {
+  if (!corkind %in% c('pearson', 'kendall', 'spearman', 'gamma', 'polychoric')) {
+    cat('\nThe entry for corkind, ', corkind, ', is not one of the options for this function.', sep='')
+    cat('\n"pearson" will be used instead.')
+    corkind <- 'pearson'
+  }
+  return(invisible(corkind))
+}
+
+
+
+schmid_options_check <- function(schmid_options) {
+  
+  # check the names of the provided schmid_options elements
+  possible_eles <- c('extraction','rotation')
+  eles <- names(schmid_options)
+  if (!all(eles %in% possible_eles)) {
+    cat('\n\nThe names of one or more elements in LV_options is not valid.')
+    cat('\nThe possibilities are: extraction, and rotation.')
+  }
+  
+  # update schmid_options with default values if any of the possible elements are missing
+  not_there <- setdiff(possible_eles, eles)
+  if (length(not_there) > 0) {
+    
+    if ('extraction' %in% not_there) schmid_options$extraction <- 'minres'
+    
+    if ('rotation' %in% not_there) schmid_options$rotation <- 'oblimin'
+  }
+  
+  # is the schmid_options extraction method valid?
+  # 3 of the bifactor methods use psych::schmid, which has restricted options
+  # fm: the default is  minres. fm="pa" for principal axes, fm="pc" for principal 
+  # components, fm = "minres" for minimum residual (OLS), pc="ml" for maximum likelihood
+  if (!schmid_options$extraction %in% c('paf', 'minres', 'ml', 'pc')) {
+    cat('\nThe schmid_options entry for extraction, ', schmid_options$extraction, 
+        ', is not one of the options for this argument.', sep='')
+    cat('\n"minres" will be used instead.')
+    schmid_options$extraction <- 'minres'
+  }
+  
+  # is the schmid_options rotation method valid?
+  # rotate: the default, oblimin, produces somewhat more correlated factors than the 
+  # alternative, simplimax. Other options include Promax (not Kaiser normalized) 
+  # or promax (Promax with Kaiser normalization). See fa for possible oblique rotations.
+  if (!schmid_options$rotation %in% c('oblimin','simplimax','Promax','promax', 'none')) { 
+    cat('\nThe schmid_options entry for rotation, ', schmid_options$rotation, 
+        ', is not one of the options for this function.', sep='')
+    cat('\n"oblimin" will be used instead.')
+    schmid_options$rotation <- 'oblimin'
+  }
+  return(invisible(schmid_options))
+}
+
+
+
+
+EFA_options_check <- function(EFA_options) {
+  
+  # check the names of the provided EFA_options elements
+  possible_eles <- c('extraction','rotation')
+  eles <- names(EFA_options)
+  if (!all(eles %in% possible_eles)) {
+    cat('\n\nThe names of one or more elements in LV_options is not valid.')
+    cat('\nThe possibilities are: extraction and rotation')
+  }
+  
+  # update EFA_options with default values if any of the possible elements are missing
+  not_there <- setdiff(possible_eles, eles)
+  if (length(not_there) > 0) {
+    
+    if ('extraction' %in% not_there) EFA_options$extraction <- 'minres'
+    
+    if ('rotation' %in% not_there) EFA_options$rotation <- 'oblimin'
+  }
+  
+  # is the EFA_options extraction method valid?
+  if (!EFA_options$extraction %in% c('paf', 'ml', 'image', 'minres', 'uls', 'ols', 'wls', 
+                                     'gls', 'alpha', 'fullinfo')) {
+    cat('\nThe EFA_options entry for extraction, ', EFA_options$extraction, 
+        ', is not one of the options for this argument.', sep='')
+    cat('\n"paf" will be used instead.')
+    EFA_options$extraction <- 'paf'
+  }
+
+  # is the EFA_options rotation method valid?
+  if (!EFA_options$rotation %in% c('bentlerQ', 'bentlerT', 'entropy', 'equamax', 
+                                   'geominQ', 'geominT', 'oblimax', 'oblimin', 
+                                   'promax', 'quartimax', 'quartimin', 
+                                   'simplimax', 'varimax', 'none')) {
+    cat('\nThe EFA_options entry for rotation, ', EFA_options$rotation, 
+        ', is not one of the options for this argument.', sep='')
+    cat('\n"oblimin" will be used instead.')
+    EFA_options$rotation <- 'oblimin'
+  }
+  
+  return(invisible(EFA_options))
+}
+
+
+
+
+LV_options_check <- function(LV_options) {
+
+  # check the names & values of the provided LV_options elements
+  possible_eles <- c('group_keys','estimator','rotation',
+                     'resid_correls','LV_names','ordered')
+  eles <- names(LV_options)
+  if (!all(eles %in% possible_eles)) {
+    cat('\n\nThe names of one or more elements in LV_options is not valid.')
+    cat('\nThe possibilities are: group_keys, estimator, rotation,
+                       resid_correls, LV_names, and ordered')
+  }
+  
+  # update LV_options with default values if any of the possible elements are missing
+  not_there <- setdiff(possible_eles, eles)
+  if (length(not_there) > 0) {
+    
+    if ('group_keys' %in% not_there) LV_options$group_keys <- NULL
+    
+    if ('estimator' %in% not_there) LV_options$estimator <- 'ML'
+    
+    if ('rotation' %in% not_there) LV_options$rotation <- 'bigeomin'
+    
+    if ('resid_correls' %in% not_there) LV_options$resid_correls <- NULL
+    
+    if ('LV_names' %in% not_there) LV_options$LV_names <- NULL
+    
+    if ('ordered' %in% not_there) LV_options$ordered <- FALSE
+  }
+  
+  # LV_options$rotation must be either 'bigeomin' or 'biquartimin' (for bifactor via lavaan::cfa)
+  if (!LV_options$rotation %in% c('bigeomin','biquartimin')) {
+    cat('\nLV_options$rotation must be either bigeomin or biquartimin. It will be changed to bigeomin.')
+    LV_options$rotation <- 'bigeomin'
+  }
+  
+  return(invisible(LV_options))
+}
+
+
+
+
+GPA_options_check <- function(GPA_options) {
+  
+  # check the names & values of the provided GPA_options elements
+  possible_eles <- c('delta','epsilon','normalize','maxit','randomStarts')
+  eles <- names(GPA_options)
+  if (!all(eles %in% possible_eles)) {
+    cat('\n\nThe names of one or more elements in GPA_options is not valid.')
+    cat('\nThe possibilities are: delta, epsilon, normalize, maxit, and randomStarts')
+  }
+  
+  # update GPA_options with default values if any of the possible elements are missing
+  not_there <- setdiff(possible_eles, eles)
+  if (length(not_there) > 0) {
+
+    if ('delta' %in% not_there) GPA_options$delta <- .01
+    
+    if ('epsilon' %in% not_there) GPA_options$epsilon <- .00001
+    
+    if ('normalize' %in% not_there) GPA_options$normalize <- FALSE
+    
+    if ('maxit' %in% not_there) GPA_options$maxit <- 1000
+    
+    if ('randomStarts' %in% not_there) GPA_options$randomStarts <- 50
+  }
+  
+  return(invisible(GPA_options))
+}
+
+
+
+
+rotation_func <- function(rotation, loadingsNOROT, GPA_options, ppower) {
+  
+  Nvars <- nrow(loadingsNOROT)
+  
+  loadingsROT <- structure <- pattern <- phi <- NULL
+  
+  # GPArotation - orthogonal rotations
+  if (rotation %in% c('bentlerT', 'entropy', 'equamax', 'geominT', 'quartimax', 
+                      'bigeominT', 'bifactorT')) {
+    
+    
+    # while it is possible to call, e.g., 'bifactorT', that name will not work
+    # for GPFRSorth -- the T must be removed
+    # it is the orth portion of GPFRSorth that keeps in orthogonal
+    if (rotation == 'bentlerT')   rotation <- 'bentler'
+    if (rotation == 'geominT')    rotation <- 'geomin'
+    if (rotation == 'bigeominT')  rotation <- 'bigeomin'
+    if (rotation == 'bifactorT')  rotation <- 'bifactor'
+
+    loadingsROT <- GPFRSorth(loadingsNOROT, method = rotation,
+                             delta = GPA_options$delta,
+                             epsilon = GPA_options$epsilon,
+                             normalize = GPA_options$normalize,
+                             maxit = GPA_options$maxit,
+                             randomStarts = GPA_options$randomStarts)$loadings[1:Nvars,]
+  }
+  
+  if (rotation == 'varimax') 
+    loadingsROT <- VARIMAX(loadingsNOROT, verbose=FALSE)$loadingsV
+  
+  # GPArotation::parsimax(loadings)   not an exported object from 'namespace:GPArotation'
+  
+  # GPArotation - oblique rotations
+  if (rotation %in% c('bentlerQ', 'geominQ', 'oblimin', 'oblimax', 'quartimin', 
+                      'simplimax', 'bigeominQ', 'bifactorQ')) {
+    
+    # while it is possible to call, e.g., 'bifactorQ', that name will not work
+    # for GPFRSooblq -- the Q must be removed
+    # it is the oblq portion of GPFRSorth that keeps in oblique
+    if (rotation == 'bentlerQ')   rotation <- 'bentler'
+    if (rotation == 'geominQ')    rotation <- 'geomin'
+    if (rotation == 'bigeominQ')  rotation <- 'bigeomin'
+    if (rotation == 'bifactorQ')  rotation <- 'bifactor'
+    
+    outp <- GPFRSoblq(loadingsNOROT, method = rotation,
+                      delta = GPA_options$delta,
+                      epsilon = GPA_options$epsilon,
+                      normalize = GPA_options$normalize,
+                      maxit = GPA_options$maxit,
+                      randomStarts = GPA_options$randomStarts)
+    pattern <- outp$loadings[1:Nvars,]
+    phi <- outp$Phi
+    structure <- pattern %*% phi
+  }
+  
+  if (rotation == 'promax' | rotation == 'PROMAX') {
+    promaxOutput <- PROMAX(loadingsNOROT, ppower=ppower, verbose=FALSE)
+    pattern <- promaxOutput$pattern
+    structure <- promaxOutput$structure
+    phi <- promaxOutput$phi
+  }
+  
+ output <- list(loadingsROT = loadingsROT, structure =structure, pattern = pattern, phi = phi)
+  
+ return(invisible(output))
+
+  # cmd_string <- paste('GPArotation::', 
+  #                     rotation, 
+  #                     '(A = loadings,
+  #                         delta = GPA_options$delta,
+  #                         epsilon = GPA_options$epsilon,
+  #                         normalize = GPA_options$normalize,
+  #                         maxit = GPA_options$maxit,
+  #                         randomStarts = GPA_options$randomStarts)', sep='')
+}
+
+
+
+ordered_estimator_check <- function(ordered, estimator) {
+  
+  # make sure ordered is compatible with estimator
+  
+  flag <- FALSE
+  
+  if ( is.logical(ordered)) { if (ordered)  flag <- TRUE}
+       
+  if (!is.logical(ordered))  flag <- TRUE
+    
+  if (flag & !estimator %in% c('WLSMV','WLSM','DWLS','ULSMV','ULSM','ULS','PML')) {
+      cat('\n\nThe estimator, ', estimator, ', cannot be used for ordered data.', sep='')
+      cat('\nThe estimator has therefore been changed to WLSMV.\n')
+      estimator <- 'WLSMV'
+    }
+  return(invisible(estimator))
+}
+
+
+
+ordered_data_check <- function(ordered, rawdata) {
+  
+  Nlevels <- sapply(rawdata, function(x) length(unique(x)))
+
+  if (is.logical(ordered)) {
+    # if ordered = TRUE
+    if (ordered) {
+      # if all have > 10 levels, change to ordered = FALSE
+      if (all(Nlevels > 10))  {
+        cat('\n\nAll variables had more than 10 levels/values\n\n')
+        print(Nlevels)
+        cat('\nordered was therefore changed to FALSE\n')
+        ordered <- FALSE
+      }
+      # if some have > 10 levels, keep them as ordered
+      if (ordered & any(Nlevels > 10)) {
+        cat('\n\nSome variables had more than 10 levels/values & others had less than 10 levels/values.\n')
+        cat('Only the variables with less than 10 levels/values were treated as ordered in the analyses.\n')
+        ordered <- names(which(Nlevels <= 10))
+      }
+    }
+
+    # if ordered = FALSE & any have 10 or fewer values
+    if (!ordered) {
+      if (any(Nlevels <= 10)) {
+        cat('\n\nThese variables have 10 or fewer levels/values:\n\n')
+        print(Nlevels[which(Nlevels <= 10)])
+        cat('\nConsider changing ordered to TRUE in such cases.\n\n')
+      }
+    }
+  }
+  
+  # if ordered = a vector of names, check the number of values for each variable 
+    if (!is.logical(ordered)) {
+      
+      # check if the ordered variables have > 10 values
+      if (any(Nlevels[ordered] > 10)) {
+        cat('\n\nThese variables have more than 10 levels/values:\n\n')
+        # print(names(which(Nlevels > 10)))
+        print(Nlevels[which(Nlevels > 10)])
+        cat('\nConsider removing their "ordered" status.\n\n')
+      }
+      
+      # the NON ordered variables, if any
+      # check if the NON ordered variables have <= 10 values
+      vars_NON_ordrd <- names(rawdata)[which(!names(rawdata) %in% ordered)]
+      Nlevels_NON_ordrd <- Nlevels[vars_NON_ordrd]
+      if (length(Nlevels_NON_ordrd) > 0) {
+        if (any(Nlevels_NON_ordrd <= 10)) {
+          cat('\n\nThese variables have 10 or fewer levels/values:\n\n')
+          print(Nlevels_NON_ordrd[Nlevels_NON_ordrd <= 10])
+          cat('\nConsider changing their status to "ordered".\n\n')
+        }
+      }
+      
+      # vars_NON_ordrd <- names(rawdata)[which(!names(rawdata) %in% ordered)]
+      # if (length(vars_NON_ordrd) > 0) {
+      #   if (any(Nlevels[vars_NON_ordrd] <= 10)) {
+      #     cat('\n\nThese variables have 10 or fewer levels/values:\n\n')
+      #     print(Nlevels[which(Nlevels[vars_NON_ordrd] <= 10)])
+      #     cat('\nConsider changing their status to "ordered".\n\n')
+      #   }
+      # }
+    }
+  return(invisible(ordered))
+}
+
+
+
+show_lavaan_stats <- function(lavaan_output, these = 'all') {
+  
+  if ('all' %in% these | 'fits' %in% these) {
+    
+    fits <- round(data.frame(lavaan::fitmeasures(lavaan_output)),2) 
+    cat('\nFit coefficients\n')
+    cat('\n RMSR  =',     format(fits['rmr',], nsmall = 2),   
+        '  GFI =',        format(fits['gfi',], nsmall = 2),   
+        '  NFI  =',       format(fits['nfi',], nsmall = 2),  
+        '  BIC =',        format(fits['bic',], nsmall = 2),
+        '  Chisq  =',     format(fits['chisq',], nsmall = 2),
+        '\n RMSEA =',     format(fits['rmsea',], nsmall = 2), 
+        '  TLI =',        format(fits['tli',], nsmall = 2),   
+        '  NNFI =',       format(fits['nnfi',], nsmall = 2), 
+        '  AIC =',        format(fits['aic',], nsmall = 2),
+        '  df     =',     format(fits['df',], nsmall = 2),
+        '\n SRMR  =',     format(fits['srmr',], nsmall = 2),  
+        '  CFI =',        format(fits['cfi',], nsmall = 2),   
+        '  IFI  =' ,      format(fits['ifi',], nsmall = 2), 
+        '  MFI =',        format(fits['mfi',], nsmall = 2),
+        '      pvalue =', format(fits['pvalue',], nsmall = 2)
+    )
+    if (any(grepl("robust", rownames(fits)))) {
+      cat('\n\nRobust fit coefficients\n')
+      cat('\n CFI robust   =', format(fits['cfi.robust',], nsmall = 2),   
+          '  TLI robust =',    format(fits['tli.robust',], nsmall = 2),   
+          '  NNFI robust =',  format(fits['nnfi.robust',], nsmall = 2),  
+          '\n RMSEA robust =', format(fits['rmsea.robust',], nsmall = 2), 
+          '  RNI robust =',    format(fits['rni.robust',], nsmall = 2),   
+          '  GFI robust  =',   format(fits['gfi.robust',], nsmall = 2)
+      )
+    }
+    
+    # [1] "npar"                          "fmin"                          "chisq"                         "df"                           
+    # [5] "pvalue"                        "chisq.scaled"                  "df.scaled"                     "pvalue.scaled"                
+    # [9] "chisq.scaling.factor"          "baseline.chisq"                "baseline.df"                   "baseline.pvalue"              
+    # [13] "baseline.chisq.scaled"         "baseline.df.scaled"            "baseline.pvalue.scaled"        "baseline.chisq.scaling.factor"
+    # [17] "cfi"                           "tli"                           "cfi.scaled"                    "tli.scaled"                   
+    # [21] "cfi.robust"                    "tli.robust"                    "nnfi"                          "rfi"                          
+    # [25] "nfi"                           "pnfi"                          "ifi"                           "rni"                          
+    # [29] "nnfi.scaled"                   "rfi.scaled"                    "nfi.scaled"                    "pnfi.scaled"                  
+    # [33] "ifi.scaled"                    "rni.scaled"                    "nnfi.robust"                   "rni.robust"                   
+    # [37] "logl"                          "unrestricted.logl"             "aic"                           "bic"                          
+    # [41] "ntotal"                        "bic2"                          "scaling.factor.h1"             "scaling.factor.h0"            
+    # [45] "rmsea"                         "rmsea.ci.lower"                "rmsea.ci.upper"                "rmsea.ci.level"               
+    # [49] "rmsea.pvalue"                  "rmsea.close.h0"                "rmsea.notclose.pvalue"         "rmsea.notclose.h0"            
+    # [53] "rmsea.scaled"                  "rmsea.ci.lower.scaled"         "rmsea.ci.upper.scaled"         "rmsea.pvalue.scaled"          
+    # [57] "rmsea.notclose.pvalue.scaled"  "rmsea.robust"                  "rmsea.ci.lower.robust"         "rmsea.ci.upper.robust"        
+    # [61] "rmsea.pvalue.robust"           "rmsea.notclose.pvalue.robust"  "rmr"                           "rmr_nomean"                   
+    # [65] "srmr"                          "srmr_bentler"                  "srmr_bentler_nomean"           "crmr"                         
+    # [69] "crmr_nomean"                   "srmr_mplus"                    "srmr_mplus_nomean"             "gfi"                          
+    # [73] "gfi.ci.lower"                  "gfi.ci.upper"                  "gfi.ci.level"                  "gfi.robust"                   
+    # [77] "gfi.ci.lower.robust"           "gfi.ci.upper.robust"           "cn_05"                         "cn_01"                        
+    # [81] "gfi_lisrel"                    "agfi_lisrel"                   "pgfi"                          "mfi"                          
+    # [85] "ecvi"  
+  }
+  
+  # # unstandardized loadings
+  # loadings_raw <- lavInspect(lavaan_output, what = "est")$lambda
+  # cat('\nRaw loadings:\n'); print(round(loadings_raw,3))
+  
+  if ('all' %in% these | 'loadings_std' %in% these) {
+    # standardized loadings
+    loadings_std <- lavInspect(lavaan_output, what = "std")$lambda
+    cat('\n\nStandardized loadings\n\n'); print(round(loadings_std,2), print.gap=4)
+  }
+  
+  if ('all' %in% these | 'psi' %in% these) {
+    # factor correlations
+    psi <-  lavInspect(lavaan_output, what = "std")$psi
+    cat('\nFactor correlations\n\n'); print(round(psi,2), print.gap=4)
+  }
+}
+
+
+
+
+lavaan_model <- function(varnames, model=NULL, keys=NULL, 
+                         LV_names=NULL, resid_correls=NULL,
+                         Nfactors = NULL,
+                         esem = FALSE,
+                         bifactor = FALSE) {
+  
+  # for cfa & no bifactor, cfa & bifactor,   esem & no bifactor, esem & bifactor
+  
+  if (!is.null(model))  lav_mod <- model
+  
+  if (is.null(model)) {
+    
+    # # need keys if model is NULL
+    # if (is.null(keys))
+    #   stop('model and keys are both NULL. The analyses cannot proceed.')
+    
+    # if keys is provided, ignore the entered Nfactors & compute Nfactors from keys
+    if (!is.null(keys))  Nfactors <- length(unique(keys))
+    
+    # if keys is NULL, then create it from the entered Nfactors
+    if (is.null(keys))  keys <- 1:Nfactors
+
+    # create a set of lavaan equations from the keys
+    values <- unique(keys)
+    
+    # a 0 in keys indicates no group factor loading for an item
+    values <- values[values != 0]
+    
+    if (is.null(Nfactors))  {
+      stop('\nboth keys & Nfactors, in LV_options are NULL. The analyses cannot proceed.')
+      # Nfactors <- length(values)
+    }
+    
+    if (is.null(LV_names))  LV_names <- paste('LV_', 1:Nfactors, sep = '')
+    
+    if (!is.null(LV_names)) {
+      if (length(LV_names) != Nfactors) {
+        message('\n\nThe length of LV_names is not equal to the number of unique values in LV-Keys.')
+        message('LV_names will be ignored.\n')
+        LV_names <- NULL
+      }
+    }
+    
+    #  CFA
+    if (!esem) {
+
+      lav_mod  <- vector()
+      
+      if (bifactor) {
+        
+        dum <- paste(paste0('Gen', " =~ "), paste(varnames, collapse = ' + '))
+        
+        lav_mod <- paste(lav_mod, '\n', dum, collapse = '\n', sep='')
+      }
+      
+      if (is.vector(keys)) {
+        
+        if (is.null(names(keys)))  names(keys) <- varnames
+        
+        for (lupe in 1:Nfactors) {
+          
+          ceci <- which(keys == values[lupe])
+          
+          dum <- paste(paste0(LV_names[lupe], " =~ "), 
+                       paste(names(keys[ceci]), collapse = ' + '))
+          
+          lav_mod <- paste(lav_mod, '\n', dum, collapse = '\n', sep='')
+        }
+      }
+      
+      if (is.data.frame(keys)) {
+        
+        for (lupe in 1:Nfactors) {
+          
+          ceci <- which(keys[,2] == lupe)
+          
+          dum <- paste(paste0(LV_names[lupe], " =~ "), 
+                       paste(keys[ceci,1], collapse = ' + '))
+          
+          lav_mod <- paste(lav_mod, '\n', dum, collapse = '\n', sep='')
+        }
+      }
+      
+      if (!is.null(resid_correls))
+        lav_mod <- paste(lav_mod, '\n', resid_correls, collapse = '\n\n', sep='')
+    }
+    
+
+    
+    
+    # ESEM & bifactor
+    if (esem & bifactor) {
+      
+      lav_mod  <- paste(paste0('efa(\"BI-ESEM\")*',  'G', ' + '))
+      
+      for (lupe in 1:Nfactors) {
+        
+        if (lupe < Nfactors)
+          dum <- paste(paste0('efa(\"BI-ESEM\")*',  LV_names[lupe], ' + '))
+        
+        if (lupe == Nfactors)
+          dum <- paste(paste0('efa(\"BI-ESEM\")*',  LV_names[lupe], ' =~ \n'))
+        
+        lav_mod <- paste(lav_mod, '\n', dum, collapse = '\n', sep='')
+      }
+      
+      # resid_correls ???
+      
+      lav_mod <- paste(lav_mod, paste(varnames, collapse = ' + '))
+    }
+    
+    
+    # ESEM (& NO bifactor)
+    if (esem & !bifactor) {
+      
+      lav_mod  <- c()   #paste(paste0('efa(\"ESEM\")*',  'G', ' + '))
+      
+      for (lupe in 1:Nfactors) {
+        
+        if (lupe < Nfactors)
+          dum <- paste(paste0('efa(\"ESEM\")*',  LV_names[lupe], ' + '))
+        
+        if (lupe == Nfactors)
+          dum <- paste(paste0('efa(\"ESEM\")*',  LV_names[lupe], ' =~ \n'))
+        
+        lav_mod <- paste(lav_mod, '\n', dum, collapse = '\n', sep='')
+      }
+      
+      # resid_correls ???
+      
+      lav_mod <- paste(lav_mod, paste(varnames, collapse = ' + '))
+    }  
+
+    # > fit$syntax
+    # [1] "# bifactory: ESEM via lavaan native efa() block\n# Mplus equivalent: F1-F2-F3 BY x1-x9 (*1);\n\nefa(\"esem\")*F1 +\n    efa(\"esem\")*F2 +\n    efa(\"esem\")*F3 =~\n    x1 + x2 + x3 + x4 + x5 + x6 +\n    x7 + x8 + x9\n"
+    # > writeLines(fit$syntax)
+    # # bifactory: ESEM via lavaan native efa() block
+    # # Mplus equivalent: F1-F2-F3 BY x1-x9 (*1);
+    # 
+    # efa("esem")*F1 +
+    #   efa("esem")*F2 +
+    #   efa("esem")*F3 =~
+    #   x1 + x2 + x3 + x4 + x5 + x6 +
+    #   x7 + x8 + x9
+  }
+  
+  # writeLines(lav_mod)
+  
+    
+  # test the syntax validity
+  tryCatch({
+    parsed_table <- lavaanify(model = lav_mod)
+    # message('The lavaan model syntax is valid.')
+    # message('\nLook at the parameter table structure:\n')
+    # print((parsed_table[, c("lhs", "op", "rhs")]))
+  }, error = function(e) {
+    message("Syntax Error found:")
+    print(e$message)
+  })
+  
+  return(invisible(lav_mod))
+}
+
+
+
+
+# generate a target matrix from keys
+target_matrix <- function(keys, varnames, bifactor) {
+  
+  target <- matrix(0, length(keys), max(keys))
+  for (lupe in 1:length(keys))  target[lupe, keys[lupe]] <- 1
+  
+  if (!bifactor) colnames(target) <- paste('Factor_', 1:ncol(target), sep = '')
+  
+  if (bifactor) {
+    target <- cbind(1, target)
+    colnames(target) <- c('General', (paste('Group_', 1:(ncol(target)-1), sep = '')))
+  }
+  
+  rownames(target) <- varnames
+  
+  # # check for errors in target_keys
+  # if (length(target_keys) != N_obsvd_vars)
+  #   cat('\nThe length of target_keys is not equal to the number of variables in data.')
+  # if (min(target_keys) != 1)  cat('\nThe smallest number in target_keys is not 1')
+  # if (!all(seq(min(target_keys):max(target_keys)) %in% unique((target_keys))))
+  #   cat('\nNot all of the possible factor numbers appear in target_keys')
+  target
+}
+
 
 
 

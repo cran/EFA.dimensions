@@ -74,16 +74,17 @@ please use INTERNAL_CONSISTENCY instead of INTERNAL.CONSISTENCY.
 	if (Nitems > 2) {
 	  
 	  # using omega McD
-	  omega_res <- OMEGA(new_data, 
-	                     bifactor_kind = 'McD', 
-	                     EFA_options    = list(extraction = 'minres', rotation = 'oblimin', Nfactors = 3),
-	                     schmid_options = list(extraction = 'minres', rotation = 'oblimin', N_group_factors = 3),
+	  omega_res <- OMEGA(new_data, Nfactors = 3,
+	                     bifactor_kind = 'none', 
+	                     EFA_options    = list(extraction = 'minres', rotation = 'oblimin'),
+	                     schmid_options = list(extraction = 'minres', rotation = 'oblimin'),
 	                     display = 0)
 
 	  coef_H <- coefficient_H(cormat=omega_res$cormat, 
 	                          Ncases=omega_res$Ncases, extraction=extraction)
 
-	  int.consist_scale <- cbind(omega_res$omega_total_McD, coef_H,
+	  int.consist_scale <- cbind(omega_res$omega_total_McD, 
+	                             coef_H,
 	                             Cronbach.alpha(new_data), 
 	                             omega_res$outpmat[,'rmsr'])
 	  
@@ -126,10 +127,10 @@ please use INTERNAL_CONSISTENCY instead of INTERNAL.CONSISTENCY.
 		  r_corxtd_item_total <- cor(rowSums(new_data[,-lupe]), new_data[,lupe] )  
 		  
 		  # using omega McD
-		  omega_res <- OMEGA(new_data[,-lupe],
-		                     bifactor_kind = 'McD', 
-		                     EFA_options    = list(extraction = 'minres', rotation = 'oblimin', Nfactors = 3),
-		                     schmid_options = list(extraction = 'minres', rotation = 'oblimin', N_group_factors = 3),
+		  omega_res <- OMEGA(new_data[,-lupe], Nfactors = 3,
+		                     bifactor_kind = 'none', 
+		                     EFA_options    = list(extraction = 'minres', rotation = 'oblimin'),
+		                     schmid_options = list(extraction = 'minres', rotation = 'oblimin'),
 		                     display = 0)
 
 		  coef_H <- coefficient_H(cormat=omega_res$cormat, 

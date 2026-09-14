@@ -65,6 +65,9 @@ EMPKC <- function (data, corkind='pearson', Ncases=NULL, verbose=TRUE) {
   
   Nvars  <- ncol(data)
   
+  # is the corkind method valid?
+  corkind <- corkind_check(corkind)
+  
   # set up cormat
   cordat <- setupcormat(data, corkind=corkind, Ncases=Ncases)
   cormat <- cordat$cormat

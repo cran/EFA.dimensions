@@ -42,6 +42,9 @@ EXTENSION_FA <- function(data,
   Ncases <- nrow(data)
   Nvars  <- ncol(data) 
   
+  # is the corkind method valid?
+  corkind <- corkind_check(corkind)
+  
   # improper specification warnings
   if ((Ncore+Next) > Nvars) {
     message('\n\nWARNING: More core and/or extension variables were specified than 

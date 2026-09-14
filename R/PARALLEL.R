@@ -6,6 +6,9 @@ PARALLEL <- function (Nvars=20, Ncases=300, Ndatasets=100, extraction='PCA',
   # deprecated  
   if (!missing(factormodel))  extraction <- factormodel
   
+  # is the corkind method valid?
+  corkind <- corkind_check(corkind)
+  
   evals <- matrix(0, nrow = Nvars, ncol = Ndatasets)
   # pb <- utils::txtProgressBar(min = 0, max = Ndatasets, style = 3) 
   for (nds in 1:Ndatasets) { 

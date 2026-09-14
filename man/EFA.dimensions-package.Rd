@@ -37,7 +37,9 @@
     
     \item FACTORABILITY, for the factorability of a correlation matrix
 
-    \item Factorial_Invariance, for factorial invariance 
+    \item Factorial_Invariance, for multiple groups factorial invariance 
+    
+    \item PLOT_Invariance, for plots of multiple groups factorial invariance statistics
     
     \item LOCALDEP, for the assessment of local independence
 
@@ -50,10 +52,6 @@
 	realistic conditions. \emph{Psychological Methods, 24(4),} 468-491.}
 \cr\cr{Mulaik, S. A. (2010). \emph{Foundations of factor analysis} (2nd ed.). Boca Raton, FL: Chapman 
 	and Hall/CRC Press, Taylor & Francis Group.}
-\cr\cr {O'Connor, B. P. (2000). SPSS and SAS programs for determining 
-  the number of components using parallel analysis and Velicer's 
-  MAP test. \emph{Behavior Research Methods, Instrumentation, and
-  Computers, 32,} 396-402.}
 \cr\cr {O'Connor, B. P. (2000). SPSS and SAS programs for determining 
   the number of components using parallel analysis and Velicer's 
   MAP test. \emph{Behavior Research Methods, Instrumentation, and

@@ -2,8 +2,8 @@ Title: Exploratory Factor Analysis Functions for Assessing
         Dimensionality
 Package: EFA.dimensions
 Type: Package
-Version: 0.1.8.8
-Date: 2026-07-21
+Version: 0.1.9.1
+Date: 2026-09-13
 Authors@R: person(given = c("Brian", "P."), 
                   family = "O'Connor", 
                   role =c("aut","cre"), 
@@ -13,23 +13,22 @@ Maintainer: Brian P. O'Connor  <brian.oconnor@ubc.ca>
 Description: Functions for an assortment of factor analysis-related
     procedures, including eleven procedures for determining the number of 
     factors; for factor analysis with multiple options for methods of extraction 
-    and rotation; for bifactor analysis; for extension factor analysis; 
+    and rotation; for bi-factor analysis; for extension factor analysis; 
     options for running the analyses using either raw data
     or correlation matrices as input and with options 
     for conducting the analyses using Pearson correlations, 
     Kendall correlations, Spearman correlations, gamma correlations, or polychoric 
     correlations; wrapper 'lavaan'-based functions for factorial invariance 
     and exploratory structural equation modeling; 
-    functions for the factorability of a correlation matrix,
-    for the congruences between factors from different datasets, for the 
+    functions for the factor-ability of a correlation matrix,
+    for the congruence between factors from different datasets, for the 
     assessment of local independence, for the assessment of factor solution 
     complexity, for internal consistency, and for correcting Pearson correlation 
     coefficients for attenuation due to unreliability.
-    Auerswald & Moshagen (2019, ISSN:1939-1463);
+    Auerswald & Moshagen (2019, <doi:10.1037/met0000200>);
     Field, Miles, & Field (2012, ISBN:978-1-4462-0045-2);
     Mulaik (2010, ISBN:978-1-4200-9981-2);
-    O'Connor (2000, <doi:10.3758/bf03200807>);
-    O'Connor (2001, ISSN:0146-6216).
+    O'Connor (2000, <doi:10.3758/bf03200807>).
 Imports: stats, psych, polycor, EFAtools, utils, mirt, GPArotation,
         lavaan, semTools
 Suggests: lattice, knitr, rmarkdown
@@ -38,6 +37,6 @@ LazyLoad: yes
 LazyData: yes
 License: GPL (>= 2)
 NeedsCompilation: no
-Packaged: 2026-07-21 17:25:03 UTC; brianoconnor
+Packaged: 2026-09-14 02:45:28 UTC; brianoconnor
 Repository: CRAN
-Date/Publication: 2026-07-21 22:40:10 UTC
+Date/Publication: 2026-09-14 07:10:42 UTC

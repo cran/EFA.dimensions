@@ -7,6 +7,9 @@ EFA_SCORES <- function(loadings=NULL, loadings_type='structure', data=NULL,
   if (is.null(loadings) & method != 'PCA')
     message('\nloadings are required when method = ', method, '. Expect errors.')
   
+  # is the corkind method valid?
+  corkind <- corkind_check(corkind)
+  
   # get the variable names
   noms <- NULL
   if (!is.null(loadings))                 noms <- rownames(loadings)

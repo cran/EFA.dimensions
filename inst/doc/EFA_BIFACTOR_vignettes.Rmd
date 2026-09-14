@@ -216,7 +216,7 @@ Factor 3, the product of that row is 0 (X  0  0 = 0). The algorithm's
 goal is to minimize this total product sum across the whole matrix. 
 Because a loading of exactly absolute zero creates a flat mathematical 
 surface where computer algorithms can get stuck or fail to calculate 
-derivatives, a tiny constant called delta (typically ranging from 0.01 to 0.5) 
+derivatives, a tiny constant (typically ranging from 0.01 to 0.5) 
 is added to the calculation. This acts as a stabilizer to keep the 
 optimization running smoothly. By focusing on making at least one 
 loading per row near-zero, geominQ is  very flexible. It doesn't 
@@ -237,7 +237,7 @@ of exactly 0 on Factor 2, the product for that row becomes zero (X  0 = 0).
 The algorithm actively tries to minimize the sum of these products 
 across the entire matrix. Because hitting a loading of absolute zero 
 creates a flat mathematical surface where computer optimization algorithms 
-can get stuck, a tiny constant called delta (defaulting to 0.01) is added 
+can get stuck, a tiny constant (defaulting to 0.01) is added 
 under the radical. This serves as a mathematical stabilizer to ensure smooth 
 convergence. While varimax is the default orthogonal rotation in most 
 software, geominT handles a specific type of data structure much more 

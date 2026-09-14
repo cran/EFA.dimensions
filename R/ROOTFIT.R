@@ -14,6 +14,9 @@ ROOTFIT <- function (data, corkind='pearson', Ncases=NULL, extraction='PAF',
   # Nroots <- floor(Nvars * .6)
   Nroots <- Nvars
   
+  # is the corkind method valid?
+  corkind <- corkind_check(corkind)
+  
   # set up cormat
   cordat <- setupcormat(data, corkind=corkind, Ncases=Ncases)
   cormat <- cordat$cormat

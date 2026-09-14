@@ -9,7 +9,7 @@
   \item{data}{
   \code{}An all-numeric dataframe where the rows are cases & the columns are the variables.}
 
-  \item{extraction}{ 
+  \item{extraction}{
   \code{}(optional) The factor extraction method to be used in the omega computations. The options are:
          'ML' for maximum likelihood (the default); and
   	     'PAF' for principal axis / common factor analysis.}
@@ -33,7 +33,12 @@ are computed and items with negative loadings are reverse-coded.
 If error messages are produced, try using 'auto_reverse = FALSE'.
 	
 If item names are provided for the 'reverse_these' argument, then auto_reverse is not conducted.
-	
+
+The Omega-total coefficient  in the output is McDonald's omega total coefficient
+computed using three factors (one general + 2 group factors), minres extraction, and
+oblimin rotation. See the OMEGA or the BIFACTOR functions in this package for
+alternative omega options.
+
 Run one of the following commands for descriptions of 
 the alpha, omega, and other coefficients produced by this function: \cr
 \itemize{
