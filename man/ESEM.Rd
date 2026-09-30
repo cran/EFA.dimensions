@@ -195,6 +195,8 @@ ESEM(data=data_RSE, method = 'startvalues', target = RSE_target)
 ESEM(data=data_RSE, target_keys = c(1, 1, 2, 1, 2, 1, 1, 2, 2, 2)) 
         
          
-# Run this command for additional Examples:  vignette("EXAMPLES_vignettes")
+# See this web page for additional Examples:
+
+# https://oconnor-psych.ok.ubc.ca/vignettes/EXAMPLES_vignettes.html
 }
 }

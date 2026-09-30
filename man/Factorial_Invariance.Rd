@@ -191,6 +191,8 @@ Factorial_Invariance(data = data_RSE_sex, group = 'gender',
                      LV_model = esem_output$esem_model_syntax)
         
          
-# Run this command for additional Examples:  vignette("EXAMPLES_vignettes")
+# See this web page for additional Examples:
+
+# https://oconnor-psych.ok.ubc.ca/vignettes/EXAMPLES_vignettes.html
 }
 }

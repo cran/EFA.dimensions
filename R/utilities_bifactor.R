@@ -265,7 +265,8 @@ bifactor_engine <- function(loadings = NULL,
     # extract loadings based on min_loading
     group_TF <- abs(loadings_BIF[,lupe]) >= min_loading
     # dum <- cbind( loadings_BIF[group_TF,1], loadings_BIF[group_TF,lupe])
-    dum <-loadings_BIF[group_TF,]
+    # dum <- loadings_BIF[group_TF,]
+    dum <- loadings_BIF[group_TF, , drop = FALSE]   # thanks Yves
     
     # ECV_SG (Specific-dimension Explained Common Variance, also called ECV S&E) is 
     # the proportion of the total common variance across all items that is explained 

@@ -113,7 +113,7 @@
   if either "rawdata" or "cormat" are provided, the function will conduct the 
   preliminary EFA, the bifactor analyses, and produce the bifactor loadings and  
   statistics. "loadings" must be NULL for this to occur.
-}
+  }
 
   The factor extraction computations for the following methods are conducted
 	using the psych package (Revelle, 2026): 'alpha', 'gls', 'minres', 'ols', 'uls', and 'wls'.
@@ -268,16 +268,10 @@
     to the run with the lowest objective criterion value among all attempts.
   }
 
+See this web page for more detailed descriptions of the above extraction, 
+rotation, and bifactor methods:
 
-  Run one of the following commands for more detailed descriptions of the 
-  above extraction, rotation, and bifactor methods:
-
-\itemize{
-
-  \item{RShowDoc("EFA_BIFACTOR_vignettes", package = "EFA.dimensions")}
-
-  \item{vignette("EFA_BIFACTOR_vignettes")}
-}
+\url{https://oconnor-psych.ok.ubc.ca/vignettes/EFA_BIFACTOR_vignettes.html}
 }
 \value{A list with the bifactor loadings and statistics, including omegas, ECV,
 ARPB, FD, coef_H, and rmsr.
@@ -358,8 +352,8 @@ BIFACTOR(rawdata = data_RSE,
                            LV_names=NULL,
                            ordered = TRUE),
          min_loading = .0001) 
-        
-         
-# Run this command for additional Examples:  vignette("EXAMPLES_vignettes")
 }
+# See this web page for additional Examples:
+
+# https://oconnor-psych.ok.ubc.ca/vignettes/EXAMPLES_vignettes.html
 }

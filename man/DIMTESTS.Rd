@@ -49,14 +49,9 @@
 \details{This is a convenience function for running possibly multiple tests 
 for the number of factors.
 	
-Run one the following commands for descriptions of the various tests:
+See this web page for descriptions of the various tests:
 
-\itemize{
-
-\item{RShowDoc("Number_of_factors_tests_vignettes", package = "EFA.dimensions")}
-
-\item{vignette("Number_of_factors_tests_vignettes")}
-}
+\url{https://oconnor-psych.ok.ubc.ca/vignettes/Number_of_factors_tests_vignettes.html}
 }
 \value{A list with the following elements:
  \item{dimtests}{A matrix with the DIMTESTS results}

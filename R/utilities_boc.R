@@ -22,7 +22,7 @@ schmid_options_check <- function(schmid_options) {
   possible_eles <- c('extraction','rotation')
   eles <- names(schmid_options)
   if (!all(eles %in% possible_eles)) {
-    cat('\n\nThe names of one or more elements in LV_options is not valid.')
+    cat('\n\nThe names of one or more elements in schmid_options is not valid.')
     cat('\nThe possibilities are: extraction, and rotation.')
   }
   

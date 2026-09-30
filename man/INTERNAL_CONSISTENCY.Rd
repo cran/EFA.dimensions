@@ -39,14 +39,10 @@ computed using three factors (one general + 2 group factors), minres extraction,
 oblimin rotation. See the OMEGA or the BIFACTOR functions in this package for
 alternative omega options.
 
-Run one of the following commands for descriptions of 
-the alpha, omega, and other coefficients produced by this function: \cr
-\itemize{
+See this web page for more detailed descriptions of the alpha, omega, and 
+other coefficients produced by this function:
 
-\item{RShowDoc("Coefficient_descriptions_vignettes", package = "EFA.dimensions")} \cr
-
-\item{vignette("Coefficient_descriptions_vignettes")} \cr
-}
+\url{https://oconnor-psych.ok.ubc.ca/vignettes/Coefficient_descriptions_vignettes.html}
 }
 \value{A list with the following elements:
  \item{int.consist_scale}{A vector with the scale omega, Cronbach's alpha, 

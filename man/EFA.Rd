@@ -176,16 +176,10 @@
     to the run with the lowest objective criterion value among all attempts.
   }
 
+See this web page for more detailed descriptions of the above 
+extraction and rotation methods:
 
-  Run one of the following commands for more detailed descriptions of the 
-  above extraction and rotation methods:
-
-  \itemize{
-
-    \item{RShowDoc("EFA_BIFACTOR_vignettes", package = "EFA.dimensions")}
-
-    \item{vignette("EFA_BIFACTOR_vignettes")}
-  }
+\url{https://oconnor-psych.ok.ubc.ca/vignettes/EFA_BIFACTOR_vignettes.html}
 }
 \value{A list with the following elements:
  \item{loadingsNOROT}{The unrotated factor loadings}

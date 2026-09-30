@@ -212,17 +212,12 @@ For the \strong{LV_options} argument:
     It returns the rotated factor loadings matrix and results corresponding 
     to the run with the lowest objective criterion value among all attempts.
   }
+  
+See this web page for more detailed descriptions of the omega-total and 
+omega-hierarchical internal consistency reliability coefficients and other 
+statistics produced by this function:
 
-
-Run the following command for detailed descriptions of 
-the omega-total and omega-hierarchical internal consistency reliability 
-coefficients and other statistics produced by this function: \cr
-\itemize{
-
-  \item{RShowDoc("Coefficient_descriptions_vignettes", package = "EFA.dimensions")} \cr
-
-  \item{vignette("Coefficient_descriptions_vignettes")} \cr
-}
+\url{https://oconnor-psych.ok.ubc.ca/vignettes/Coefficient_descriptions_vignettes.html}
 }
 \value{A list with the omega coefficients, the factor loadings, and model fit statistics.
 }
